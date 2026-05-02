@@ -65,6 +65,19 @@ model CurriculumModule {
   description   String?
   level         CompetitionLevel
   order         Int
+
+  lessons       Lesson[]
+}
+
+model Lesson {
+  id            String    @id @default(cuid())
+  moduleId      String
+  title         String
+  content       String    @db.Text
+  order         Int
+  videoUrl      String?
+  
+  module        CurriculumModule @relation(fields: [moduleId], references: [id])
 }
 
 model UserAchievement {
