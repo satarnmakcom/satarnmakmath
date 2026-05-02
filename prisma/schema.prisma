@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum CompetitionLevel {
+  POSN
+  POSN1
+  POSN2
+  TMO
+  IPST1
+  IPST2
+  IMO
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  image         String?
+  rating        Int       @default(1200)
+  globalRank    Int?
+  streak        Int       @default(0)
+  country       String    @default("TH")
+  createdAt     DateTime  @default(now())
+  
+  submissions   Submission[]
+  achievements  UserAchievement[]
+}
+
+model Problem {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  title         String
+  content       String    @db.Text
+  level         CompetitionLevel
+  difficulty    Int
+  tags          String[]
+  
+  createdAt     DateTime  @default(now())
+  
+  submissions   Submission[]
+}
+
+model Submission {
+  id            String    @id @default(cuid())
+  userId        String
+  problemId     String
+  content       String    @db.Text
+  status        String    @default("PENDING")
+  submittedAt   DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+  problem       Problem   @relation(fields: [problemId], references: [id])
+}
+
+model CurriculumModule {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  level         CompetitionLevel
+  order         Int
+}
+
+model UserAchievement {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String
+  description   String?
+  icon          String?
+  unlockedAt    DateTime  @default(now())
+
+  user          User      @relation(fields: [userId], references: [id])
+}
