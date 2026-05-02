@@ -1,5 +1,7 @@
 'use client'
 
+import { useSession } from "next-auth/react"
+
 const achievements = [
   { id: 'streak', icon: 'fire', color: 'gold', title: 'Streak Master', locked: false },
   { id: 'solver', icon: 'check', color: 'electric', title: 'Problem Solver', locked: false },
@@ -23,7 +25,19 @@ const colorMap: Record<string, { from: string; to: string }> = {
   emerald: { from: 'from-emerald-500', to: 'to-emerald-400' }
 }
 
+const getRatingInfo = (rating: number) => {
+  if (rating < 1200) return { title: 'Newbie', className: 'rating-newbie' }
+  if (rating < 1400) return { title: 'Pupil', className: 'rating-pupil' }
+  if (rating < 1600) return { title: 'Specialist', className: 'rating-specialist' }
+  if (rating < 1900) return { title: 'Expert', className: 'rating-expert' }
+  if (rating < 2400) return { title: 'Master', className: 'rating-master' }
+  return { title: 'Grandmaster', className: 'rating-grandmaster' }
+}
+
 export default function ProfilePage() {
+  const { data: session } = useSession()
+  const user = session?.user
+  const ratingInfo = getRatingInfo(user?.rating || 1200)
   return (
     <section className="max-w-6xl mx-auto space-y-6">
       {/* Hero Banner */}
@@ -38,11 +52,11 @@ export default function ProfilePage() {
           {/* Floating Stats on Banner */}
           <div className="absolute top-6 right-6 md:right-10 flex gap-3">
             <div className="px-4 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center hover:bg-white/10 transition-colors">
-              <div className="text-lg font-bold text-white">Expert</div>
+              <div className="text-lg font-bold text-white">{ratingInfo.title}</div>
               <div className="text-[10px] text-white/60 uppercase tracking-wider">Rank</div>
             </div>
             <div className="px-4 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center hover:bg-white/10 transition-colors">
-              <div className="text-lg font-bold text-neon-400">12d</div>
+              <div className="text-lg font-bold text-neon-400">{user?.streak || 0}d</div>
               <div className="text-[10px] text-white/60 uppercase tracking-wider">Streak</div>
             </div>
           </div>
@@ -52,7 +66,7 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row md:items-end gap-5 -mt-14 md:-mt-16">
             <div className="relative group cursor-pointer">
               <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-electric-400 via-violet-500 to-violet-600 p-[3px] shadow-2xl group-hover:scale-105 transition-transform duration-300">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=AlexChen" className="w-full h-full rounded-2xl bg-[var(--bg-card)]" alt="" />
+                <img src={user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} className="w-full h-full rounded-2xl bg-[var(--bg-card)]" alt="" />
               </div>
               <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-xl bg-[var(--bg-card)] border-2 border-[var(--border-color)] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <span className="text-lg">🇹🇭</span>
@@ -63,26 +77,25 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 mb-0 md:mb-2">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">Alex Chen</h1>
-                <span className="px-3 py-1 rounded-xl bg-gradient-to-r from-electric-500/15 to-violet-500/15 text-electric-400 text-xs font-bold border border-electric-500/20">Expert</span>
-                <span className="px-3 py-1 rounded-xl bg-gold-500/10 text-gold-400 text-xs font-bold border border-gold-500/20">⭐ 4.8</span>
+                <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user?.name || "Anonymous"}</h1>
+                <span className={`px-3 py-1 rounded-xl bg-gradient-to-r from-[var(--tw-gradient-from)] to-[var(--tw-gradient-to)] text-[var(--tw-gradient-from)] text-xs font-bold border border-white/10 ${ratingInfo.className.replace('rating', 'from')}`}>{ratingInfo.title}</span>
               </div>
               <p className="text-sm text-[var(--text-secondary)] mt-2 flex items-center gap-3 flex-wrap">
                 <span className="flex items-center gap-1 hover:text-electric-400 transition-colors cursor-pointer">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                   </svg>
-                  @alex_chen
+                  @{user?.email?.split('@')[0] || "user"}
                 </span>
                 <span className="text-[var(--text-tertiary)]">•</span>
-                <span>Joined March 2023</span>
+                <span>Joined recently</span>
                 <span className="text-[var(--text-tertiary)]">•</span>
                 <span className="flex items-center gap-1">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                   </svg>
-                  Bangkok, Thailand
+                  Thailand
                 </span>
               </p>
             </div>
@@ -106,24 +119,24 @@ export default function ProfilePage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
-          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">2,147</div>
+          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.rating || 1200}</div>
           <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Rating</div>
-          <div className="text-xs text-neon-400 mt-1 font-bold">+23 this week</div>
+          <div className="text-xs text-neon-400 mt-1 font-bold">+0 this week</div>
         </div>
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
-          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">1,247</div>
+          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.solvedCount || 0}</div>
           <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Solved</div>
-          <div className="text-xs text-electric-400 mt-1 font-bold">342 this month</div>
+          <div className="text-xs text-electric-400 mt-1 font-bold">0 this month</div>
         </div>
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
-          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">48</div>
+          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">0</div>
           <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Challenges</div>
-          <div className="text-xs text-gold-400 mt-1 font-bold">Top 10% globally</div>
+          <div className="text-xs text-gold-400 mt-1 font-bold">Just started</div>
         </div>
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
-          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">#342</div>
+          <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.globalRank ? `#${user.globalRank}` : '-'}</div>
           <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Global</div>
-          <div className="text-xs text-rose-400 mt-1 font-bold">▼ 5 places</div>
+          <div className="text-xs text-rose-400 mt-1 font-bold">Unranked</div>
         </div>
       </div>
 
