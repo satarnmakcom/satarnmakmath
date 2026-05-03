@@ -22,9 +22,9 @@ export async function updateProfile(userId: string, data: {
     revalidatePath("/")
 
     return { success: true, data: updated }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to update profile:", error)
-    return { success: false, error: "Failed to update profile" }
+    return { success: false, error: error?.message || "Failed to update profile" }
   }
 }
 

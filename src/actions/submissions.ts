@@ -29,9 +29,9 @@ export async function submitProblemSolution(data: {
     revalidatePath(`/problem/${data.problemId}`)
 
     return { success: true, data: submission }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to submit solution:", error)
-    return { success: false, error: "Failed to submit solution" }
+    return { success: false, error: error?.message || "Failed to submit solution" }
   }
 }
 
