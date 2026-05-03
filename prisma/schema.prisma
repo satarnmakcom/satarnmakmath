@@ -28,8 +28,8 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
-  password      String?
-  image         String?
+  password      String?   @db.Text
+  image         String?   @db.Text
   role          Role      @default(USER)
   rating        Int       @default(1200)
   globalRank    Int?
