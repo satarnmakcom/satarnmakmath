@@ -122,9 +122,16 @@ export async function aiGradeSolution(data: {
     // Changed to Gemini 2.5 Flash
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
-    const prompt = `You are an expert Math Olympiad Grader (specifically for POSN Camp 1).
-IMPORTANT: These are short-answer / fill-in-the-blank questions. The student DOES NOT need to provide a formal proof.
-Evaluate the student's answer based primarily on the final answer's correctness. If it is mathematically equivalent to the correct answer, mark it as correct.
+    const requiresProof = problem.level !== 'POSN'
+
+    const prompt = `You are an expert Math Olympiad Grader (specifically for ${problem.level}).
+${requiresProof 
+  ? `IMPORTANT: This problem requires a formal proof or step-by-step logic.
+If the student only provides a final answer without sufficient explanation or proof, you MUST mark it as incorrect.
+Evaluate the mathematical rigor and logical steps.`
+  : `IMPORTANT: These are short-answer / fill-in-the-blank questions. The student DOES NOT need to provide a formal proof.
+Evaluate the student's answer based primarily on the final answer's correctness. If it is mathematically equivalent to the correct answer, mark it as correct.`
+}
 Return your evaluation as a valid JSON object EXACTLY in this format:
 {
   "isCorrect": boolean,

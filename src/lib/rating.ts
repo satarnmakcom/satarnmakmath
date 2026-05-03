@@ -9,24 +9,28 @@
  * - Small penalty regardless (to discourage spam submissions)
  */
 
-const K_FACTOR = 40 // Maximum possible rating change per problem
-
 export function calculateRatingChange(
   userRating: number,
   problemDifficulty: number,
   isCorrect: boolean
 ): number {
+  // Dynamic K-factor based on rating (higher rating = slower growth)
+  let kFactor = 30
+  if (userRating > 1400) kFactor = 20
+  if (userRating > 1800) kFactor = 10
+  if (userRating > 2200) kFactor = 5
+
   // Expected score using logistic function (like chess ELO)
   const expectedScore = 1 / (1 + Math.pow(10, (problemDifficulty - userRating) / 400))
 
   if (isCorrect) {
     // Gain: K * (1 - expectedScore)
     // Harder problems (low expectedScore) → bigger gain
-    const gain = Math.round(K_FACTOR * (1 - expectedScore))
+    const gain = Math.round(kFactor * (1 - expectedScore))
     return Math.max(1, gain) // Always gain at least 1 point
   } else {
     // Loss: small penalty, capped
-    const loss = Math.round(K_FACTOR * expectedScore * 0.3) // 30% of what you'd gain
+    const loss = Math.round(kFactor * expectedScore * 0.3) // 30% of what you'd gain
     return -Math.max(1, loss) // Always lose at least 1 point
   }
 }
