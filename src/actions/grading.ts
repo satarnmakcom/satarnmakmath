@@ -112,7 +112,8 @@ export async function aiGradeSolution(data: {
       return { success: false, error: "Submission not found or already graded" }
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || "AIzaSyDqo7VolldAwT6bMOGP-wiO3SS3518nVAI"
+    // Hardcoding the new key to prevent Vercel's old Environment Variables from overriding it
+    const apiKey = "AIzaSyDqo7VolldAwT6bMOGP-wiO3SS3518nVAI"
     if (!apiKey) {
       return { success: false, error: "GEMINI_API_KEY is not configured" }
     }
