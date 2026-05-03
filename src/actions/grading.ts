@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { calculateRatingChange, recalculateGlobalRanks } from "@/lib/rating"
 import { revalidatePath } from "next/cache"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
 /**
  * Self-grade a submission (honor system).
@@ -80,3 +81,98 @@ export async function selfGradeSolution(data: {
     return { success: false, error: "Failed to grade solution" }
   }
 }
+
+/**
+ * AI-grade a submission using Gemini.
+ */
+export async function aiGradeSolution(data: {
+  submissionId: string
+  userId: string
+  problemId: string
+  studentProof: string
+}) {
+  try {
+    if (!process.env.GEMINI_API_KEY) {
+      return { success: false, error: "GEMINI_API_KEY is not configured" }
+    }
+
+    const problem = await prisma.problem.findUnique({
+      where: { id: data.problemId }
+    })
+
+    if (!problem) {
+      return { success: false, error: "Problem not found" }
+    }
+
+    const submission = await prisma.submission.findUnique({
+      where: { id: data.submissionId }
+    })
+
+    if (!submission || submission.status !== "PENDING") {
+      return { success: false, error: "Submission not found or already graded" }
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
+
+    const prompt = `You are an expert Math Olympiad Grader. 
+Evaluate the following student's proof/solution for correctness.
+Return your evaluation as a valid JSON object EXACTLY in this format:
+{
+  "isCorrect": boolean,
+  "feedback": "Your concise, constructive feedback explaining why it's correct or incorrect. Provide hints if incorrect, but do not give the full solution."
+}
+
+Problem Statement:
+${problem.content}
+
+Student's Solution:
+${data.studentProof}
+
+Remember, return ONLY valid JSON.`
+
+    const result = await model.generateContent(prompt)
+    const response = result.response.text()
+    
+    // Parse the JSON output safely
+    let aiResult
+    try {
+      // Find JSON block in case AI wraps it in markdown
+      const jsonMatch = response.match(/\{[\s\S]*\}/)
+      const jsonString = jsonMatch ? jsonMatch[0] : response
+      aiResult = JSON.parse(jsonString)
+    } catch (e) {
+      console.error("Failed to parse AI output:", response)
+      return { success: false, error: "AI returned invalid format" }
+    }
+
+    const isCorrect = aiResult.isCorrect === true
+
+    // Now re-use the self-grading logic to update DB and rating
+    const dbResult = await selfGradeSolution({
+      submissionId: data.submissionId,
+      userId: data.userId,
+      isCorrect
+    })
+
+    if (!dbResult.success || !dbResult.data) {
+      return dbResult
+    }
+
+    return {
+      success: true,
+      error: undefined,
+      data: {
+        status: dbResult.data.status,
+        ratingDelta: dbResult.data.ratingDelta,
+        newRating: dbResult.data.newRating,
+        isCorrect,
+        feedback: aiResult.feedback
+      }
+    }
+  } catch (error) {
+    console.error("Failed to AI grade solution:", error)
+    return { success: false, error: "Failed to grade solution via AI" }
+  }
+}
+

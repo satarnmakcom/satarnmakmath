@@ -6,8 +6,9 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { submitProblemSolution } from '@/actions/submissions'
 import { getProblemById } from '@/actions/problems'
-import { selfGradeSolution } from '@/actions/grading'
+import { aiGradeSolution } from '@/actions/grading'
 import { motion, AnimatePresence } from 'framer-motion'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface Problem {
   id: string
@@ -33,7 +34,8 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
   const [solution, setSolution] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submissionId, setSubmissionId] = useState<string | null>(null)
-  const [gradeResult, setGradeResult] = useState<{ status: string, ratingDelta: number, newRating: number } | null>(null)
+  const [gradeResult, setGradeResult] = useState<{ status: string, ratingDelta: number, newRating: number, feedback?: string } | null>(null)
+  const [isAIGrading, setIsAIGrading] = useState(false)
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
     }
 
     setSubmitting(true)
+    // 1. Submit the solution
     const res = await submitProblemSolution({
       userId: session.user.id,
       problemId: problem.id,
@@ -89,27 +92,27 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
 
     if (res.success && res.data) {
       setSubmissionId(res.data.id)
-      setToast({ message: 'Solution submitted! Now grade your answer.', type: 'success' })
+      setToast({ message: 'Solution submitted! AI is now evaluating...', type: 'success' })
+      
+      // 2. Trigger AI Grading
+      setIsAIGrading(true)
+      const gradeRes = await aiGradeSolution({
+        submissionId: res.data.id,
+        userId: session.user.id,
+        problemId: problem.id,
+        studentProof: solution
+      })
+
+      if (gradeRes.success && gradeRes.data) {
+        setGradeResult(gradeRes.data)
+      } else {
+        setToast({ message: gradeRes.error || 'AI Grading failed', type: 'error' })
+      }
+      setIsAIGrading(false)
     } else {
       setToast({ message: res.error || 'Submission failed', type: 'error' })
     }
     setSubmitting(false)
-  }
-
-  const handleGrade = async (isCorrect: boolean) => {
-    if (!submissionId || !session?.user?.id) return
-
-    const res = await selfGradeSolution({
-      submissionId,
-      userId: session.user.id,
-      isCorrect,
-    })
-
-    if (res.success && res.data) {
-      setGradeResult(res.data)
-    } else {
-      setToast({ message: res.error || 'Grading failed', type: 'error' })
-    }
   }
 
   if (loading) {
@@ -173,10 +176,8 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
 
           <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-4 tracking-tight">{problem.title}</h2>
           
-          <div className="prose dark:prose-invert max-w-none text-sm">
-            {problem.content.split('\n\n').map((paragraph, i) => (
-              <p key={i} className="text-[var(--text-secondary)] leading-relaxed mb-4">{paragraph}</p>
-            ))}
+          <div className="mt-4">
+            <MarkdownRenderer content={problem.content} />
           </div>
         </div>
       </div>
@@ -208,63 +209,86 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
         {/* Editor or Grade Panel */}
         <div className="flex-1 p-4 flex flex-col">
           {gradeResult ? (
-            // === GRADE RESULT ===
+            // === AI EVALUATION RESULT ===
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex-1 flex items-center justify-center"
+              className="flex-1 flex flex-col justify-center items-center py-8 px-4"
             >
-              <div className="text-center space-y-6 max-w-sm">
-                <div className={`w-24 h-24 rounded-3xl mx-auto flex items-center justify-center text-5xl ${
-                  gradeResult.status === 'ACCEPTED'
-                    ? 'bg-neon-500/15 border-2 border-neon-500/30'
-                    : 'bg-rose-500/15 border-2 border-rose-500/30'
+              <div className="w-full max-w-lg">
+                <div className="text-center mb-8">
+                  <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-6 shadow-xl ${
+                    gradeResult.status === 'ACCEPTED'
+                      ? 'bg-gradient-to-br from-neon-500/20 to-neon-500/5 border border-neon-500/30 text-neon-400'
+                      : 'bg-gradient-to-br from-rose-500/20 to-rose-500/5 border border-rose-500/30 text-rose-400'
+                  }`}>
+                    {gradeResult.status === 'ACCEPTED' ? '✨' : '💡'}
+                  </div>
+                  <h3 className={`text-3xl font-extrabold tracking-tight mb-2 ${
+                    gradeResult.status === 'ACCEPTED' ? 'text-neon-400' : 'text-rose-400'
+                  }`}>
+                    {gradeResult.status === 'ACCEPTED' ? 'Brilliant Solution!' : 'Not Quite There'}
+                  </h3>
+                  
+                  <div className="flex items-center justify-center gap-4 mt-4">
+                    <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-2 rounded-xl">
+                      <span className="text-xs text-[var(--text-tertiary)] uppercase font-bold tracking-wider block mb-1">Rating Change</span>
+                      <span className={`text-xl font-bold ${gradeResult.ratingDelta >= 0 ? 'text-neon-400' : 'text-rose-400'}`}>
+                        {gradeResult.ratingDelta >= 0 ? '+' : ''}{gradeResult.ratingDelta}
+                      </span>
+                    </div>
+                    <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-2 rounded-xl">
+                      <span className="text-xs text-[var(--text-tertiary)] uppercase font-bold tracking-wider block mb-1">New Rating</span>
+                      <span className="text-xl font-bold text-[var(--text-primary)]">{gradeResult.newRating}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={`p-6 rounded-2xl border backdrop-blur-sm ${
+                  gradeResult.status === 'ACCEPTED' 
+                    ? 'bg-neon-500/5 border-neon-500/20 shadow-[0_0_30px_rgba(52,211,153,0.1)]' 
+                    : 'bg-rose-500/5 border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.1)]'
                 }`}>
-                  {gradeResult.status === 'ACCEPTED' ? '✅' : '❌'}
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg className={`w-5 h-5 ${gradeResult.status === 'ACCEPTED' ? 'text-neon-500' : 'text-rose-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                    <h4 className={`font-bold text-sm uppercase tracking-wider ${gradeResult.status === 'ACCEPTED' ? 'text-neon-400' : 'text-rose-400'}`}>
+                      AI Evaluation
+                    </h4>
+                  </div>
+                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed whitespace-pre-wrap">
+                    {gradeResult.feedback || "Your solution was graded based on mathematical correctness."}
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-[var(--text-primary)]">
-                  {gradeResult.status === 'ACCEPTED' ? 'Correct!' : 'Incorrect'}
-                </h3>
-                <div className={`text-4xl font-extrabold ${gradeResult.ratingDelta >= 0 ? 'text-neon-400' : 'text-rose-400'}`}>
-                  {gradeResult.ratingDelta >= 0 ? '+' : ''}{gradeResult.ratingDelta}
+
+                <div className="mt-8 text-center">
+                  <Link
+                    href="/practice"
+                    className="inline-block px-8 py-3 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-electric-500/50 text-[var(--text-primary)] font-bold rounded-xl transition-all hover:scale-105"
+                  >
+                    Back to Arena
+                  </Link>
                 </div>
-                <p className="text-sm text-[var(--text-secondary)]">
-                  New Rating: <span className="font-bold text-[var(--text-primary)]">{gradeResult.newRating}</span>
-                </p>
-                <Link
-                  href="/practice"
-                  className="btn-primary inline-block px-6 py-2.5 text-white rounded-xl text-sm font-semibold"
-                >
-                  Next Problem →
-                </Link>
               </div>
             </motion.div>
-          ) : submissionId ? (
-            // === SELF-GRADE PANEL ===
+          ) : isAIGrading ? (
+            // === AI GRADING LOADING STATE ===
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex-1 flex items-center justify-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex-1 flex flex-col items-center justify-center space-y-6"
             >
-              <div className="text-center space-y-6 max-w-md">
-                <h3 className="text-xl font-bold text-[var(--text-primary)]">Grade Your Solution</h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  Compare your proof with the official solution. Did you solve it correctly?
-                </p>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={() => handleGrade(true)}
-                    className="flex-1 max-w-[160px] py-4 rounded-2xl bg-neon-500/10 border-2 border-neon-500/20 hover:border-neon-500/50 text-neon-400 font-bold text-lg transition-all hover:scale-105"
-                  >
-                    ✅ Correct
-                  </button>
-                  <button
-                    onClick={() => handleGrade(false)}
-                    className="flex-1 max-w-[160px] py-4 rounded-2xl bg-rose-500/10 border-2 border-rose-500/20 hover:border-rose-500/50 text-rose-400 font-bold text-lg transition-all hover:scale-105"
-                  >
-                    ❌ Incorrect
-                  </button>
+              <div className="relative">
+                <div className="w-16 h-16 rounded-2xl bg-electric-500/20 animate-pulse absolute inset-0 blur-xl"></div>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-electric-500 to-violet-500 flex items-center justify-center shadow-2xl relative z-10 overflow-hidden">
+                   <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
+                   <svg className="w-8 h-8 text-white animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
                 </div>
+              </div>
+              <div className="text-center">
+                <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-electric-400 to-violet-400 animate-pulse">
+                  AI is analyzing your proof...
+                </h3>
+                <p className="text-xs text-[var(--text-tertiary)] mt-2">Checking logic and mathematical rigor</p>
               </div>
             </motion.div>
           ) : (
