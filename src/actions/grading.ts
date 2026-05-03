@@ -112,8 +112,12 @@ export async function aiGradeSolution(data: {
       }
     })
 
-    // Use hardcoded API key to bypass Vercel's old env variable
-    const apiKey = "AIzaSyC4zO3OeBwCAYJPY5Xl7xQs0UPv62E5ai4"
+    // Use environment variable for API key to prevent leaks
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY is not set")
+      return { success: false, error: "AI grading is not configured properly." }
+    }
 
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
@@ -221,7 +225,10 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "Attempt not found or not submitted" }
     }
 
-    const apiKey = "AIzaSyC4zO3OeBwCAYJPY5Xl7xQs0UPv62E5ai4"
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      return { success: false, error: "AI grading is not configured properly." }
+    }
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
