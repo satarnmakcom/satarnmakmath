@@ -174,7 +174,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
                 <img
                   src={session.user?.image || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session.user?.name}
                   alt={session.user?.name || "User"}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-electric-400 to-violet-500 ring-2 ring-[var(--bg-primary)]"
+                  className="w-8 h-8 rounded-full bg-gradient-to-br from-electric-400 to-violet-500 ring-2 ring-[var(--bg-primary)] object-cover"
                 />
                 <div className="hidden md:block text-left">
                   <div className={`text-xs font-bold leading-tight group-hover:opacity-80 transition-opacity truncate max-w-[100px] ${ratingInfo.className}`}>

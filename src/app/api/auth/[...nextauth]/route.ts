@@ -62,6 +62,8 @@ export const authOptions: NextAuthOptions = {
         session.user.streak = (token.streak as number) || 0
         session.user.globalRank = (token.globalRank as number | null) || null
         session.user.solvedCount = (token.solvedCount as number) || 0
+        if (token.picture) session.user.image = token.picture as string
+        if (token.name) session.user.name = token.name as string
       }
       return session
     },
@@ -122,6 +124,8 @@ export const authOptions: NextAuthOptions = {
           token.streak = newStreak
           token.globalRank = dbUser.globalRank
           token.solvedCount = dbUser.submissions.length
+          token.picture = dbUser.image
+          token.name = dbUser.name
         }
       }
       return token

@@ -67,7 +67,7 @@ export default function ProfilePage() {
           <div className="flex flex-col md:flex-row md:items-end gap-5 -mt-14 md:-mt-16">
             <div className="relative group cursor-pointer">
               <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-electric-400 via-violet-500 to-violet-600 p-[3px] shadow-2xl group-hover:scale-105 transition-transform duration-300">
-                <img src={user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} className="w-full h-full rounded-2xl bg-[var(--bg-card)]" alt="" />
+                <img src={user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} className="w-full h-full rounded-2xl bg-[var(--bg-card)] object-cover" alt="" />
               </div>
               <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-xl bg-[var(--bg-card)] border-2 border-[var(--border-color)] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <span className="text-lg">🇹🇭</span>

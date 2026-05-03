@@ -6,6 +6,7 @@ import { getLeaderboard } from '@/actions/users'
 interface User {
   id: string
   name: string | null
+  image: string | null
   country: string
   rating: number
   solvedCount: number
@@ -89,7 +90,7 @@ export default function LeaderboardPage() {
                       <td className={`px-6 py-4 font-bold ${u.rank <= 3 ? 'text-gold-400' : 'text-[var(--text-primary)]'}`}>#{u.rank || index + 1}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`} className="w-8 h-8 rounded-full bg-[var(--bg-secondary)]" alt="" />
+                          <img src={u.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`} className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] object-cover" alt="" />
                           <span className={`font-semibold text-sm ${getRatingClass(u.rating)}`}>{u.name}</span>
                         </div>
                       </td>

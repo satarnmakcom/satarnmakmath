@@ -24,7 +24,7 @@ const countries = [
 ]
 
 export default function EditProfilePage() {
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const router = useRouter()
   const [name, setName] = useState(session?.user?.name || '')
   const [country, setCountry] = useState('TH')
@@ -40,6 +40,7 @@ export default function EditProfilePage() {
     const res = await updateProfile(session.user.id, { name, country, image: image || undefined })
 
     if (res.success) {
+      await update()
       setToast({ message: 'Profile updated successfully!', type: 'success' })
       setTimeout(() => router.push('/profile'), 1500)
     } else {
