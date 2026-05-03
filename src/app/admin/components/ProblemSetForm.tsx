@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 
-interface Problem {
-  id: string
-  code: string
-  title: string
+interface InlineProblem {
+  id?: string
+  content: string
+  level: "POSN" | "POSN1" | "POSN2" | "TMO" | "IMO"
   difficulty: number
 }
 
@@ -17,7 +17,7 @@ interface ProblemSetFormProps {
     description: string | null
     timeLimitMinutes: number
     isPublic: boolean
-    items: { problemId: string, order: number, problem: Problem }[]
+    items: { id: string, content: string, level: any, difficulty: number, order: number }[]
   }
   onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>
   isEditing?: boolean
@@ -32,56 +32,37 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
   const [description, setDescription] = useState(initialData?.description || "")
   const [timeLimitMinutes, setTimeLimitMinutes] = useState(initialData?.timeLimitMinutes || 90)
   const [isPublic, setIsPublic] = useState(initialData?.isPublic || false)
-  const [selectedProblems, setSelectedProblems] = useState<Problem[]>(
-    initialData?.items.sort((a, b) => a.order - b.order).map(i => i.problem) || []
+  const [problems, setProblems] = useState<InlineProblem[]>(
+    initialData?.items.sort((a, b) => a.order - b.order).map(i => ({
+      id: i.id,
+      content: i.content,
+      level: i.level,
+      difficulty: i.difficulty
+    })) || []
   )
 
-  // Search logic
-  const [searchTerm, setSearchTerm] = useState("")
-  const [availableProblems, setAvailableProblems] = useState<Problem[]>([])
-  const [searching, setSearching] = useState(false)
-
-  useEffect(() => {
-    async function search() {
-      if (!searchTerm) {
-        setAvailableProblems([])
-        return
-      }
-      setSearching(true)
-      try {
-        const res = await fetch(`/api/admin/problems?q=${encodeURIComponent(searchTerm)}`)
-        const data = await res.json()
-        setAvailableProblems(data.slice(0, 10)) // Limit to 10
-      } catch (e) {
-        console.error(e)
-      } finally {
-        setSearching(false)
-      }
-    }
-    const t = setTimeout(search, 300)
-    return () => clearTimeout(t)
-  }, [searchTerm])
-
-  const handleAddProblem = (p: Problem) => {
-    if (!selectedProblems.find(sp => sp.id === p.id)) {
-      setSelectedProblems([...selectedProblems, p])
-    }
-    setSearchTerm("")
-    setAvailableProblems([])
+  const handleAddProblem = () => {
+    setProblems([...problems, { content: "", level: "POSN", difficulty: 1200 }])
   }
 
-  const handleRemoveProblem = (id: string) => {
-    setSelectedProblems(selectedProblems.filter(p => p.id !== id))
+  const handleRemoveProblem = (index: number) => {
+    setProblems(problems.filter((_, i) => i !== index))
+  }
+
+  const updateProblem = (index: number, field: keyof InlineProblem, value: any) => {
+    const newProblems = [...problems]
+    newProblems[index] = { ...newProblems[index], [field]: value }
+    setProblems(newProblems)
   }
 
   const moveProblem = (index: number, direction: -1 | 1) => {
     const newIndex = index + direction
-    if (newIndex < 0 || newIndex >= selectedProblems.length) return
-    const newArr = [...selectedProblems]
+    if (newIndex < 0 || newIndex >= problems.length) return
+    const newArr = [...problems]
     const temp = newArr[index]
     newArr[index] = newArr[newIndex]
     newArr[newIndex] = temp
-    setSelectedProblems(newArr)
+    setProblems(newArr)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,8 +71,12 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
       setError("Title is required")
       return
     }
-    if (selectedProblems.length === 0) {
-      setError("Please select at least one problem")
+    if (problems.length === 0) {
+      setError("Please add at least one problem")
+      return
+    }
+    if (problems.some(p => !p.content.trim())) {
+      setError("All problems must have content")
       return
     }
 
@@ -103,7 +88,7 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
       description,
       timeLimitMinutes,
       isPublic,
-      problemIds: selectedProblems.map(p => p.id)
+      problems
     })
 
     if (res.success) {
@@ -173,68 +158,81 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
         </div>
       </div>
 
-      <div className="card p-6 rounded-2xl border border-[var(--border-color)] space-y-4">
-        <h3 className="font-bold text-[var(--text-primary)]">Problems ({selectedProblems.length})</h3>
-        
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            placeholder="Search problems by code or title to add..."
-            className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-[var(--text-primary)] outline-none focus:border-electric-500 transition-colors"
-          />
-          {searchTerm && (
-            <div className="absolute z-10 w-full mt-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl shadow-xl max-h-64 overflow-y-auto">
-              {searching ? (
-                <div className="p-4 text-center text-sm text-[var(--text-secondary)]">Searching...</div>
-              ) : availableProblems.length > 0 ? (
-                <div className="divide-y divide-[var(--border-color)]">
-                  {availableProblems.map(p => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handleAddProblem(p)}
-                      className="w-full text-left p-3 hover:bg-[var(--bg-secondary)] transition-colors flex items-center justify-between"
-                    >
-                      <div>
-                        <span className="font-mono text-electric-400 text-xs mr-2">{p.code}</span>
-                        <span className="text-sm text-[var(--text-primary)]">{p.title}</span>
-                      </div>
-                      <span className="text-xs text-[var(--text-tertiary)]">+ Add</span>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-4 text-center text-sm text-[var(--text-secondary)]">No problems found.</div>
-              )}
-            </div>
-          )}
+      <div className="card p-6 rounded-2xl border border-[var(--border-color)] space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-[var(--text-primary)]">Problems ({problems.length})</h3>
+          <button
+            type="button"
+            onClick={handleAddProblem}
+            className="text-xs font-bold bg-electric-500/10 text-electric-500 hover:bg-electric-500/20 px-3 py-1.5 rounded-lg transition-colors"
+          >
+            + Add Question
+          </button>
         </div>
 
-        <div className="space-y-2 mt-4">
-          {selectedProblems.map((p, idx) => (
-            <div key={p.id} className="flex items-center gap-3 p-3 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl">
-              <div className="flex flex-col gap-1">
-                <button type="button" onClick={() => moveProblem(idx, -1)} disabled={idx === 0} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30">▲</button>
-                <button type="button" onClick={() => moveProblem(idx, 1)} disabled={idx === selectedProblems.length - 1} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30">▼</button>
+        <div className="space-y-6">
+          {problems.map((p, idx) => (
+            <div key={idx} className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-4 relative">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex flex-col gap-1">
+                    <button type="button" onClick={() => moveProblem(idx, -1)} disabled={idx === 0} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30">▲</button>
+                    <button type="button" onClick={() => moveProblem(idx, 1)} disabled={idx === problems.length - 1} className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] disabled:opacity-30">▼</button>
+                  </div>
+                  <span className="font-bold text-[var(--text-primary)]">Question {idx + 1}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveProblem(idx)}
+                  className="text-rose-500 hover:text-rose-400 p-2"
+                >
+                  ✕ Remove
+                </button>
               </div>
-              <div className="flex-1">
-                <div className="text-xs font-mono text-electric-400">{p.code}</div>
-                <div className="text-sm font-semibold text-[var(--text-primary)]">{p.title}</div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Problem Statement (Markdown supported)</label>
+                <textarea
+                  value={p.content}
+                  onChange={e => updateProblem(idx, "content", e.target.value)}
+                  rows={4}
+                  className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-[var(--text-primary)] outline-none focus:border-electric-500 transition-colors font-mono text-sm"
+                  placeholder="Type your problem here..."
+                />
               </div>
-              <button
-                type="button"
-                onClick={() => handleRemoveProblem(p.id)}
-                className="text-rose-500 hover:text-rose-400 p-2"
-              >
-                ✕
-              </button>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Level / Grading Rules</label>
+                  <select
+                    value={p.level}
+                    onChange={e => updateProblem(idx, "level", e.target.value)}
+                    className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-[var(--text-primary)] outline-none focus:border-electric-500 transition-colors"
+                  >
+                    <option value="POSN">POSN (Short Answer - Final answer only)</option>
+                    <option value="POSN1">POSN 1 (Requires Proof)</option>
+                    <option value="POSN2">POSN 2 (Requires Proof)</option>
+                    <option value="TMO">TMO (Requires Proof)</option>
+                    <option value="IMO">IMO (Requires Proof)</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Difficulty / Base Rating</label>
+                  <input
+                    type="number"
+                    value={p.difficulty}
+                    onChange={e => updateProblem(idx, "difficulty", Number(e.target.value))}
+                    min={800}
+                    step={100}
+                    className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-[var(--text-primary)] outline-none focus:border-electric-500 transition-colors"
+                  />
+                </div>
+              </div>
             </div>
           ))}
-          {selectedProblems.length === 0 && (
+          {problems.length === 0 && (
             <div className="text-center py-8 text-[var(--text-secondary)] text-sm">
-              No problems added yet. Search above to add some.
+              No questions added yet. Click "+ Add Question" to start.
             </div>
           )}
         </div>

@@ -46,9 +46,10 @@ export async function selfGradeSolution(data: {
     }
 
     // 4. Calculate rating change
+    const difficulty = submission.problem?.difficulty ?? 1200
     const ratingDelta = calculateRatingChange(
       user.rating,
-      submission.problem.difficulty,
+      difficulty,
       data.isCorrect
     )
 
@@ -112,7 +113,7 @@ export async function aiGradeSolution(data: {
     })
 
     // Use hardcoded API key to bypass Vercel's old env variable
-    const apiKey = "AIzaSyDqo7VolldAwT6bMOGP-wiO3SS3518nVAI"
+    const apiKey = "AIzaSyC4zO3OeBwCAYJPY5Xl7xQs0UPv62E5ai4"
 
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
@@ -211,7 +212,7 @@ export async function aiGradeAttempt(attemptId: string) {
     const attempt = await prisma.problemSetAttempt.findUnique({
       where: { id: attemptId },
       include: {
-        submissions: { include: { problem: true } },
+        submissions: { include: { problemSetItem: true } },
         user: true
       }
     })
@@ -220,7 +221,7 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "Attempt not found or not submitted" }
     }
 
-    const apiKey = "AIzaSyDqo7VolldAwT6bMOGP-wiO3SS3518nVAI"
+    const apiKey = "AIzaSyC4zO3OeBwCAYJPY5Xl7xQs0UPv62E5ai4"
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
@@ -228,10 +229,10 @@ export async function aiGradeAttempt(attemptId: string) {
 
     // Grade each submission sequentially
     for (const sub of attempt.submissions) {
-      if (sub.status !== "PENDING") continue // Already graded
+      if (sub.status !== "PENDING" || !sub.problemSetItem) continue // Already graded or missing item
 
-      const requiresProof = sub.problem.level !== 'POSN'
-      const prompt = `You are an expert Math Olympiad Grader (specifically for ${sub.problem.level}).
+      const requiresProof = sub.problemSetItem.level !== 'POSN'
+      const prompt = `You are an expert Math Olympiad Grader (specifically for ${sub.problemSetItem.level}).
 ${requiresProof
   ? `IMPORTANT: This problem requires a formal proof or step-by-step logic.
 If the student only provides a final answer without sufficient explanation or proof, you MUST mark it as incorrect.
@@ -246,7 +247,7 @@ Return your evaluation as a valid JSON object EXACTLY in this format:
 }
 
 Problem Statement:
-${sub.problem.content}
+${sub.problemSetItem.content}
 
 Student's Answer:
 ${sub.content}
@@ -276,10 +277,10 @@ Remember, return ONLY valid JSON.`
 
       if (isCorrect) {
         // Calculate rating bump for this single problem
-        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, true)
+        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problemSetItem.difficulty, true)
         totalRatingDelta += delta
       } else {
-        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
+        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problemSetItem.difficulty, false)
         totalRatingDelta += delta
       }
     }

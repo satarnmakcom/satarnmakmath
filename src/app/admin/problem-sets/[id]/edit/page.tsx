@@ -10,8 +10,7 @@ export default async function EditProblemSetPage({ params }: { params: Promise<{
     where: { id },
     include: {
       items: {
-        orderBy: { order: "asc" },
-        include: { problem: true }
+        orderBy: { order: "asc" }
       }
     }
   })

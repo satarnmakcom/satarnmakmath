@@ -26,8 +26,7 @@ export async function getProblemSetById(id: string) {
       where: { id },
       include: {
         items: {
-          orderBy: { order: "asc" },
-          include: { problem: true }
+          orderBy: { order: "asc" }
         }
       }
     })
@@ -75,7 +74,7 @@ export async function startAttempt(problemSetId: string) {
 
 export async function submitAttempt(
   attemptId: string,
-  answers: { problemId: string, content: string }[]
+  answers: { problemSetItemId: string, content: string }[]
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -101,7 +100,7 @@ export async function submitAttempt(
       await prisma.submission.create({
         data: {
           userId: session.user.id,
-          problemId: answer.problemId,
+          problemSetItemId: answer.problemSetItemId,
           attemptId: attempt.id,
           content: answer.content,
           status: "PENDING"

@@ -188,7 +188,7 @@ export async function createProblemSet(data: {
   description?: string
   timeLimitMinutes: number
   isPublic: boolean
-  problemIds: string[]
+  problems: { content: string, level: any, difficulty: number }[]
 }) {
   try {
     await ensureAdmin()
@@ -200,8 +200,10 @@ export async function createProblemSet(data: {
         timeLimitMinutes: data.timeLimitMinutes,
         isPublic: data.isPublic,
         items: {
-          create: data.problemIds.map((id, index) => ({
-            problemId: id,
+          create: data.problems.map((p, index) => ({
+            content: p.content,
+            level: p.level,
+            difficulty: p.difficulty,
             order: index
           }))
         }
@@ -222,7 +224,7 @@ export async function updateProblemSet(id: string, data: {
   description?: string
   timeLimitMinutes: number
   isPublic: boolean
-  problemIds: string[]
+  problems: { content: string, level: any, difficulty: number }[]
 }) {
   try {
     await ensureAdmin()
@@ -238,8 +240,10 @@ export async function updateProblemSet(id: string, data: {
           timeLimitMinutes: data.timeLimitMinutes,
           isPublic: data.isPublic,
           items: {
-            create: data.problemIds.map((pid, index) => ({
-              problemId: pid,
+            create: data.problems.map((p, index) => ({
+              content: p.content,
+              level: p.level,
+              difficulty: p.difficulty,
               order: index
             }))
           }

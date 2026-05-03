@@ -12,8 +12,7 @@ export default async function ContestPage({ params }: { params: Promise<{ id: st
     where: { id },
     include: {
       items: {
-        orderBy: { order: "asc" },
-        include: { problem: true }
+        orderBy: { order: "asc" }
       }
     }
   })
