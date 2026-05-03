@@ -284,10 +284,10 @@ Remember, return ONLY valid JSON.`
 
       if (isCorrect) {
         // Calculate rating bump for this single problem
-        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problemSetItem.difficulty, true)
+        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, true)
         totalRatingDelta += delta
       } else {
-        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problemSetItem.difficulty, false)
+        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
         totalRatingDelta += delta
       }
     }
