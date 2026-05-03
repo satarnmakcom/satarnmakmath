@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { submitProblemSolution } from '@/actions/submissions'
+import { getProblemById } from '@/actions/problems'
 import { selfGradeSolution } from '@/actions/grading'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -32,20 +33,15 @@ export default function ProblemSolverPage() {
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
-    // Mock problem data - in production this would fetch from API
-    const mockProblem: Problem = {
-      id,
-      code: 'TMO2565-P4',
-      title: 'Cyclic Quadrilateral Perpendiculars',
-      content: `Let $ABCD$ be a cyclic quadrilateral inscribed in circle $\\Gamma$. Let $P$ be the intersection of diagonals $AC$ and $BD$. Let $E$ and $F$ be the feet of perpendiculars from $P$ to sides $AB$ and $CD$ respectively.
-
-Prove that line $EF$ is perpendicular to the line connecting the midpoints of $AD$ and $BC$.`,
-      level: 'HARD',
-      difficulty: 1800,
-      tags: ['Geometry', 'Cyclic Quadrilaterals']
+    async function loadProblem() {
+      setLoading(true)
+      const res = await getProblemById(id)
+      if (res.success && res.data) {
+        setProblem(res.data as any)
+      }
+      setLoading(false)
     }
-    setProblem(mockProblem)
-    setLoading(false)
+    loadProblem()
   }, [id])
 
   // Timer countdown

@@ -1,10 +1,11 @@
 import prisma from "@/lib/prisma"
+import Link from "next/link"
 
 export default async function AdminCurriculumPage() {
   try {
     const modules = await prisma.curriculumModule.findMany({
       include: {
-        lessons: true
+        lessons: { orderBy: { order: 'asc' } }
       },
       orderBy: [
         { level: 'asc' },
@@ -16,9 +17,12 @@ export default async function AdminCurriculumPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">Manage Curriculum</h1>
-          <button className="btn-primary px-4 py-2 text-white rounded-xl text-sm font-semibold">
+          <Link
+            href="/admin/curriculum/new"
+            className="btn-primary px-4 py-2 text-white rounded-xl text-sm font-semibold"
+          >
             + New Module
-          </button>
+          </Link>
         </div>
 
         <div className="space-y-4">
@@ -35,15 +39,22 @@ export default async function AdminCurriculumPage() {
                     </span>
                   </div>
                   <h3 className="text-lg font-bold text-[var(--text-primary)]">{mod.title}</h3>
-                  <p className="text-sm text-[var(--text-secondary)] mt-1">{mod.description}</p>
+                  {mod.description && (
+                    <p className="text-sm text-[var(--text-secondary)] mt-1">{mod.description}</p>
+                  )}
                 </div>
-                <button className="text-sm font-semibold text-electric-400 hover:text-electric-300">
+                <Link
+                  href={`/admin/curriculum/${mod.id}/edit`}
+                  className="text-sm font-semibold text-electric-400 hover:text-electric-300 px-3 py-1.5 rounded-lg hover:bg-electric-500/10 transition-all"
+                >
                   Edit Module
-                </button>
+                </Link>
               </div>
 
               <div className="pl-4 border-l-2 border-[var(--border-color)] space-y-2 mt-4">
-                <h4 className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Lessons ({mod.lessons.length})</h4>
+                <h4 className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">
+                  Lessons ({mod.lessons.length})
+                </h4>
                 {mod.lessons.map(lesson => (
                   <div key={lesson.id} className="flex justify-between items-center bg-[var(--bg-secondary)] p-3 rounded-xl">
                     <div className="flex items-center gap-3">
@@ -52,27 +63,42 @@ export default async function AdminCurriculumPage() {
                       </span>
                       <span className="text-sm font-semibold text-[var(--text-primary)]">{lesson.title}</span>
                     </div>
-                    <button className="text-xs font-semibold text-violet-400 hover:text-violet-300">
+                    <Link
+                      href={`/admin/curriculum/${mod.id}/lessons/${lesson.id}/edit`}
+                      className="text-xs font-semibold text-violet-400 hover:text-violet-300 px-2 py-1 rounded-lg hover:bg-violet-500/10 transition-all"
+                    >
                       Edit
-                    </button>
+                    </Link>
                   </div>
                 ))}
-                <button className="mt-2 w-full py-2 border-2 border-dashed border-[var(--border-color)] hover:border-electric-500/50 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-electric-400 transition-colors">
+                <Link
+                  href={`/admin/curriculum/${mod.id}/lessons/new`}
+                  className="mt-2 w-full py-2 border-2 border-dashed border-[var(--border-color)] hover:border-electric-500/50 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-electric-400 transition-colors flex items-center justify-center"
+                >
                   + Add Lesson
-                </button>
+                </Link>
               </div>
             </div>
           ))}
 
           {modules.length === 0 && (
-            <div className="text-center py-12 card border border-[var(--border-color)] rounded-2xl text-[var(--text-secondary)]">
-              No curriculum modules found.
+            <div className="text-center py-16 card border border-[var(--border-color)] rounded-2xl">
+              <div className="text-4xl mb-4">📚</div>
+              <p className="font-semibold text-[var(--text-secondary)]">No curriculum modules yet</p>
+              <Link href="/admin/curriculum/new" className="mt-4 inline-block text-electric-400 hover:text-electric-300 text-sm font-semibold">
+                Create your first module →
+              </Link>
             </div>
           )}
         </div>
       </div>
     )
   } catch (e: any) {
-    return <div className="p-8 bg-red-100 text-red-900 border border-red-300 rounded-xl"><h1>Curriculum Page Error:</h1><pre className="whitespace-pre-wrap">{e.stack || e.message}</pre></div>
+    return (
+      <div className="p-8 bg-red-100 text-red-900 border border-red-300 rounded-xl">
+        <h1 className="font-bold text-lg mb-2">Curriculum Page Error:</h1>
+        <pre className="whitespace-pre-wrap text-sm">{e.stack || e.message}</pre>
+      </div>
+    )
   }
 }

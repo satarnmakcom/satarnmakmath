@@ -57,3 +57,22 @@ export async function getProblemByCode(code: string) {
     return { success: false, error: "Failed to fetch problem" }
   }
 }
+
+export async function getProblemById(id: string) {
+  try {
+    const problem = await prisma.problem.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { submissions: true }
+        }
+      }
+    })
+    if (!problem) return { success: false, error: "Problem not found" }
+    return { success: true, data: problem }
+  } catch (error) {
+    console.error("Failed to fetch problem:", error)
+    return { success: false, error: "Failed to fetch problem" }
+  }
+}
+
