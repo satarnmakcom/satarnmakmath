@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSession } from 'next-auth/react'
 
 const navItems = [
   { id: 'dashboard', href: '/', label: 'Dashboard', labelTh: 'แดชบอร์ด', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
@@ -15,11 +16,36 @@ const navItems = [
 
 interface SidebarProps {
   currentLang?: string
+  isOpen?: boolean
+  onClose?: () => void
 }
 
-export default function Sidebar({ currentLang = 'en' }: SidebarProps) {
+const getRankProgress = (rating: number) => {
+  if (rating < 1200) return { current: 'Newbie', next: 'Pupil', percent: Math.max(0, (rating / 1200) * 100) }
+  if (rating < 1400) return { current: 'Pupil', next: 'Specialist', percent: Math.max(0, ((rating - 1200) / 200) * 100) }
+  if (rating < 1600) return { current: 'Specialist', next: 'Expert', percent: Math.max(0, ((rating - 1400) / 200) * 100) }
+  if (rating < 1900) return { current: 'Expert', next: 'Master', percent: Math.max(0, ((rating - 1600) / 300) * 100) }
+  if (rating < 2400) return { current: 'Master', next: 'Grandmaster', percent: Math.max(0, ((rating - 1900) / 500) * 100) }
+  return { current: 'Grandmaster', next: 'Max', percent: 100 }
+}
+
+export default function Sidebar({ currentLang = 'en', isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const { data: session } = useSession()
+  const userRating = session?.user?.rating || 1200
+  const progressInfo = getRankProgress(userRating)
+
+  // Auto-collapse sidebar on mobile if screen is small
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setCollapsed(false) // Mobile uses standard width, controlled by isOpen
+      }
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const isActive = (href: string) => {
     if (href === '/') return pathname === '/'
@@ -27,12 +53,16 @@ export default function Sidebar({ currentLang = 'en' }: SidebarProps) {
   }
 
   return (
-    <motion.aside 
-      initial={false}
-      animate={{ width: collapsed ? 80 : 256 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="flex-shrink-0 flex flex-col border-r border-[var(--border-color)] bg-[var(--bg-secondary)] z-40 overflow-hidden"
-    >
+    <>
+      <motion.aside 
+        initial={false}
+        animate={{ 
+          width: collapsed ? 80 : 256,
+          x: isOpen || typeof window !== 'undefined' && window.innerWidth >= 768 ? 0 : -256
+        }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--border-color)] bg-[var(--bg-secondary)] z-50 overflow-hidden shadow-2xl md:shadow-none"
+      >
       {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-[var(--border-color)] flex-shrink-0 cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
         <motion.div 
@@ -121,13 +151,13 @@ export default function Sidebar({ currentLang = 'en' }: SidebarProps) {
               </p>
               <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <div className="flex justify-between text-xs mb-2">
-                  <span className="text-[var(--text-secondary)] font-medium">Expert &rarr; CM</span>
-                  <span className="text-electric-400 font-bold">80%</span>
+                  <span className="text-[var(--text-secondary)] font-medium truncate max-w-[120px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
+                  <span className="text-electric-400 font-bold ml-2">{Math.round(progressInfo.percent)}%</span>
                 </div>
                 <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: '80%' }}
+                    animate={{ width: `${progressInfo.percent}%` }}
                     transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
                     className="h-full bg-gradient-to-r from-electric-500 to-violet-500 rounded-full" 
                   />
@@ -153,6 +183,7 @@ export default function Sidebar({ currentLang = 'en' }: SidebarProps) {
         </motion.button>
       </div>
     </motion.aside>
+    </>
   )
 }
 

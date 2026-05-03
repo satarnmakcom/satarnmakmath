@@ -8,6 +8,7 @@ import { useSession, signOut } from 'next-auth/react'
 interface HeaderProps {
   currentLang?: string
   onLanguageChange?: (lang: string) => void
+  onToggleSidebar?: () => void
 }
 
 const getRatingInfo = (rating: number) => {
@@ -19,7 +20,7 @@ const getRatingInfo = (rating: number) => {
   return { title: 'Grandmaster', className: 'rating-grandmaster' }
 }
 
-export default function Header({ currentLang = 'en', onLanguageChange }: HeaderProps) {
+export default function Header({ currentLang = 'en', onLanguageChange, onToggleSidebar }: HeaderProps) {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false)
   const [searchFocused, setSearchFocused] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(true)
@@ -40,8 +41,16 @@ export default function Header({ currentLang = 'en', onLanguageChange }: HeaderP
 
   return (
     <header className="h-16 glass flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-30">
-      {/* Left: Search */}
+      {/* Left: Search & Mobile Menu */}
       <div className="flex items-center gap-3 flex-1">
+        <button 
+          onClick={onToggleSidebar}
+          className="md:hidden p-2 -ml-2 rounded-xl text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <motion.div
           animate={{ flexGrow: searchFocused ? 1.1 : 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}

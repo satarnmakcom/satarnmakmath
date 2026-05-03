@@ -12,6 +12,7 @@ interface AppLayoutProps {
 
 export default function AppLayout({ children }: AppLayoutProps) {
   const [currentLang, setCurrentLang] = useState('en')
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
 
@@ -19,11 +20,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
     setMounted(true)
   }, [])
 
+  // Close sidebar on route change on mobile
+  useEffect(() => {
+    setIsSidebarOpen(false)
+  }, [pathname])
+
   if (!mounted) {
     return (
       <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
         <div className="flex h-screen overflow-hidden">
-          <div className="w-64 border-r border-[var(--border-color)] bg-[var(--bg-secondary)]" />
+          <div className="hidden md:block w-64 border-r border-[var(--border-color)] bg-[var(--bg-secondary)]" />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <div className="h-16 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]" />
           </div>
@@ -34,15 +40,27 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Layout Wrapper */}
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden relative">
         {/* LEFT SIDEBAR */}
-        <Sidebar currentLang={currentLang} />
+        <Sidebar currentLang={currentLang} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
         {/* MAIN AREA */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative w-full">
           {/* Top Navigation Bar */}
-          <Header currentLang={currentLang} onLanguageChange={setCurrentLang} />
+          <Header 
+            currentLang={currentLang} 
+            onLanguageChange={setCurrentLang} 
+            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          />
 
           {/* Content Scroll Area */}
           <main className="flex-1 overflow-y-auto relative">

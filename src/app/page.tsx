@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { getProblems } from '@/actions/problems'
+import { useSession } from 'next-auth/react'
 
 interface Problem {
   id: string
@@ -24,6 +25,8 @@ function getDiffClass(diff: number) {
 export default function DashboardPage() {
   const [problems, setProblems] = useState<Problem[]>([])
   const [loading, setLoading] = useState(true)
+  const { data: session } = useSession()
+  const user = session?.user
 
   useEffect(() => {
     async function loadData() {
@@ -41,8 +44,8 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
           <p className="text-sm text-[var(--text-secondary)] mb-1 font-medium">Welcome back,</p>
-          <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">Alex Chen</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-2">You are on a <span className="text-neon-400 font-bold">12-day streak</span>. Keep pushing!</p>
+          <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user?.name || "Anonymous"}</h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-2">You are on a <span className="text-neon-400 font-bold">{user?.streak || 0}-day streak</span>. Keep pushing!</p>
         </div>
         <div className="flex gap-3">
           <Link href="/practice" className="btn-primary px-6 py-2.5 text-white rounded-xl text-sm font-semibold flex items-center gap-2 hover:scale-105 transition-transform">
@@ -66,12 +69,12 @@ export default function DashboardPage() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-electric-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-electric-500/10 transition-all duration-500"></div>
           <div className="relative">
             <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Rating</div>
-            <div className="text-2xl md:text-3xl font-extrabold rating-expert tracking-tight group-hover:text-electric-400 transition-colors">2,147</div>
+            <div className="text-2xl md:text-3xl font-extrabold text-electric-400 tracking-tight group-hover:text-electric-300 transition-colors">{user?.rating || 1200}</div>
             <div className="text-xs text-neon-400 mt-1.5 flex items-center gap-1 font-bold bg-neon-500/10 w-fit px-2 py-0.5 rounded-lg">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
               </svg>
-              +23
+              +0
             </div>
           </div>
         </div>
@@ -79,28 +82,28 @@ export default function DashboardPage() {
           <div className="absolute top-0 right-0 w-32 h-32 bg-neon-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-neon-500/10 transition-all duration-500"></div>
           <div className="relative">
             <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Solved</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">1,247</div>
-            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">342 this month</div>
+            <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.solvedCount || 0}</div>
+            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">0 this month</div>
           </div>
         </div>
         <div className="card rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-gold-500/10 transition-all duration-500"></div>
           <div className="relative">
             <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Streak</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-gold-400 tracking-tight">12 <span className="text-sm font-medium text-[var(--text-secondary)]">days</span></div>
-            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">Best: 28</div>
+            <div className="text-2xl md:text-3xl font-extrabold text-gold-400 tracking-tight">{user?.streak || 0} <span className="text-sm font-medium text-[var(--text-secondary)]">days</span></div>
+            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">Best: {user?.streak || 0}</div>
           </div>
         </div>
         <div className="card rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-violet-500/10 transition-all duration-500"></div>
           <div className="relative">
             <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Global Rank</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">#342</div>
-            <div className="text-xs text-rose-400 mt-1.5 flex items-center gap-1 font-bold bg-rose-500/10 w-fit px-2 py-0.5 rounded-lg">
+            <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.globalRank ? `#${user.globalRank}` : '-'}</div>
+            <div className="text-xs text-[var(--text-secondary)] mt-1.5 flex items-center gap-1 font-bold bg-[var(--bg-secondary)] w-fit px-2 py-0.5 rounded-lg">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 12h14"/>
               </svg>
-              -5
+              Unranked
             </div>
           </div>
         </div>

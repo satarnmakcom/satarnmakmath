@@ -3,19 +3,19 @@
 import { useSession } from "next-auth/react"
 
 const achievements = [
-  { id: 'streak', icon: 'fire', color: 'gold', title: 'Streak Master', locked: false },
-  { id: 'solver', icon: 'check', color: 'electric', title: 'Problem Solver', locked: false },
-  { id: 'geometry', icon: 'beaker', color: 'violet', title: 'Geometry Wizard', locked: false },
-  { id: 'speed', icon: 'bolt', color: 'neon', title: 'Speed Demon', locked: false },
+  { id: 'welcome', icon: 'fire', color: 'gold', title: 'Welcome to SatarnMath', locked: false },
+  { id: 'solver', icon: 'lock', color: 'electric', title: 'Problem Solver', locked: true },
+  { id: 'geometry', icon: 'lock', color: 'violet', title: 'Geometry Wizard', locked: true },
+  { id: 'speed', icon: 'lock', color: 'neon', title: 'Speed Demon', locked: true },
   { id: 'consistent', icon: 'lock', color: 'rose', title: 'Consistent', locked: true },
   { id: 'grandmaster', icon: 'lock', color: 'orange', title: 'Grandmaster', locked: true },
 ]
 
 const skills = [
-  { name: 'Algebra', level: 'Expert', progress: 85, color: 'electric' },
-  { name: 'Geometry', level: 'Master', progress: 92, color: 'violet' },
-  { name: 'Number Theory', level: 'Specialist', progress: 60, color: 'orange' },
-  { name: 'Combinatorics', level: 'Pupil', progress: 40, color: 'emerald' },
+  { name: 'Algebra', level: 'Unrated', progress: 0, color: 'electric' },
+  { name: 'Geometry', level: 'Unrated', progress: 0, color: 'violet' },
+  { name: 'Number Theory', level: 'Unrated', progress: 0, color: 'orange' },
+  { name: 'Combinatorics', level: 'Unrated', progress: 0, color: 'emerald' },
 ]
 
 const colorMap: Record<string, { from: string; to: string }> = {
