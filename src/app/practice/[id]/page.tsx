@@ -286,9 +286,9 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
                       AI Evaluation
                     </h4>
                   </div>
-                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
-                    {gradeResult.feedback || 'Your solution was graded based on mathematical correctness.'}
-                  </p>
+                  <div className="text-[var(--text-secondary)] text-sm leading-relaxed max-w-none prose prose-invert prose-p:my-1">
+                    <MarkdownRenderer content={gradeResult.feedback || 'Your solution was graded based on mathematical correctness.'} />
+                  </div>
                 </div>
 
                 {/* Action buttons */}
