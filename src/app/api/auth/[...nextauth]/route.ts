@@ -79,8 +79,42 @@ export const authOptions: NextAuthOptions = {
         })
 
         if (dbUser) {
+          // --- Streak Auto-Update ---
+          const now = new Date()
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+          let newStreak = dbUser.streak
+
+          if (dbUser.lastLoginAt) {
+            const lastLogin = new Date(dbUser.lastLoginAt)
+            const lastLoginDay = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate())
+            const diffDays = Math.floor((today.getTime() - lastLoginDay.getTime()) / (1000 * 60 * 60 * 24))
+
+            if (diffDays === 1) {
+              // Yesterday → increment streak
+              newStreak = dbUser.streak + 1
+            } else if (diffDays === 0) {
+              // Same day → keep streak
+              newStreak = dbUser.streak
+            } else {
+              // Missed a day → reset to 1
+              newStreak = 1
+            }
+          } else {
+            // First ever login
+            newStreak = 1
+          }
+
+          // Update streak and lastLoginAt in DB
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              streak: newStreak,
+              lastLoginAt: now,
+            }
+          })
+
           token.rating = dbUser.rating
-          token.streak = dbUser.streak
+          token.streak = newStreak
           token.globalRank = dbUser.globalRank
           token.solvedCount = dbUser.submissions.length
         }

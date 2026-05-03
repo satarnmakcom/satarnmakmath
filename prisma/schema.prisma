@@ -29,6 +29,7 @@ model User {
   globalRank    Int?
   streak        Int       @default(0)
   country       String    @default("TH")
+  lastLoginAt   DateTime?
   createdAt     DateTime  @default(now())
   
   accounts      Account[]

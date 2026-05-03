@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
+import { submitProblemSolution } from '@/actions/submissions'
+import { selfGradeSolution } from '@/actions/grading'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Problem {
   id: string
@@ -17,9 +21,15 @@ interface Problem {
 export default function ProblemSolverPage() {
   const params = useParams()
   const id = params.id as string
+  const { data: session } = useSession()
   const [problem, setProblem] = useState<Problem | null>(null)
   const [loading, setLoading] = useState(true)
-  const [timeLeft, setTimeLeft] = useState(45 * 60) // 45 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(45 * 60)
+  const [solution, setSolution] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [submissionId, setSubmissionId] = useState<string | null>(null)
+  const [gradeResult, setGradeResult] = useState<{ status: string, ratingDelta: number, newRating: number } | null>(null)
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
     // Mock problem data - in production this would fetch from API
@@ -49,10 +59,56 @@ Prove that line $EF$ is perpendicular to the line connecting the midpoints of $A
     return () => clearInterval(timer)
   }, [])
 
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 4000)
+      return () => clearTimeout(t)
+    }
+  }, [toast])
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60)
     const s = seconds % 60
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+
+  const handleSubmit = async () => {
+    if (!session?.user?.id || !problem || !solution.trim()) {
+      setToast({ message: 'Please write your solution before submitting.', type: 'error' })
+      return
+    }
+
+    setSubmitting(true)
+    const res = await submitProblemSolution({
+      userId: session.user.id,
+      problemId: problem.id,
+      content: solution,
+    })
+
+    if (res.success && res.data) {
+      setSubmissionId(res.data.id)
+      setToast({ message: 'Solution submitted! Now grade your answer.', type: 'success' })
+    } else {
+      setToast({ message: res.error || 'Submission failed', type: 'error' })
+    }
+    setSubmitting(false)
+  }
+
+  const handleGrade = async (isCorrect: boolean) => {
+    if (!submissionId || !session?.user?.id) return
+
+    const res = await selfGradeSolution({
+      submissionId,
+      userId: session.user.id,
+      isCorrect,
+    })
+
+    if (res.success && res.data) {
+      setGradeResult(res.data)
+    } else {
+      setToast({ message: res.error || 'Grading failed', type: 'error' })
+    }
   }
 
   if (loading) {
@@ -76,6 +132,24 @@ Prove that line $EF$ is perpendicular to the line connecting the midpoints of $A
 
   return (
     <div className="h-[calc(100vh-8rem)] -mx-4 md:-mx-6 lg:-mx-8 -mt-4 md:-mt-6 lg:-mt-8 flex flex-col lg:flex-row">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-20 right-6 z-50 px-5 py-3 rounded-xl text-sm font-semibold shadow-2xl border ${
+              toast.type === 'success'
+                ? 'bg-neon-500/15 text-neon-400 border-neon-500/30'
+                : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+            }`}
+          >
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Problem Statement */}
       <div className="lg:w-1/2 h-1/2 lg:h-full overflow-y-auto p-6 lg:p-8 border-b lg:border-b-0 lg:border-r border-[var(--border-color)]">
         <div className="max-w-xl mx-auto">
@@ -120,18 +194,87 @@ Prove that line $EF$ is perpendicular to the line connecting the midpoints of $A
             <button className="px-3 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 text-xs font-semibold transition-all">
               Hint
             </button>
-            <button className="btn-primary px-4 py-1.5 rounded-lg text-white text-xs font-semibold">
-              Submit
+            <button 
+              onClick={handleSubmit}
+              disabled={submitting || !!submissionId}
+              className="btn-primary px-4 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-50"
+            >
+              {submitting ? 'Submitting...' : submissionId ? 'Submitted ✓' : 'Submit'}
             </button>
           </div>
         </div>
 
-        {/* Editor */}
-        <div className="flex-1 p-4">
-          <textarea 
-            className="w-full h-full p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-mono text-sm resize-none outline-none focus:border-electric-500/50 focus:shadow-md transition-all shadow-sm" 
-            placeholder="Write your proof in LaTeX..."
-          />
+        {/* Editor or Grade Panel */}
+        <div className="flex-1 p-4 flex flex-col">
+          {gradeResult ? (
+            // === GRADE RESULT ===
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex-1 flex items-center justify-center"
+            >
+              <div className="text-center space-y-6 max-w-sm">
+                <div className={`w-24 h-24 rounded-3xl mx-auto flex items-center justify-center text-5xl ${
+                  gradeResult.status === 'ACCEPTED'
+                    ? 'bg-neon-500/15 border-2 border-neon-500/30'
+                    : 'bg-rose-500/15 border-2 border-rose-500/30'
+                }`}>
+                  {gradeResult.status === 'ACCEPTED' ? '✅' : '❌'}
+                </div>
+                <h3 className="text-2xl font-bold text-[var(--text-primary)]">
+                  {gradeResult.status === 'ACCEPTED' ? 'Correct!' : 'Incorrect'}
+                </h3>
+                <div className={`text-4xl font-extrabold ${gradeResult.ratingDelta >= 0 ? 'text-neon-400' : 'text-rose-400'}`}>
+                  {gradeResult.ratingDelta >= 0 ? '+' : ''}{gradeResult.ratingDelta}
+                </div>
+                <p className="text-sm text-[var(--text-secondary)]">
+                  New Rating: <span className="font-bold text-[var(--text-primary)]">{gradeResult.newRating}</span>
+                </p>
+                <Link
+                  href="/practice"
+                  className="btn-primary inline-block px-6 py-2.5 text-white rounded-xl text-sm font-semibold"
+                >
+                  Next Problem →
+                </Link>
+              </div>
+            </motion.div>
+          ) : submissionId ? (
+            // === SELF-GRADE PANEL ===
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex-1 flex items-center justify-center"
+            >
+              <div className="text-center space-y-6 max-w-md">
+                <h3 className="text-xl font-bold text-[var(--text-primary)]">Grade Your Solution</h3>
+                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                  Compare your proof with the official solution. Did you solve it correctly?
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => handleGrade(true)}
+                    className="flex-1 max-w-[160px] py-4 rounded-2xl bg-neon-500/10 border-2 border-neon-500/20 hover:border-neon-500/50 text-neon-400 font-bold text-lg transition-all hover:scale-105"
+                  >
+                    ✅ Correct
+                  </button>
+                  <button
+                    onClick={() => handleGrade(false)}
+                    className="flex-1 max-w-[160px] py-4 rounded-2xl bg-rose-500/10 border-2 border-rose-500/20 hover:border-rose-500/50 text-rose-400 font-bold text-lg transition-all hover:scale-105"
+                  >
+                    ❌ Incorrect
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            // === TEXTAREA EDITOR ===
+            <textarea 
+              className="w-full flex-1 p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-mono text-sm resize-none outline-none focus:border-electric-500/50 focus:shadow-md transition-all shadow-sm" 
+              placeholder="Write your proof in LaTeX..."
+              value={solution}
+              onChange={(e) => setSolution(e.target.value)}
+            />
+          )}
         </div>
       </div>
     </div>
