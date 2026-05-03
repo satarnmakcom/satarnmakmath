@@ -27,7 +27,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
     params.then(p => setId(p.id))
   }, [params])
 
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
   const [problem, setProblem] = useState<Problem | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeLeft, setTimeLeft] = useState(45 * 60)
@@ -105,6 +105,8 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
 
       if (gradeRes.success && gradeRes.data) {
         setGradeResult(gradeRes.data)
+        // Refresh the session token so the profile and header show the new rating
+        await update()
       } else {
         setToast({ message: gradeRes.error || 'AI Grading failed', type: 'error' })
       }

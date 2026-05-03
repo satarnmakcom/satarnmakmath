@@ -65,13 +65,14 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.sub = user.id
-        
-        // Fetch fresh stats from the database on initial login
+    async jwt({ token, user, trigger }) {
+      if (user || trigger === "update") {
+        const userId = user?.id || token.sub
+        if (!userId) return token
+
+        // Fetch fresh stats from the database
         const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
+          where: { id: userId },
           include: {
             submissions: {
               where: { status: "ACCEPTED" }
@@ -105,14 +106,16 @@ export const authOptions: NextAuthOptions = {
             newStreak = 1
           }
 
-          // Update streak and lastLoginAt in DB
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              streak: newStreak,
-              lastLoginAt: now,
-            }
-          })
+          // Update streak and lastLoginAt in DB if it changed
+          if (newStreak !== dbUser.streak || !dbUser.lastLoginAt || dbUser.lastLoginAt.toDateString() !== now.toDateString()) {
+            await prisma.user.update({
+              where: { id: userId },
+              data: {
+                streak: newStreak,
+                lastLoginAt: now,
+              }
+            })
+          }
 
           token.role = dbUser.role
           token.rating = dbUser.rating
