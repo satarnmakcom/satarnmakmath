@@ -41,11 +41,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return dictionaries[language][key] || key
   }
 
-  // Prevent hydration mismatch
-  if (!mounted) {
-    return <>{children}</>
-  }
-
+  // We don't need to prevent hydration mismatch by hiding children because
+  // the initial state is always "en", matching the server render perfectly.
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
