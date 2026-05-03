@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { calculateRatingChange, recalculateGlobalRanks } from "@/lib/rating"
 import { revalidatePath } from "next/cache"
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
 /**
  * Self-grade a submission (honor system).
@@ -111,7 +112,13 @@ export async function aiGradeSolution(data: {
       return { success: false, error: "Submission not found or already graded" }
     }
 
-    const kimiKey = process.env.KIMI_API_KEY || "sk-uRhOJmGpl4PGSSwu6HBsevzdLDJNuxazWDdE2ancPZ9IDwJ8"
+    if (!process.env.GEMINI_API_KEY) {
+      return { success: false, error: "GEMINI_API_KEY is not configured" }
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    // Changed to Gemini 1.5 Pro
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
 
     const prompt = `You are an expert Math Olympiad Grader. 
 Evaluate the following student's proof/solution for correctness.
@@ -129,30 +136,8 @@ ${data.studentProof}
 
 Remember, return ONLY valid JSON.`
 
-    const res = await fetch("https://api.moonshot.cn/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${kimiKey}`
-      },
-      body: JSON.stringify({
-        model: "moonshot-v1-8k",
-        messages: [
-          { role: "system", content: "You are an expert Math Olympiad Grader. Always respond with valid JSON." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.3
-      })
-    })
-
-    if (!res.ok) {
-      const errorText = await res.text()
-      console.error("Kimi API Error:", errorText)
-      return { success: false, error: "Failed to communicate with Kimi AI" }
-    }
-
-    const result = await res.json()
-    const response = result.choices[0].message.content
+    const result = await model.generateContent(prompt)
+    const response = result.response.text()
     
     // Parse the JSON output safely
     let aiResult
