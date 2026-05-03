@@ -5,13 +5,13 @@ import Sidebar from './Sidebar'
 import Header from './Header'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
+import { LanguageProvider } from '@/context/LanguageContext'
 
 interface AppLayoutProps {
   children: React.ReactNode
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
-  const [currentLang, setCurrentLang] = useState('en')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
@@ -39,28 +39,27 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   return (
-    <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
-      {/* Mobile Overlay */}
-      {isSidebarOpen && (
-        <div 
-          className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      {/* Layout Wrapper */}
-      <div className="flex h-screen overflow-hidden relative">
-        {/* LEFT SIDEBAR */}
-        <Sidebar currentLang={currentLang} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-
-        {/* MAIN AREA */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative w-full">
-          {/* Top Navigation Bar */}
-          <Header 
-            currentLang={currentLang} 
-            onLanguageChange={setCurrentLang} 
-            onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+    <LanguageProvider>
+      <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
+        {/* Mobile Overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 transition-opacity"
+            onClick={() => setIsSidebarOpen(false)}
           />
+        )}
+
+        {/* Layout Wrapper */}
+        <div className="flex h-screen overflow-hidden relative">
+          {/* LEFT SIDEBAR */}
+          <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+
+          {/* MAIN AREA */}
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative w-full">
+            {/* Top Navigation Bar */}
+            <Header 
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
 
           {/* Content Scroll Area */}
           <main className="flex-1 overflow-y-auto relative">
@@ -80,5 +79,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
       </div>
     </div>
+    </LanguageProvider>
   )
 }

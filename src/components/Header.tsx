@@ -4,10 +4,9 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
+import { useLanguage } from '@/context/LanguageContext'
 
 interface HeaderProps {
-  currentLang?: string
-  onLanguageChange?: (lang: string) => void
   onToggleSidebar?: () => void
 }
 
@@ -20,23 +19,19 @@ const getRatingInfo = (rating: number) => {
   return { title: 'Grandmaster', className: 'rating-grandmaster' }
 }
 
-export default function Header({ currentLang = 'en', onLanguageChange, onToggleSidebar }: HeaderProps) {
-  const [langDropdownOpen, setLangDropdownOpen] = useState(false)
-  const [searchFocused, setSearchFocused] = useState(false)
+export default function Header({ onToggleSidebar }: HeaderProps) {
+  const [isLangOpen, setIsLangOpen] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(true)
 
   const { data: session } = useSession()
+  const { language, setLanguage, t } = useLanguage()
   const userRating = session?.user?.rating || 1200
   const ratingInfo = getRatingInfo(userRating)
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode)
     document.documentElement.classList.toggle('dark')
-  }
-
-  const setLanguage = (lang: string) => {
-    onLanguageChange?.(lang)
-    setLangDropdownOpen(false)
   }
 
   return (
@@ -51,25 +46,23 @@ export default function Header({ currentLang = 'en', onLanguageChange, onToggleS
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <motion.div
-          animate={{ flexGrow: searchFocused ? 1.1 : 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="flex-1 max-w-xl"
-        >
-          <div className={`search-input flex items-center bg-[var(--bg-secondary)] border ${searchFocused ? 'border-electric-500 ring-2 ring-electric-500/20' : 'border-[var(--border-color)]'} rounded-xl px-4 py-2.5 transition-all`}>
-            <svg className={`w-4 h-4 ${searchFocused ? 'text-electric-500' : 'text-[var(--text-tertiary)]'} transition-colors`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              type="text"
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              placeholder={currentLang === 'th' ? 'ค้นหาโจทย์, ผู้ใช้, แท็ก...' : 'Search problems, users, tags...'}
-              className="bg-transparent border-none outline-none text-sm ml-3 w-full text-[var(--text-primary)] placeholder-[var(--text-tertiary)]"
-            />
-            <span className="text-[10px] text-[var(--text-tertiary)] border border-[var(--border-color)] rounded-md px-1.5 py-0.5 hidden sm:block font-mono">⌘K</span>
+
+        {/* Search Bar */}
+        <div className="hidden md:flex flex-1 max-w-md ml-4 relative">
+          <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors ${isSearchFocused ? 'text-electric-500' : 'text-[var(--text-tertiary)]'}`}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </div>
-        </motion.div>
+          <input
+            type="text"
+            placeholder={t('header.search')}
+            className="w-full pl-10 pr-12 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-electric-500/50 focus:border-electric-500/50 transition-all placeholder:text-[var(--text-tertiary)] shadow-sm"
+            onFocus={() => setIsSearchFocused(true)}
+            onBlur={() => setIsSearchFocused(false)}
+          />
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <span className="text-[10px] font-bold text-[var(--text-tertiary)] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded border border-[var(--border-color)]">⌘K</span>
+          </div>
+        </div>
       </div>
 
       {/* Right Actions */}
@@ -104,23 +97,24 @@ export default function Header({ currentLang = 'en', onLanguageChange, onToggleS
         </motion.button>
 
         <div className="relative">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-sm font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors"
+          <button 
+            onClick={() => setIsLangOpen(!isLangOpen)}
+            className="hidden sm:flex items-center gap-2 p-2 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all border border-transparent hover:border-[var(--border-color)]"
           >
-            <span className="text-xs tracking-widest font-bold">{currentLang.toUpperCase()}</span>
+            <span className="w-5 h-5 rounded-full overflow-hidden bg-[var(--bg-primary)] border border-[var(--border-color)] flex items-center justify-center text-[10px]">
+              {language === 'en' ? '🇬🇧' : '🇹🇭'}
+            </span>
+            <span className="uppercase text-[10px] tracking-wider">{language}</span>
             <motion.svg
-              animate={{ rotate: langDropdownOpen ? 180 : 0 }}
+              animate={{ rotate: isLangOpen ? 180 : 0 }}
               className="w-4 h-4 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
             </motion.svg>
-          </motion.button>
+          </button>
 
           <AnimatePresence>
-            {langDropdownOpen && (
+            {isLangOpen && (
               <motion.div
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -128,25 +122,37 @@ export default function Header({ currentLang = 'en', onLanguageChange, onToggleS
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 className="absolute right-0 mt-2 w-48 card rounded-xl shadow-2xl py-2 z-50 border border-[var(--border-color)] overflow-hidden bg-[var(--bg-primary)]"
               >
-                <button onClick={() => setLanguage('en')} className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-3 relative overflow-hidden group">
-                  <motion.div className="absolute inset-0 bg-gradient-to-r from-electric-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative z-10 flex-1">
+                <button 
+                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors relative overflow-hidden group ${language === 'en' ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'}`}
+                  onClick={() => {
+                    setLanguage('en')
+                    setIsLangOpen(false)
+                  }}
+                >
+                  {language === 'en' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-electric-500 rounded-r-full" />}
+                  <div className="flex flex-col items-start pl-2">
                     <div className="font-medium text-[var(--text-primary)]">English</div>
                     <div className="text-xs text-[var(--text-tertiary)]">EN</div>
                   </div>
-                  {currentLang === 'en' && (
+                  {language === 'en' && (
                     <motion.div layoutId="langCheck" className="relative z-10 text-electric-500">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                     </motion.div>
                   )}
                 </button>
-                <button onClick={() => setLanguage('th')} className="w-full text-left px-4 py-2.5 text-sm hover:bg-[var(--bg-secondary)] transition-colors flex items-center gap-3 relative overflow-hidden group">
-                  <motion.div className="absolute inset-0 bg-gradient-to-r from-electric-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="relative z-10 flex-1">
+                <button 
+                  className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors relative overflow-hidden group ${language === 'th' ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'}`}
+                  onClick={() => {
+                    setLanguage('th')
+                    setIsLangOpen(false)
+                  }}
+                >
+                  {language === 'th' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-electric-500 rounded-r-full" />}
+                  <div className="flex flex-col items-start pl-2">
                     <div className="font-medium text-[var(--text-primary)]">ไทย</div>
                     <div className="text-xs text-[var(--text-tertiary)]">TH</div>
                   </div>
-                  {currentLang === 'th' && (
+                  {language === 'th' && (
                     <motion.div layoutId="langCheck" className="relative z-10 text-electric-500">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                     </motion.div>

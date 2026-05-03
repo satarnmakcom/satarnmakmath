@@ -5,17 +5,17 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession } from 'next-auth/react'
+import { useLanguage } from '@/context/LanguageContext'
 
 const navItems = [
-  { id: 'dashboard', href: '/', label: 'Dashboard', labelTh: 'แดชบอร์ด', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
-  { id: 'learn', href: '/learn', label: 'Learn', labelTh: 'เรียนรู้', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-  { id: 'practice', href: '/practice', label: 'Practice', labelTh: 'ฝึกฝน', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
-  { id: 'leaderboard', href: '/leaderboard', label: 'Leaderboard', labelTh: 'กระดานผู้นำ', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-  { id: 'profile', href: '/profile', label: 'Profile', labelTh: 'โปรไฟล์', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+  { id: 'dashboard', href: '/', labelKey: 'sidebar.dashboard', icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z' },
+  { id: 'learn', href: '/learn', labelKey: 'sidebar.learn', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+  { id: 'practice', href: '/practice', labelKey: 'sidebar.practice', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01' },
+  { id: 'leaderboard', href: '/leaderboard', labelKey: 'sidebar.leaderboard', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+  { id: 'profile', href: '/profile', labelKey: 'sidebar.profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
 ]
 
 interface SidebarProps {
-  currentLang?: string
   isOpen?: boolean
   onClose?: () => void
 }
@@ -29,10 +29,11 @@ const getRankProgress = (rating: number) => {
   return { current: 'Grandmaster', next: 'Max', percent: 100 }
 }
 
-export default function Sidebar({ currentLang = 'en', isOpen = false, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
   const { data: session } = useSession()
+  const { t } = useLanguage()
   const userRating = session?.user?.rating || 1200
   const progressInfo = getRankProgress(userRating)
 
@@ -122,12 +123,12 @@ export default function Sidebar({ currentLang = 'en', isOpen = false, onClose }:
                   <AnimatePresence>
                     {!collapsed && (
                       <motion.span
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto', marginLeft: '12px' }}
-                        exit={{ opacity: 0, width: 0, marginLeft: 0 }}
-                        className="whitespace-nowrap"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-3 whitespace-nowrap"
                       >
-                        {currentLang === 'th' ? item.labelTh : item.label}
+                        {t(item.labelKey)}
                       </motion.span>
                     )}
                   </AnimatePresence>
@@ -146,9 +147,11 @@ export default function Sidebar({ currentLang = 'en', isOpen = false, onClose }:
               transition={{ delay: 0.3 }}
               className="pt-4 mt-6 border-t border-[var(--border-color)]"
             >
-              <p className="px-3 text-xs font-semibold text-[var(--text-tertiary)] uppercase tracking-wider mb-3">
-                {currentLang === 'th' ? 'ความคืบหน้าของคุณ' : 'Your Progress'}
-              </p>
+              <div className="flex items-center justify-between mb-2 px-3">
+                <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
+                  {t('sidebar.your_progress')}
+                </span>
+              </div>
               <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <div className="flex justify-between text-xs mb-2">
                   <span className="text-[var(--text-secondary)] font-medium truncate max-w-[120px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
@@ -180,7 +183,7 @@ export default function Sidebar({ currentLang = 'en', isOpen = false, onClose }:
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
-            {!collapsed && <span>{currentLang === 'th' ? 'ตั้งค่า' : 'Settings'}</span>}
+            {!collapsed && <span>{t('sidebar.settings')}</span>}
           </motion.div>
         </Link>
       </div>

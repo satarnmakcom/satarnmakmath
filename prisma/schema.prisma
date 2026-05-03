@@ -18,6 +18,11 @@ enum CompetitionLevel {
   IMO
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -25,6 +30,7 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
+  role          Role      @default(USER)
   rating        Int       @default(1200)
   globalRank    Int?
   streak        Int       @default(0)
