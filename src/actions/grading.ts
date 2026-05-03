@@ -112,26 +112,28 @@ export async function aiGradeSolution(data: {
       return { success: false, error: "Submission not found or already graded" }
     }
 
-    if (!process.env.GEMINI_API_KEY) {
+    const apiKey = process.env.GEMINI_API_KEY || "AIzaSyDqo7VolldAwT6bMOGP-wiO3SS3518nVAI"
+    if (!apiKey) {
       return { success: false, error: "GEMINI_API_KEY is not configured" }
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-    // Changed to Gemini 1.5 Pro
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" })
+    const genAI = new GoogleGenerativeAI(apiKey)
+    // Changed to Gemini 2.5 Flash
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
-    const prompt = `You are an expert Math Olympiad Grader. 
-Evaluate the following student's proof/solution for correctness.
+    const prompt = `You are an expert Math Olympiad Grader (specifically for POSN Camp 1).
+IMPORTANT: These are short-answer / fill-in-the-blank questions. The student DOES NOT need to provide a formal proof.
+Evaluate the student's answer based primarily on the final answer's correctness. If it is mathematically equivalent to the correct answer, mark it as correct.
 Return your evaluation as a valid JSON object EXACTLY in this format:
 {
   "isCorrect": boolean,
-  "feedback": "Your concise, constructive feedback explaining why it's correct or incorrect. Provide hints if incorrect, but do not give the full solution."
+  "feedback": "Your concise, constructive feedback. If incorrect, provide a brief hint but do not give the full solution."
 }
 
 Problem Statement:
 ${problem.content}
 
-Student's Solution:
+Student's Answer:
 ${data.studentProof}
 
 Remember, return ONLY valid JSON.`
