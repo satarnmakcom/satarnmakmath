@@ -3,9 +3,11 @@ import LessonForm from '../../../../components/LessonForm'
 import { updateLesson, deleteLesson } from '@/actions/admin'
 import { notFound, redirect } from 'next/navigation'
 
-export default async function EditLessonPage({ params }: { params: { moduleId: string; lessonId: string } }) {
+export default async function EditLessonPage({ params }: { params: Promise<{ moduleId: string; lessonId: string }> }) {
+  const { moduleId, lessonId } = await params
+  
   const lesson = await prisma.lesson.findUnique({
-    where: { id: params.lessonId }
+    where: { id: lessonId }
   })
 
   if (!lesson) notFound()
@@ -17,7 +19,7 @@ export default async function EditLessonPage({ params }: { params: { moduleId: s
     videoUrl?: string
   }) => {
     'use server'
-    return updateLesson(params.lessonId, data)
+    return updateLesson(lessonId, data)
   }
 
   return (
@@ -29,7 +31,7 @@ export default async function EditLessonPage({ params }: { params: { moduleId: s
         <h3 className="text-sm font-bold text-rose-500 uppercase tracking-wider mb-4">Danger Zone</h3>
         <form action={async () => {
           'use server'
-          await deleteLesson(params.lessonId)
+          await deleteLesson(lessonId)
           redirect('/admin/curriculum')
         }}>
           <button

@@ -153,32 +153,8 @@ export default function DashboardPage() {
         <div className="card rounded-2xl p-6">
           <h3 className="font-bold text-[var(--text-primary)] mb-5 text-base">Continue Learning</h3>
           <div className="space-y-5">
-            <div className="group cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-electric-400 transition-colors">Geometry — Cyclic Quads</span>
-                <span className="text-xs font-bold text-[var(--text-tertiary)]">65%</span>
-              </div>
-              <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-electric-500 to-electric-400 rounded-full transition-all duration-1000" style={{ width: '65%' }}></div>
-              </div>
-            </div>
-            <div className="group cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-violet-400 transition-colors">Number Theory — Modulo</span>
-                <span className="text-xs font-bold text-[var(--text-tertiary)]">42%</span>
-              </div>
-              <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-violet-500 to-violet-400 rounded-full transition-all duration-1000" style={{ width: '42%' }}></div>
-              </div>
-            </div>
-            <div className="group cursor-pointer">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-neon-400 transition-colors">Combinatorics — Graphs</span>
-                <span className="text-xs font-bold text-[var(--text-tertiary)]">12%</span>
-              </div>
-              <div className="h-2 bg-[var(--bg-secondary)] rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-neon-500 to-neon-400 rounded-full transition-all duration-1000" style={{ width: '12%' }}></div>
-              </div>
+            <div className="p-6 text-center border-2 border-dashed border-[var(--border-color)] rounded-2xl">
+              <p className="text-[var(--text-secondary)] font-medium text-sm">Start your first curriculum module to see progress here.</p>
             </div>
           </div>
           <Link href="/learn" className="w-full mt-6 py-2.5 rounded-xl border border-[var(--border-color)] hover:border-electric-500/40 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all hover:bg-[var(--bg-secondary)] text-center block">
@@ -194,40 +170,9 @@ export default function DashboardPage() {
           <button className="text-xs text-electric-400 hover:text-electric-500 font-bold transition-colors">View All</button>
         </div>
         <div className="space-y-3">
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-neon-500/10 flex items-center justify-center text-neon-400 flex-shrink-0 group-hover:scale-110 transition-transform">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/>
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[var(--text-primary)] truncate">Solved <span className="text-electric-400">TMO 2565 P4</span></div>
-              <div className="text-xs text-[var(--text-tertiary)]">Geometry • 2 hours ago</div>
-            </div>
-            <span className="text-sm font-bold text-neon-400 flex-shrink-0 bg-neon-500/10 px-2 py-0.5 rounded-lg">+18</span>
-          </div>
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-electric-500/10 flex items-center justify-center text-electric-400 flex-shrink-0 group-hover:scale-110 transition-transform">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[var(--text-primary)] truncate">Completed <span className="text-electric-400">Cyclic Quadrilaterals</span></div>
-              <div className="text-xs text-[var(--text-tertiary)]">Module • 5 hours ago</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 p-3 rounded-xl hover:bg-[var(--bg-secondary)] transition-colors cursor-pointer group">
-            <div className="w-10 h-10 rounded-xl bg-gold-500/10 flex items-center justify-center text-gold-400 flex-shrink-0 group-hover:scale-110 transition-transform">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-              </svg>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold text-[var(--text-primary)] truncate">Rank <span className="text-gold-400">#42</span> in Weekly Challenge</div>
-              <div className="text-xs text-[var(--text-tertiary)]">Challenge • 1 day ago</div>
-            </div>
-            <span className="text-sm font-bold text-gold-400 flex-shrink-0 bg-gold-500/10 px-2 py-0.5 rounded-lg">+45</span>
+          <div className="p-8 text-center border-2 border-dashed border-[var(--border-color)] rounded-2xl">
+            <div className="text-3xl mb-3">📭</div>
+            <p className="text-[var(--text-secondary)] font-medium text-sm">You have no recent activity yet.<br/>Go solve some problems!</p>
           </div>
         </div>
       </div>

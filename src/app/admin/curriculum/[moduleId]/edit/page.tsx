@@ -4,9 +4,11 @@ import { updateModule, deleteModule } from '@/actions/admin'
 import { notFound, redirect } from 'next/navigation'
 import { CompetitionLevel } from '@prisma/client'
 
-export default async function EditModulePage({ params }: { params: { moduleId: string } }) {
+export default async function EditModulePage({ params }: { params: Promise<{ moduleId: string }> }) {
+  const { moduleId } = await params
+  
   const mod = await prisma.curriculumModule.findUnique({
-    where: { id: params.moduleId }
+    where: { id: moduleId }
   })
 
   if (!mod) notFound()
@@ -18,7 +20,7 @@ export default async function EditModulePage({ params }: { params: { moduleId: s
     order: number
   }) => {
     'use server'
-    return updateModule(params.moduleId, data)
+    return updateModule(moduleId, data)
   }
 
   return (
@@ -30,7 +32,7 @@ export default async function EditModulePage({ params }: { params: { moduleId: s
         <h3 className="text-sm font-bold text-rose-500 uppercase tracking-wider mb-4">Danger Zone</h3>
         <form action={async () => {
           'use server'
-          await deleteModule(params.moduleId)
+          await deleteModule(moduleId)
           redirect('/admin/curriculum')
         }}>
           <button

@@ -19,9 +19,13 @@ interface Problem {
   tags: string[]
 }
 
-export default function ProblemSolverPage() {
-  const params = useParams()
-  const id = params.id as string
+export default function ProblemSolverPage({ params }: { params: Promise<{ id: string }> }) {
+  const [id, setId] = useState<string>('')
+  
+  useEffect(() => {
+    params.then(p => setId(p.id))
+  }, [params])
+
   const { data: session } = useSession()
   const [problem, setProblem] = useState<Problem | null>(null)
   const [loading, setLoading] = useState(true)
@@ -33,6 +37,7 @@ export default function ProblemSolverPage() {
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
+    if (!id) return
     async function loadProblem() {
       setLoading(true)
       const res = await getProblemById(id)

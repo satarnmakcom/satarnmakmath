@@ -3,19 +3,20 @@ import ProblemForm from "../../components/ProblemForm"
 import { updateProblem, deleteProblem } from "@/actions/admin"
 import { notFound } from "next/navigation"
 
-export default async function EditProblemPage({ params }: { params: { id: string } }) {
+export default async function EditProblemPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  
   const problem = await prisma.problem.findUnique({
-    where: { id: params.id }
+    where: { id }
   })
 
   if (!problem) {
     notFound()
   }
 
-  // We need a wrapper to pass the ID to updateProblem
   const handleUpdate = async (data: any) => {
     "use server"
-    return updateProblem(params.id, data)
+    return updateProblem(id, data)
   }
 
   return (
@@ -26,7 +27,7 @@ export default async function EditProblemPage({ params }: { params: { id: string
         <h3 className="text-sm font-bold text-rose-500 uppercase tracking-wider mb-4">Danger Zone</h3>
         <form action={async () => {
           "use server"
-          await deleteProblem(params.id)
+          await deleteProblem(id)
         }}>
           <button type="submit" className="px-6 py-2.5 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 rounded-xl text-sm font-semibold transition-colors">
             Delete Problem
