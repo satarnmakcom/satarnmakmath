@@ -48,29 +48,15 @@ export default function PracticePage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true)
-      const res = await getProblems({ limit: 100 })
-      if (res.success && res.data && res.data.length > 0) {
-        const data = res.data.map((p: any) => ({
+      const res = await getProblems({ limit: 500 })
+      if (res.success && res.data) {
+        const data = (res.data as any[]).map((p: any) => ({
           ...p,
-          acceptance: Math.floor(Math.random() * 60) + 20
+          acceptance: p._count?.submissions > 0
+            ? Math.round((p._count.submissions / Math.max(p._count.submissions * 1.5, 1)) * 100)
+            : 0
         }))
         setProblems(data)
-      } else {
-        const mockProblems: Problem[] = Array.from({ length: 15 }).map((_, i) => {
-          const randomLevel = olympiadLevels[Math.floor(Math.random() * olympiadLevels.length)].id
-          const difficulty = 1200 + Math.floor(Math.random() * 1800)
-          return {
-            id: `mock-${i}`,
-            code: `${randomLevel}-${2023 - Math.floor(i/5)}-${(i%5)+1}`,
-            title: `Sample Problem for ${randomLevel}`,
-            level: randomLevel,
-            difficulty,
-            tags: [ALL_TAGS[Math.floor(Math.random() * 3)], ALL_TAGS[3 + Math.floor(Math.random() * 3)]],
-            acceptance: Math.floor(Math.random() * 60) + 20,
-            _count: { submissions: Math.floor(Math.random() * 500) }
-          }
-        })
-        setProblems(mockProblems)
       }
       setLoading(false)
     }
