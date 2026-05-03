@@ -180,3 +180,90 @@ export async function deleteLesson(id: string) {
     return { success: false, error: error.message || "Failed to delete lesson" }
   }
 }
+
+// ─────────────────────────── Problem Sets ───────────────────────────────────
+
+export async function createProblemSet(data: {
+  title: string
+  description?: string
+  timeLimitMinutes: number
+  isPublic: boolean
+  problemIds: string[]
+}) {
+  try {
+    await ensureAdmin()
+    
+    const problemSet = await prisma.problemSet.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        timeLimitMinutes: data.timeLimitMinutes,
+        isPublic: data.isPublic,
+        items: {
+          create: data.problemIds.map((id, index) => ({
+            problemId: id,
+            order: index
+          }))
+        }
+      }
+    })
+
+    revalidatePath("/admin/problem-sets")
+    revalidatePath("/contests")
+    return { success: true, data: problemSet }
+  } catch (error: any) {
+    console.error("Create ProblemSet error:", error)
+    return { success: false, error: error.message || "Failed to create problem set" }
+  }
+}
+
+export async function updateProblemSet(id: string, data: {
+  title: string
+  description?: string
+  timeLimitMinutes: number
+  isPublic: boolean
+  problemIds: string[]
+}) {
+  try {
+    await ensureAdmin()
+
+    // We do this in a transaction: delete old items, update set, create new items
+    await prisma.$transaction([
+      prisma.problemSetItem.deleteMany({ where: { problemSetId: id } }),
+      prisma.problemSet.update({
+        where: { id },
+        data: {
+          title: data.title,
+          description: data.description,
+          timeLimitMinutes: data.timeLimitMinutes,
+          isPublic: data.isPublic,
+          items: {
+            create: data.problemIds.map((pid, index) => ({
+              problemId: pid,
+              order: index
+            }))
+          }
+        }
+      })
+    ])
+
+    revalidatePath("/admin/problem-sets")
+    revalidatePath("/contests")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Update ProblemSet error:", error)
+    return { success: false, error: error.message || "Failed to update problem set" }
+  }
+}
+
+export async function deleteProblemSet(id: string) {
+  try {
+    await ensureAdmin()
+    await prisma.problemSet.delete({ where: { id } })
+    revalidatePath("/admin/problem-sets")
+    revalidatePath("/contests")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: error.message || "Failed to delete problem set" }
+  }
+}

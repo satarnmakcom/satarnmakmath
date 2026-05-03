@@ -42,6 +42,7 @@ model User {
   sessions      Session[]
   submissions   Submission[]
   achievements  UserAchievement[]
+  problemSetAttempts ProblemSetAttempt[]
 }
 
 model Account {
@@ -91,6 +92,7 @@ model Problem {
   createdAt     DateTime  @default(now())
   
   submissions   Submission[]
+  problemSets   ProblemSetItem[]
 }
 
 model Submission {
@@ -100,9 +102,11 @@ model Submission {
   content       String    @db.Text
   status        String    @default("PENDING")
   submittedAt   DateTime  @default(now())
+  attemptId     String?
 
   user          User      @relation(fields: [userId], references: [id])
   problem       Problem   @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  attempt       ProblemSetAttempt? @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 }
 
 model CurriculumModule {
@@ -135,4 +139,46 @@ model UserAchievement {
   unlockedAt    DateTime  @default(now())
 
   user          User      @relation(fields: [userId], references: [id])
+}
+
+// =======================
+// PROBLEM SETS (Mock Exams)
+// =======================
+
+model ProblemSet {
+  id               String            @id @default(cuid())
+  title            String
+  description      String?           @db.Text
+  timeLimitMinutes Int               @default(90)
+  isPublic         Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+
+  items            ProblemSetItem[]
+  attempts         ProblemSetAttempt[]
+}
+
+model ProblemSetItem {
+  id             String     @id @default(cuid())
+  problemSetId   String
+  problemId      String
+  order          Int
+
+  problemSet     ProblemSet @relation(fields: [problemSetId], references: [id], onDelete: Cascade)
+  problem        Problem    @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemSetId, problemId])
+}
+
+model ProblemSetAttempt {
+  id             String     @id @default(cuid())
+  userId         String
+  problemSetId   String
+  startedAt      DateTime   @default(now())
+  completedAt    DateTime?
+  score          Int?       // Total points/rating delta gained
+  status         String     @default("IN_PROGRESS") // IN_PROGRESS, SUBMITTED, GRADED
+
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemSet     ProblemSet @relation(fields: [problemSetId], references: [id], onDelete: Cascade)
+  submissions    Submission[]
 }

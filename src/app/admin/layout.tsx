@@ -30,6 +30,9 @@ export default async function AdminLayout({
             <Link href="/admin/problems" className="block px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               Problems
             </Link>
+            <Link href="/admin/problem-sets" className="block px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+              Problem Sets (Exams)
+            </Link>
             <Link href="/admin/curriculum" className="block px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               Curriculum
             </Link>
