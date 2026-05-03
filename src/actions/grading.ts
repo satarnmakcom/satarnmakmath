@@ -84,6 +84,7 @@ export async function selfGradeSolution(data: {
 
 /**
  * AI-grade a submission using Gemini.
+ * Allows retry: if user already solved this problem before, no rating change.
  */
 export async function aiGradeSolution(data: {
   submissionId: string
@@ -92,10 +93,6 @@ export async function aiGradeSolution(data: {
   studentProof: string
 }) {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      return { success: false, error: "GEMINI_API_KEY is not configured" }
-    }
-
     const problem = await prisma.problem.findUnique({
       where: { id: data.problemId }
     })
@@ -104,28 +101,26 @@ export async function aiGradeSolution(data: {
       return { success: false, error: "Problem not found" }
     }
 
-    const submission = await prisma.submission.findUnique({
-      where: { id: data.submissionId }
+    // Check if user already solved this problem before (for rating purposes)
+    const alreadySolved = await prisma.submission.findFirst({
+      where: {
+        userId: data.userId,
+        problemId: data.problemId,
+        status: "ACCEPTED",
+        id: { not: data.submissionId }
+      }
     })
 
-    if (!submission || submission.status !== "PENDING") {
-      return { success: false, error: "Submission not found or already graded" }
-    }
-
-    // Hardcoding the new key to prevent Vercel's old Environment Variables from overriding it
+    // Use hardcoded API key to bypass Vercel's old env variable
     const apiKey = "AIzaSyDqo7VolldAwT6bMOGP-wiO3SS3518nVAI"
-    if (!apiKey) {
-      return { success: false, error: "GEMINI_API_KEY is not configured" }
-    }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    // Changed to Gemini 2.5 Flash
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
     const requiresProof = problem.level !== 'POSN'
 
     const prompt = `You are an expert Math Olympiad Grader (specifically for ${problem.level}).
-${requiresProof 
+${requiresProof
   ? `IMPORTANT: This problem requires a formal proof or step-by-step logic.
 If the student only provides a final answer without sufficient explanation or proof, you MUST mark it as incorrect.
 Evaluate the mathematical rigor and logical steps.`
@@ -148,11 +143,10 @@ Remember, return ONLY valid JSON.`
 
     const result = await model.generateContent(prompt)
     const response = result.response.text()
-    
+
     // Parse the JSON output safely
     let aiResult
     try {
-      // Find JSON block in case AI wraps it in markdown
       const jsonMatch = response.match(/\{[\s\S]*\}/)
       const jsonString = jsonMatch ? jsonMatch[0] : response
       aiResult = JSON.parse(jsonString)
@@ -162,27 +156,45 @@ Remember, return ONLY valid JSON.`
     }
 
     const isCorrect = aiResult.isCorrect === true
+    const newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
 
-    // Now re-use the self-grading logic to update DB and rating
-    const dbResult = await selfGradeSolution({
-      submissionId: data.submissionId,
-      userId: data.userId,
-      isCorrect
+    // Update submission status
+    await prisma.submission.update({
+      where: { id: data.submissionId },
+      data: { status: newStatus }
     })
 
-    if (!dbResult.success || !dbResult.data) {
-      return dbResult
+    // Only update rating on FIRST successful solve
+    const user = await prisma.user.findUnique({ where: { id: data.userId } })
+    if (!user) return { success: false, error: "User not found" }
+
+    let ratingDelta = 0
+    let newRating = user.rating
+
+    if (!alreadySolved) {
+      ratingDelta = calculateRatingChange(user.rating, problem.difficulty, isCorrect)
+      newRating = Math.max(0, user.rating + ratingDelta)
+      await prisma.user.update({
+        where: { id: data.userId },
+        data: { rating: newRating }
+      })
+      await recalculateGlobalRanks(prisma)
     }
+
+    revalidatePath("/")
+    revalidatePath("/profile")
+    revalidatePath("/leaderboard")
 
     return {
       success: true,
       error: undefined,
       data: {
-        status: dbResult.data.status,
-        ratingDelta: dbResult.data.ratingDelta,
-        newRating: dbResult.data.newRating,
+        status: newStatus,
+        ratingDelta,
+        newRating,
         isCorrect,
-        feedback: aiResult.feedback
+        isRetry: !!alreadySolved,
+        feedback: aiResult.feedback as string
       }
     }
   } catch (error) {
@@ -190,4 +202,3 @@ Remember, return ONLY valid JSON.`
     return { success: false, error: "Failed to grade solution via AI" }
   }
 }
-

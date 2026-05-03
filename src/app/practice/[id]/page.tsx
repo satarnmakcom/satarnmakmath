@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import { submitProblemSolution } from '@/actions/submissions'
@@ -20,9 +19,17 @@ interface Problem {
   tags: string[]
 }
 
+interface GradeResult {
+  status: string
+  ratingDelta: number
+  newRating: number
+  isRetry?: boolean
+  feedback?: string
+}
+
 export default function ProblemSolverPage({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string>('')
-  
+
   useEffect(() => {
     params.then(p => setId(p.id))
   }, [params])
@@ -33,8 +40,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
   const [timeLeft, setTimeLeft] = useState(45 * 60)
   const [solution, setSolution] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [submissionId, setSubmissionId] = useState<string | null>(null)
-  const [gradeResult, setGradeResult] = useState<{ status: string, ratingDelta: number, newRating: number, feedback?: string } | null>(null)
+  const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [isAIGrading, setIsAIGrading] = useState(false)
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
@@ -76,14 +82,19 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
   }
 
+  const handleTryAgain = () => {
+    setGradeResult(null)
+    setSolution('')
+  }
+
   const handleSubmit = async () => {
     if (!session?.user?.id || !problem || !solution.trim()) {
-      setToast({ message: 'Please write your solution before submitting.', type: 'error' })
+      setToast({ message: 'Please write your answer before submitting.', type: 'error' })
       return
     }
 
     setSubmitting(true)
-    // 1. Submit the solution
+    // 1. Create a fresh submission each time
     const res = await submitProblemSolution({
       userId: session.user.id,
       problemId: problem.id,
@@ -91,9 +102,8 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
     })
 
     if (res.success && res.data) {
-      setSubmissionId(res.data.id)
-      setToast({ message: 'Solution submitted! AI is now evaluating...', type: 'success' })
-      
+      setToast({ message: 'Submitted! AI is now evaluating...', type: 'success' })
+
       // 2. Trigger AI Grading
       setIsAIGrading(true)
       const gradeRes = await aiGradeSolution({
@@ -104,9 +114,11 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
       })
 
       if (gradeRes.success && gradeRes.data) {
-        setGradeResult(gradeRes.data)
-        // Refresh the session token so the profile and header show the new rating
-        await update()
+        setGradeResult(gradeRes.data as GradeResult)
+        // Only refresh session if rating actually changed
+        if (!gradeRes.data.isRetry) {
+          await update()
+        }
       } else {
         setToast({ message: gradeRes.error || 'AI Grading failed', type: 'error' })
       }
@@ -169,15 +181,15 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
           </div>
 
           <div className="flex items-center gap-2 mb-4 flex-wrap">
-            <span className="px-2.5 py-1 rounded-lg bg-electric-500/10 text-electric-400 text-xs font-bold">{problem.code.split('-')[0]}</span>
+            <span className="px-2.5 py-1 rounded-lg bg-electric-500/10 text-electric-400 text-xs font-bold">{problem.level}</span>
             {problem.tags.map(tag => (
               <span key={tag} className="px-2.5 py-1 rounded-lg bg-violet-500/10 text-violet-400 text-xs font-bold">{tag}</span>
             ))}
-            <span className="px-2.5 py-1 rounded-lg bg-gold-500/10 text-gold-400 text-xs font-bold">{problem.difficulty}</span>
+            <span className="px-2.5 py-1 rounded-lg bg-gold-500/10 text-gold-400 text-xs font-bold">Difficulty: {problem.difficulty}</span>
           </div>
 
           <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-4 tracking-tight">{problem.title}</h2>
-          
+
           <div className="mt-4">
             <MarkdownRenderer content={problem.content} />
           </div>
@@ -195,79 +207,103 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
             <span className="timer-digit font-mono font-bold text-[var(--text-primary)] text-base">{formatTime(timeLeft)}</span>
           </div>
           <div className="flex gap-2">
-            <button className="px-3 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 text-xs font-semibold transition-all">
-              Hint
-            </button>
-            <button 
-              onClick={handleSubmit}
-              disabled={submitting || !!submissionId}
-              className="btn-primary px-4 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-50"
-            >
-              {submitting ? 'Submitting...' : submissionId ? 'Submitted ✓' : 'Submit'}
-            </button>
+            {gradeResult ? (
+              <button
+                onClick={handleTryAgain}
+                className="px-4 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 text-xs font-semibold transition-all"
+              >
+                ↺ Try Again
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={submitting || isAIGrading}
+                className="btn-primary px-4 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-50"
+              >
+                {submitting || isAIGrading ? 'Evaluating...' : 'Submit & Grade'}
+              </button>
+            )}
           </div>
         </div>
 
         {/* Editor or Grade Panel */}
-        <div className="flex-1 p-4 flex flex-col">
+        <div className="flex-1 p-4 flex flex-col overflow-y-auto">
           {gradeResult ? (
             // === AI EVALUATION RESULT ===
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex-1 flex flex-col justify-center items-center py-8 px-4"
+              className="flex-1 flex flex-col justify-center items-center py-4 px-4"
             >
               <div className="w-full max-w-lg">
-                <div className="text-center mb-8">
-                  <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-6 shadow-xl ${
+                <div className="text-center mb-6">
+                  <div className={`w-20 h-20 rounded-3xl mx-auto flex items-center justify-center text-4xl mb-4 shadow-xl ${
                     gradeResult.status === 'ACCEPTED'
-                      ? 'bg-gradient-to-br from-neon-500/20 to-neon-500/5 border border-neon-500/30 text-neon-400'
-                      : 'bg-gradient-to-br from-rose-500/20 to-rose-500/5 border border-rose-500/30 text-rose-400'
+                      ? 'bg-gradient-to-br from-neon-500/20 to-neon-500/5 border border-neon-500/30'
+                      : 'bg-gradient-to-br from-rose-500/20 to-rose-500/5 border border-rose-500/30'
                   }`}>
                     {gradeResult.status === 'ACCEPTED' ? '✨' : '💡'}
                   </div>
                   <h3 className={`text-3xl font-extrabold tracking-tight mb-2 ${
                     gradeResult.status === 'ACCEPTED' ? 'text-neon-400' : 'text-rose-400'
                   }`}>
-                    {gradeResult.status === 'ACCEPTED' ? 'Brilliant Solution!' : 'Not Quite There'}
+                    {gradeResult.status === 'ACCEPTED' ? 'Brilliant!' : 'Not Quite There'}
                   </h3>
-                  
-                  <div className="flex items-center justify-center gap-4 mt-4">
-                    <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-2 rounded-xl">
-                      <span className="text-xs text-[var(--text-tertiary)] uppercase font-bold tracking-wider block mb-1">Rating Change</span>
-                      <span className={`text-xl font-bold ${gradeResult.ratingDelta >= 0 ? 'text-neon-400' : 'text-rose-400'}`}>
-                        {gradeResult.ratingDelta >= 0 ? '+' : ''}{gradeResult.ratingDelta}
-                      </span>
+
+                  {gradeResult.isRetry ? (
+                    // Retry: no rating change
+                    <div className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
+                      <span className="text-sm text-[var(--text-tertiary)]">Practice mode — rating unchanged</span>
                     </div>
-                    <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-2 rounded-xl">
-                      <span className="text-xs text-[var(--text-tertiary)] uppercase font-bold tracking-wider block mb-1">New Rating</span>
-                      <span className="text-xl font-bold text-[var(--text-primary)]">{gradeResult.newRating}</span>
+                  ) : (
+                    // First solve: show rating change
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-2 rounded-xl">
+                        <span className="text-xs text-[var(--text-tertiary)] uppercase font-bold tracking-wider block mb-1">Rating Change</span>
+                        <span className={`text-xl font-bold ${gradeResult.ratingDelta >= 0 ? 'text-neon-400' : 'text-rose-400'}`}>
+                          {gradeResult.ratingDelta >= 0 ? '+' : ''}{gradeResult.ratingDelta}
+                        </span>
+                      </div>
+                      <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] px-4 py-2 rounded-xl">
+                        <span className="text-xs text-[var(--text-tertiary)] uppercase font-bold tracking-wider block mb-1">New Rating</span>
+                        <span className="text-xl font-bold text-[var(--text-primary)]">{gradeResult.newRating}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
 
-                <div className={`p-6 rounded-2xl border backdrop-blur-sm ${
-                  gradeResult.status === 'ACCEPTED' 
-                    ? 'bg-neon-500/5 border-neon-500/20 shadow-[0_0_30px_rgba(52,211,153,0.1)]' 
-                    : 'bg-rose-500/5 border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.1)]'
+                {/* AI Feedback Card */}
+                <div className={`p-5 rounded-2xl border backdrop-blur-sm ${
+                  gradeResult.status === 'ACCEPTED'
+                    ? 'bg-neon-500/5 border-neon-500/20 shadow-[0_0_30px_rgba(52,211,153,0.08)]'
+                    : 'bg-rose-500/5 border-rose-500/20 shadow-[0_0_30px_rgba(244,63,94,0.08)]'
                 }`}>
                   <div className="flex items-center gap-2 mb-3">
-                    <svg className={`w-5 h-5 ${gradeResult.status === 'ACCEPTED' ? 'text-neon-500' : 'text-rose-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                    <h4 className={`font-bold text-sm uppercase tracking-wider ${gradeResult.status === 'ACCEPTED' ? 'text-neon-400' : 'text-rose-400'}`}>
+                    <svg className={`w-4 h-4 shrink-0 ${gradeResult.status === 'ACCEPTED' ? 'text-neon-500' : 'text-rose-500'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                    <h4 className={`font-bold text-xs uppercase tracking-wider ${gradeResult.status === 'ACCEPTED' ? 'text-neon-400' : 'text-rose-400'}`}>
                       AI Evaluation
                     </h4>
                   </div>
-                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed whitespace-pre-wrap">
-                    {gradeResult.feedback || "Your solution was graded based on mathematical correctness."}
+                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed">
+                    {gradeResult.feedback || 'Your solution was graded based on mathematical correctness.'}
                   </p>
                 </div>
 
-                <div className="mt-8 text-center">
+                {/* Action buttons */}
+                <div className="mt-6 flex gap-3 justify-center">
+                  <button
+                    onClick={handleTryAgain}
+                    className="px-6 py-2.5 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-electric-500/50 text-[var(--text-primary)] font-bold rounded-xl transition-all hover:scale-105 text-sm"
+                  >
+                    ↺ Try Again
+                  </button>
                   <Link
                     href="/practice"
-                    className="inline-block px-8 py-3 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-electric-500/50 text-[var(--text-primary)] font-bold rounded-xl transition-all hover:scale-105"
+                    className="px-6 py-2.5 bg-electric-500/10 border border-electric-500/30 hover:border-electric-500/60 text-electric-400 font-bold rounded-xl transition-all hover:scale-105 text-sm"
                   >
-                    Back to Arena
+                    Next Problem →
                   </Link>
                 </div>
               </div>
@@ -281,23 +317,26 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
             >
               <div className="relative">
                 <div className="w-16 h-16 rounded-2xl bg-electric-500/20 animate-pulse absolute inset-0 blur-xl"></div>
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-electric-500 to-violet-500 flex items-center justify-center shadow-2xl relative z-10 overflow-hidden">
-                   <div className="absolute inset-0 bg-white/20 animate-[shimmer_2s_infinite]"></div>
-                   <svg className="w-8 h-8 text-white animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-electric-500 to-violet-500 flex items-center justify-center shadow-2xl relative z-10">
+                  <svg className="w-8 h-8 text-white animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  </svg>
                 </div>
               </div>
               <div className="text-center">
                 <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-electric-400 to-violet-400 animate-pulse">
-                  AI is analyzing your proof...
+                  AI is analyzing your answer...
                 </h3>
-                <p className="text-xs text-[var(--text-tertiary)] mt-2">Checking logic and mathematical rigor</p>
+                <p className="text-xs text-[var(--text-tertiary)] mt-2">Checking mathematical correctness</p>
               </div>
             </motion.div>
           ) : (
             // === TEXTAREA EDITOR ===
-            <textarea 
-              className="w-full flex-1 p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-mono text-sm resize-none outline-none focus:border-electric-500/50 focus:shadow-md transition-all shadow-sm" 
-              placeholder="Write your proof in LaTeX..."
+            <textarea
+              className="w-full flex-1 p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-mono text-sm resize-none outline-none focus:border-electric-500/50 focus:shadow-md transition-all shadow-sm"
+              placeholder={problem.level === 'POSN'
+                ? 'Type your answer here (e.g. 42, or \\frac{1}{2})...'
+                : 'Write your full proof here. Include your reasoning and all steps...'}
               value={solution}
               onChange={(e) => setSolution(e.target.value)}
             />
