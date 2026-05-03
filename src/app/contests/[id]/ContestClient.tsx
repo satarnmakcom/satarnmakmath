@@ -74,9 +74,8 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
     setLoading(true)
     if (timerRef.current) clearInterval(timerRef.current)
 
-    // Convert answers keyed by problemSetItemId to array format
-    const answerArr = Object.entries(answers).map(([problemSetItemId, content]) => ({
-      problemSetItemId,
+    const answerArr = Object.entries(answers).map(([problemId, content]) => ({
+      problemId,
       content
     }))
 
@@ -194,8 +193,8 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
         <h3 className="text-xl font-bold text-[var(--text-primary)] mb-6">Submission Details</h3>
         <div className="space-y-6">
           {problemSet.items.map((item: any, idx: number) => {
-            // Match submission by problemSetItemId
-            const sub = submissions.find((s: any) => s.problemSetItemId === item.id)
+            // Match submission by problemId
+            const sub = submissions.find((s: any) => s.problemId === item.problemId)
             const isCorrect = sub?.status === "ACCEPTED"
             return (
               <div key={item.id} className={`card p-6 rounded-2xl border ${isCorrect ? 'border-neon-500/30' : 'border-rose-500/30'}`}>
@@ -207,7 +206,7 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
                 </div>
 
                 <div className="mb-4 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
-                  <MarkdownRenderer content={item.content} />
+                  <MarkdownRenderer content={item.problem.content} />
                 </div>
 
                 <div>
@@ -262,20 +261,20 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
               <div className="px-6 py-4 border-b border-[var(--border-color)] bg-[var(--bg-secondary)]/50 flex items-center justify-between">
                 <h3 className="font-bold text-[var(--text-primary)]">Question {idx + 1}</h3>
                 <div className="flex items-center gap-3 text-xs text-[var(--text-tertiary)]">
-                  <span className="font-mono font-medium">{item.level}</span>
+                  <span className="font-mono font-medium">{item.problem.level}</span>
                   <span>•</span>
-                  <span>⭐ {item.difficulty}</span>
+                  <span>⭐ {item.problem.difficulty}</span>
                 </div>
               </div>
               <div className="p-6">
-                <MarkdownRenderer content={item.content} />
+                <MarkdownRenderer content={item.problem.content} />
 
                 <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
                   <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-3">Your Answer</label>
                   <textarea
-                    value={answers[item.id] || ''}
-                    onChange={(e) => setAnswers(prev => ({ ...prev, [item.id]: e.target.value }))}
-                    placeholder={item.level === 'POSN' ? "Type short answer here..." : "Type full proof/solution here..."}
+                    value={answers[item.problemId] || ''}
+                    onChange={(e) => setAnswers(prev => ({ ...prev, [item.problemId]: e.target.value }))}
+                    placeholder={item.problem.level === 'POSN' ? "Type short answer here..." : "Type full proof/solution here..."}
                     className="w-full h-32 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 font-mono text-sm text-[var(--text-primary)] outline-none focus:border-electric-500 resize-y transition-colors"
                   />
                 </div>

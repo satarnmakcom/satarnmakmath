@@ -216,7 +216,7 @@ export async function aiGradeAttempt(attemptId: string) {
     const attempt = await prisma.problemSetAttempt.findUnique({
       where: { id: attemptId },
       include: {
-        submissions: { include: { problemSetItem: true } },
+        submissions: { include: { problem: true } },
         user: true
       }
     })
@@ -236,10 +236,10 @@ export async function aiGradeAttempt(attemptId: string) {
 
     // Grade each submission sequentially
     for (const sub of attempt.submissions) {
-      if (sub.status !== "PENDING" || !sub.problemSetItem) continue // Already graded or missing item
+      if (sub.status !== "PENDING" || !sub.problem) continue // Already graded or missing item
 
-      const requiresProof = sub.problemSetItem.level !== 'POSN'
-      const prompt = `You are an expert Math Olympiad Grader (specifically for ${sub.problemSetItem.level}).
+      const requiresProof = sub.problem.level !== 'POSN'
+      const prompt = `You are an expert Math Olympiad Grader (specifically for ${sub.problem.level}).
 ${requiresProof
   ? `IMPORTANT: This problem requires a formal proof or step-by-step logic.
 If the student only provides a final answer without sufficient explanation or proof, you MUST mark it as incorrect.
@@ -254,7 +254,7 @@ Return your evaluation as a valid JSON object EXACTLY in this format:
 }
 
 Problem Statement:
-${sub.problemSetItem.content}
+${sub.problem.content}
 
 Student's Answer:
 ${sub.content}

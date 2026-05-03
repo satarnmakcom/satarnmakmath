@@ -74,7 +74,7 @@ export async function startAttempt(problemSetId: string) {
 
 export async function submitAttempt(
   attemptId: string,
-  answers: { problemSetItemId: string, content: string }[]
+  answers: { problemId: string, content: string }[]
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -100,7 +100,7 @@ export async function submitAttempt(
       await prisma.submission.create({
         data: {
           userId: session.user.id,
-          problemSetItemId: answer.problemSetItemId,
+          problemId: answer.problemId,
           attemptId: attempt.id,
           content: answer.content,
           status: "PENDING"

@@ -92,21 +92,20 @@ model Problem {
   createdAt     DateTime  @default(now())
   
   submissions   Submission[]
+  problemSets   ProblemSetItem[]
 }
 
 model Submission {
   id               String    @id @default(cuid())
   userId           String
-  problemId        String?
-  problemSetItemId String?
+  problemId        String
   content          String    @db.Text
   status           String    @default("PENDING")
   submittedAt      DateTime  @default(now())
   attemptId        String?
 
   user             User               @relation(fields: [userId], references: [id])
-  problem          Problem?           @relation(fields: [problemId], references: [id], onDelete: Cascade)
-  problemSetItem   ProblemSetItem?    @relation(fields: [problemSetItemId], references: [id], onDelete: Cascade)
+  problem          Problem            @relation(fields: [problemId], references: [id], onDelete: Cascade)
   attempt          ProblemSetAttempt? @relation(fields: [attemptId], references: [id], onDelete: Cascade)
 }
 
@@ -161,14 +160,11 @@ model ProblemSet {
 model ProblemSetItem {
   id             String           @id @default(cuid())
   problemSetId   String
+  problemId      String
   order          Int
   
-  content        String           @db.Text
-  level          CompetitionLevel
-  difficulty     Int              @default(1200)
-
   problemSet     ProblemSet       @relation(fields: [problemSetId], references: [id], onDelete: Cascade)
-  submissions    Submission[]
+  problem        Problem          @relation(fields: [problemId], references: [id], onDelete: Cascade)
 }
 
 model ProblemSetAttempt {

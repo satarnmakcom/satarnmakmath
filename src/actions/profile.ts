@@ -6,13 +6,15 @@ import { revalidatePath } from "next/cache"
 export async function updateProfile(userId: string, data: {
   name?: string
   country?: string
+  image?: string
 }) {
   try {
     const updated = await prisma.user.update({
       where: { id: userId },
       data: {
-        ...(data.name && { name: data.name }),
-        ...(data.country && { country: data.country }),
+        ...(data.name !== undefined && { name: data.name }),
+        ...(data.country !== undefined && { country: data.country }),
+        ...(data.image !== undefined && { image: data.image }),
       }
     })
 

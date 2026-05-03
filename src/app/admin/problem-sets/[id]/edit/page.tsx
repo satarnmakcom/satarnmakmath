@@ -10,13 +10,27 @@ export default async function EditProblemSetPage({ params }: { params: Promise<{
     where: { id },
     include: {
       items: {
-        orderBy: { order: "asc" }
+        orderBy: { order: "asc" },
+        include: { problem: true }
       }
     }
   })
 
   if (!problemSet) {
     notFound()
+  }
+
+  // Map to format expected by form
+  const formattedProblemSet = {
+    ...problemSet,
+    items: problemSet.items.map(item => ({
+      id: item.id,
+      problemId: item.problemId,
+      content: item.problem.content,
+      level: item.problem.level,
+      difficulty: item.problem.difficulty,
+      order: item.order
+    }))
   }
 
   const handleUpdate = async (data: any) => {
@@ -27,7 +41,7 @@ export default async function EditProblemSetPage({ params }: { params: Promise<{
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-[var(--text-primary)]">Edit Problem Set</h1>
-      <ProblemSetForm initialData={problemSet} onSubmit={handleUpdate} isEditing />
+      <ProblemSetForm initialData={formattedProblemSet as any} onSubmit={handleUpdate} isEditing />
       
       <div className="max-w-4xl pt-8 border-t border-[var(--border-color)]">
         <h3 className="text-sm font-bold text-rose-500 uppercase tracking-wider mb-4">Danger Zone</h3>

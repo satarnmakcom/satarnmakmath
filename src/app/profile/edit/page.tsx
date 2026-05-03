@@ -28,6 +28,7 @@ export default function EditProfilePage() {
   const router = useRouter()
   const [name, setName] = useState(session?.user?.name || '')
   const [country, setCountry] = useState('TH')
+  const [image, setImage] = useState<string | null>(session?.user?.image || null)
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
@@ -36,7 +37,7 @@ export default function EditProfilePage() {
     if (!session?.user?.id) return
 
     setSaving(true)
-    const res = await updateProfile(session.user.id, { name, country })
+    const res = await updateProfile(session.user.id, { name, country, image: image || undefined })
 
     if (res.success) {
       setToast({ message: 'Profile updated successfully!', type: 'success' })
@@ -45,6 +46,51 @@ export default function EditProfilePage() {
       setToast({ message: res.error || 'Failed to update', type: 'error' })
     }
     setSaving(false)
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setToast({ message: 'Please upload an image file.', type: 'error' })
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_SIZE = 256
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width
+            width = MAX_SIZE
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height
+            height = MAX_SIZE
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height)
+          // Compress to webp base64
+          const dataUrl = canvas.toDataURL('image/webp', 0.8)
+          setImage(dataUrl)
+        }
+      }
+      img.src = event.target?.result as string
+    }
+    reader.readAsDataURL(file)
   }
 
   return (
@@ -73,16 +119,26 @@ export default function EditProfilePage() {
       )}
 
       <form onSubmit={handleSave} className="card rounded-2xl p-6 md:p-8 space-y-6">
-        {/* Avatar Preview */}
+        {/* Avatar Preview & Upload */}
         <div className="flex items-center gap-5">
-          <img
-            src={session?.user?.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session?.user?.name || 'User'}`}
-            className="w-20 h-20 rounded-2xl bg-[var(--bg-secondary)] border-2 border-[var(--border-color)]"
-            alt=""
-          />
+          <div className="relative group cursor-pointer">
+            <img
+              src={image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${session?.user?.name || 'User'}`}
+              className="w-20 h-20 rounded-2xl bg-[var(--bg-secondary)] border-2 border-[var(--border-color)] object-cover"
+              alt="Avatar"
+            />
+            <label className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+            </label>
+          </div>
           <div>
             <p className="text-sm font-bold text-[var(--text-primary)]">{session?.user?.name || 'User'}</p>
-            <p className="text-xs text-[var(--text-tertiary)]">{session?.user?.email}</p>
+            <p className="text-xs text-[var(--text-tertiary)] mb-2">{session?.user?.email}</p>
+            <label className="text-xs text-neon-500 hover:text-neon-400 font-bold cursor-pointer transition-colors">
+              Change Picture
+              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+            </label>
           </div>
         </div>
 

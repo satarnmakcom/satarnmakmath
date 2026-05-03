@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 
 interface InlineProblem {
   id?: string
+  problemId?: string
   content: string
   level: "POSN" | "POSN1" | "POSN2" | "TMO" | "IMO"
   difficulty: number
@@ -17,7 +18,7 @@ interface ProblemSetFormProps {
     description: string | null
     timeLimitMinutes: number
     isPublic: boolean
-    items: { id: string, content: string, level: any, difficulty: number, order: number }[]
+    items: { id: string, problemId: string, content: string, level: any, difficulty: number, order: number }[]
   }
   onSubmit: (data: any) => Promise<{ success: boolean; error?: string }>
   isEditing?: boolean
@@ -35,6 +36,7 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
   const [problems, setProblems] = useState<InlineProblem[]>(
     initialData?.items.sort((a, b) => a.order - b.order).map(i => ({
       id: i.id,
+      problemId: i.problemId,
       content: i.content,
       level: i.level,
       difficulty: i.difficulty

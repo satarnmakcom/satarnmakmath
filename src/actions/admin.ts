@@ -188,11 +188,27 @@ export async function createProblemSet(data: {
   description?: string
   timeLimitMinutes: number
   isPublic: boolean
-  problems: { content: string, level: any, difficulty: number }[]
+  problems: { problemId?: string, content: string, level: any, difficulty: number }[]
 }) {
   try {
     await ensureAdmin()
     
+    // First, create all new problems globally
+    const createdProblems = await Promise.all(
+      data.problems.map(async (p, index) => {
+        return await prisma.problem.create({
+          data: {
+            title: `${data.title} - Question ${index + 1}`,
+            code: `${data.title.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase()}-Q${index + 1}-${Date.now().toString().slice(-4)}`,
+            content: p.content,
+            level: p.level,
+            difficulty: p.difficulty,
+            tags: ["Mock Exam"]
+          }
+        })
+      })
+    )
+
     const problemSet = await prisma.problemSet.create({
       data: {
         title: data.title,
@@ -200,10 +216,8 @@ export async function createProblemSet(data: {
         timeLimitMinutes: data.timeLimitMinutes,
         isPublic: data.isPublic,
         items: {
-          create: data.problems.map((p, index) => ({
-            content: p.content,
-            level: p.level,
-            difficulty: p.difficulty,
+          create: createdProblems.map((cp, index) => ({
+            problemId: cp.id,
             order: index
           }))
         }
@@ -224,12 +238,39 @@ export async function updateProblemSet(id: string, data: {
   description?: string
   timeLimitMinutes: number
   isPublic: boolean
-  problems: { content: string, level: any, difficulty: number }[]
+  problems: { problemId?: string, content: string, level: any, difficulty: number }[]
 }) {
   try {
     await ensureAdmin()
 
-    // We do this in a transaction: delete old items, update set, create new items
+    // Process problems: Update existing ones, create new ones
+    const processedProblems = await Promise.all(
+      data.problems.map(async (p, index) => {
+        if (p.problemId) {
+          return await prisma.problem.update({
+            where: { id: p.problemId },
+            data: {
+              content: p.content,
+              level: p.level,
+              difficulty: p.difficulty
+            }
+          })
+        } else {
+          return await prisma.problem.create({
+            data: {
+              title: `${data.title} - Question ${index + 1}`,
+              code: `${data.title.replace(/[^a-zA-Z0-9]/g, '-').toUpperCase()}-Q${index + 1}-${Date.now().toString().slice(-4)}`,
+              content: p.content,
+              level: p.level,
+              difficulty: p.difficulty,
+              tags: ["Mock Exam"]
+            }
+          })
+        }
+      })
+    )
+
+    // Delete old items and recreate with correct order
     await prisma.$transaction([
       prisma.problemSetItem.deleteMany({ where: { problemSetId: id } }),
       prisma.problemSet.update({
@@ -240,10 +281,8 @@ export async function updateProblemSet(id: string, data: {
           timeLimitMinutes: data.timeLimitMinutes,
           isPublic: data.isPublic,
           items: {
-            create: data.problems.map((p, index) => ({
-              content: p.content,
-              level: p.level,
-              difficulty: p.difficulty,
+            create: processedProblems.map((cp, index) => ({
+              problemId: cp.id,
               order: index
             }))
           }
