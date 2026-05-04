@@ -42,7 +42,7 @@ export default function PracticePage() {
   // Filter state
   const [selectedLevels, setSelectedLevels] = useState<Set<string>>(new Set())
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set())
-  const [maxDifficulty, setMaxDifficulty] = useState(3000)
+  const [maxDifficulty, setMaxDifficulty] = useState(4000)
   const [sortBy, setSortBy] = useState<'asc' | 'desc' | 'new'>('asc')
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function PracticePage() {
   const resetFilters = () => {
     setSelectedLevels(new Set())
     setSelectedTags(new Set())
-    setMaxDifficulty(3000)
+    setMaxDifficulty(4000)
     setSortBy('asc')
   }
 
@@ -100,7 +100,7 @@ export default function PracticePage() {
     return result
   }, [problems, selectedLevels, selectedTags, maxDifficulty, sortBy])
 
-  const hasFilters = selectedLevels.size > 0 || selectedTags.size > 0 || maxDifficulty < 3000
+  const hasFilters = selectedLevels.size > 0 || selectedTags.size > 0 || maxDifficulty < 4000
 
   return (
     <section className="max-w-6xl mx-auto py-6">
@@ -193,16 +193,16 @@ export default function PracticePage() {
                 </div>
                 <input
                   type="range"
-                  min="1200"
-                  max="3000"
+                  min="800"
+                  max="4000"
                   step="100"
                   value={maxDifficulty}
                   onChange={e => setMaxDifficulty(Number(e.target.value))}
                   className="w-full h-2 bg-[var(--bg-secondary)] rounded-lg appearance-none cursor-pointer accent-electric-500"
                 />
                 <div className="flex justify-between text-xs text-[var(--text-tertiary)] mt-2 font-mono font-medium">
-                  <span>1200</span>
-                  <span>3000</span>
+                  <span>800</span>
+                  <span>4000</span>
                 </div>
               </div>
             </div>
