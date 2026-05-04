@@ -137,22 +137,24 @@ ${requiresProof
 }
 
 STEP 3 - Format your response:
-You must return ONLY a JSON object. The JSON object must have exactly these keys:
+First, write out your step-by-step solution and evaluation of the student's answer in plain text.
+Then, AT THE VERY END of your response, you MUST include a JSON block wrapped in \`\`\`json ... \`\`\` containing your final verdict.
+
+Example format:
+(Your step-by-step analysis and math reasoning goes here...)
+
+\`\`\`json
 {
-  "expertSolution": "Your step-by-step solution to the problem",
-  "studentEvaluation": "Your evaluation of whether the student answer matches your solution and why",
-  "isCorrect": true or false,
+  "isCorrect": true,
   "feedback": "Brief feedback in the same language as the student's answer. If wrong, give a helpful hint. If correct, give encouragement."
 }
+\`\`\`
 
 Problem:
 ${problem.content}
 
 Student's Answer:
-${data.studentProof}
-
-IMPORTANT: You must properly escape all backslashes in your JSON strings. For example, use \\\\frac instead of \\frac.
-Remember: Return ONLY the JSON object.`
+${data.studentProof}`
 
     let responseText = ""
     try {
@@ -183,13 +185,14 @@ Remember: Return ONLY the JSON object.`
     // Parse the JSON output safely
     let aiResult
     try {
-      const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-      let jsonString = jsonMatch ? jsonMatch[0] : responseText
+      // Try to find JSON inside markdown block first, fallback to any JSON-like object
+      const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i) || responseText.match(/\{[\s\S]*\}/)
+      let jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : responseText
       
-      // Sanitize unescaped backslashes (common with LaTeX) and control characters
+      // Sanitize unescaped backslashes and control characters
       jsonString = jsonString
         .replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
-        .replace(/[\u0000-\u0019]+/g, " ")
+        .replace(/[\u0000-\u001F]+/g, " ")
         
       aiResult = JSON.parse(jsonString)
     } catch (e: any) {
@@ -290,22 +293,24 @@ ${requiresProof
 }
 
 STEP 3 - Format your response:
-You must return ONLY a JSON object. The JSON object must have exactly these keys:
+First, write out your step-by-step solution and evaluation of the student's answer in plain text.
+Then, AT THE VERY END of your response, you MUST include a JSON block wrapped in \`\`\`json ... \`\`\` containing your final verdict.
+
+Example format:
+(Your step-by-step analysis and math reasoning goes here...)
+
+\`\`\`json
 {
-  "expertSolution": "Your step-by-step solution to the problem",
-  "studentEvaluation": "Your evaluation of whether the student answer matches your solution and why",
-  "isCorrect": true or false,
+  "isCorrect": true,
   "feedback": "Brief feedback. If wrong, give a helpful hint."
 }
+\`\`\`
 
 Problem:
 ${sub.problem.content}
 
 Student's Answer:
-${sub.content}
-
-IMPORTANT: You must properly escape all backslashes in your JSON strings. For example, use \\\\frac instead of \\frac.
-Return ONLY the JSON object.`
+${sub.content}`
 
       let isCorrect = false
       let newStatus = "WRONG_ANSWER"
@@ -330,13 +335,14 @@ Return ONLY the JSON object.`
 
         const result = await res.json()
         const responseText = result.choices?.[0]?.message?.content || ""
-        const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-        let jsonString = jsonMatch ? jsonMatch[0] : responseText
+        
+        const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i) || responseText.match(/\{[\s\S]*\}/)
+        let jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : responseText
         
         // Sanitize unescaped backslashes and control characters
         jsonString = jsonString
           .replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
-          .replace(/[\u0000-\u0019]+/g, " ")
+          .replace(/[\u0000-\u001F]+/g, " ")
           
         const aiResult = JSON.parse(jsonString)
         isCorrect = aiResult.isCorrect === true
