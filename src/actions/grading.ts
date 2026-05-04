@@ -139,8 +139,11 @@ ${requiresProof
 - Mark WRONG only if the answer is genuinely incorrect.`
 }
 
-STEP 3 - Return ONLY a valid JSON object (no extra text, no markdown):
+STEP 3 - Format your response:
+You must return ONLY a JSON object. The JSON object must have exactly these keys:
 {
+  "expertSolution": "Your step-by-step solution to the problem",
+  "studentEvaluation": "Your evaluation of whether the student answer matches your solution and why",
   "isCorrect": true or false,
   "feedback": "Brief feedback in the same language as the student's answer. If wrong, give a helpful hint. If correct, give encouragement."
 }
@@ -261,8 +264,11 @@ ${requiresProof
 - Mark WRONG only if genuinely incorrect.`
 }
 
-STEP 3 - Return ONLY valid JSON (no extra text, no markdown):
+STEP 3 - Format your response:
+You must return ONLY a JSON object. The JSON object must have exactly these keys:
 {
+  "expertSolution": "Your step-by-step solution to the problem",
+  "studentEvaluation": "Your evaluation of whether the student answer matches your solution and why",
   "isCorrect": true or false,
   "feedback": "Brief feedback. If wrong, give a helpful hint."
 }
