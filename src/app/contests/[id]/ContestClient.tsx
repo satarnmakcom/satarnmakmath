@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { startAttempt, submitAttempt } from "@/actions/problemSets"
 import { aiGradeAttempt } from "@/actions/grading"
 import MarkdownRenderer from "@/components/MarkdownRenderer"
@@ -14,6 +15,7 @@ interface ContestClientProps {
 
 export default function ContestClient({ problemSet, attempt, session }: ContestClientProps) {
   const router = useRouter()
+  const { update } = useSession()
   const [currentAttempt, setCurrentAttempt] = useState<any>(attempt)
   // answers keyed by item.id (ProblemSetItem ID)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -105,6 +107,8 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
     const res = await aiGradeAttempt(attemptId)
     if (res.success) {
       setCurrentAttempt(res.data)
+      // Refresh session so rating in Profile/Dashboard syncs immediately
+      await update()
     } else {
       alert(res.error || "Failed to grade exam")
     }
