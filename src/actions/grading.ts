@@ -120,7 +120,7 @@ export async function aiGradeSolution(data: {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
     const requiresProof = problem.level !== 'POSN'
 
@@ -230,7 +230,7 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "AI grading is not configured properly." }
     }
     const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" })
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
     let totalRatingDelta = 0
 
