@@ -165,7 +165,7 @@ ${data.studentProof}`
           "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "llama-3.2-90b-vision-preview",
           messages: [{ role: "user", content: prompt }]
         })
       })
@@ -323,7 +323,7 @@ ${sub.content}`
             "Authorization": `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
+            model: "llama-3.2-90b-vision-preview",
             messages: [{ role: "user", content: prompt }]
           })
         })
