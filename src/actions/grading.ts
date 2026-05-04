@@ -113,14 +113,11 @@ export async function aiGradeSolution(data: {
     })
 
     // Use environment variable for API key to prevent leaks
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY
     if (!apiKey) {
-      console.error("GEMINI_API_KEY is not set")
+      console.error("API Key is not set")
       return { success: false, error: "AI grading is not configured properly." }
     }
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
     const requiresProof = problem.level !== 'POSN'
 
@@ -156,17 +153,39 @@ ${data.studentProof}
 
 Remember: Return ONLY the JSON object.`
 
-    const result = await model.generateContent(prompt)
-    const response = result.response.text()
+    let responseText = ""
+    try {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: "gpt-oss-120b",
+          messages: [{ role: "user", content: prompt }]
+        })
+      })
+
+      if (!res.ok) {
+        throw new Error(\`API returned \${res.status} \${res.statusText}\`)
+      }
+
+      const result = await res.json()
+      responseText = result.choices?.[0]?.message?.content || ""
+    } catch (e: any) {
+      console.error("Failed to fetch from Groq API:", e)
+      return { success: false, error: "AI API request failed" }
+    }
 
     // Parse the JSON output safely
     let aiResult
     try {
-      const jsonMatch = response.match(/\{[\s\S]*\}/)
-      const jsonString = jsonMatch ? jsonMatch[0] : response
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+      const jsonString = jsonMatch ? jsonMatch[0] : responseText
       aiResult = JSON.parse(jsonString)
     } catch (e: any) {
-      console.error("Failed to parse AI output:", response, e)
+      console.error("Failed to parse AI output:", responseText, e)
       return { success: false, error: e?.message || "AI returned invalid format" }
     }
 
@@ -235,12 +254,10 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "Attempt not found or not submitted" }
     }
 
-    const apiKey = process.env.GEMINI_API_KEY
+    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY
     if (!apiKey) {
       return { success: false, error: "AI grading is not configured properly." }
     }
-    const genAI = new GoogleGenerativeAI(apiKey)
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" })
 
     let totalRatingDelta = 0
 
@@ -285,10 +302,24 @@ Return ONLY the JSON object.`
       let newStatus = "WRONG_ANSWER"
       
       try {
-        const result = await model.generateContent(prompt)
-        const response = result.response.text()
-        const jsonMatch = response.match(/\{[\s\S]*\}/)
-        const jsonString = jsonMatch ? jsonMatch[0] : response
+        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: "gpt-oss-120b",
+            messages: [{ role: "user", content: prompt }]
+          })
+        })
+
+        if (!res.ok) throw new Error(\`API error: \${res.status}\`)
+
+        const result = await res.json()
+        const responseText = result.choices?.[0]?.message?.content || ""
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+        const jsonString = jsonMatch ? jsonMatch[0] : responseText
         const aiResult = JSON.parse(jsonString)
         isCorrect = aiResult.isCorrect === true
         newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
