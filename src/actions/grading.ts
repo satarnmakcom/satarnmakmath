@@ -155,9 +155,9 @@ Remember, return ONLY valid JSON.`
       const jsonMatch = response.match(/\{[\s\S]*\}/)
       const jsonString = jsonMatch ? jsonMatch[0] : response
       aiResult = JSON.parse(jsonString)
-    } catch (e) {
-      console.error("Failed to parse AI output:", response)
-      return { success: false, error: "AI returned invalid format" }
+    } catch (e: any) {
+      console.error("Failed to parse AI output:", response, e)
+      return { success: false, error: e?.message || "AI returned invalid format" }
     }
 
     const isCorrect = aiResult.isCorrect === true
@@ -202,9 +202,9 @@ Remember, return ONLY valid JSON.`
         feedback: aiResult.feedback as string
       }
     }
-  } catch (error) {
-    console.error("Failed to AI grade solution:", error)
-    return { success: false, error: "Failed to grade solution via AI" }
+  } catch (error: any) {
+    console.error("Failed to grade AI solution:", error)
+    return { success: false, error: error?.message || "Failed to grade solution via AI" }
   }
 }
 
