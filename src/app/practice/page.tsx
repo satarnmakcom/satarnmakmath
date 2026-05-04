@@ -90,7 +90,7 @@ export default function PracticePage() {
     let result = problems.filter(p => {
       const levelMatch = selectedLevels.size === 0 || selectedLevels.has(p.level)
       const tagMatch = selectedTags.size === 0 || p.tags.some(t => selectedTags.has(t))
-      const diffMatch = p.difficulty <= maxDifficulty
+      const diffMatch = (p.difficulty ?? 0) <= maxDifficulty
       return levelMatch && tagMatch && diffMatch
     })
 
