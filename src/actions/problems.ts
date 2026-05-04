@@ -20,6 +20,8 @@ export async function getProblems(params?: {
         }),
         ...(params?.minDifficulty && { difficulty: { gte: params.minDifficulty } }),
         ...(params?.maxDifficulty && { difficulty: { lte: params.maxDifficulty } }),
+        // Only show standalone problems (not part of any Mock Exam)
+        problemSets: { none: {} }
       },
       orderBy: {
         difficulty: 'asc'
