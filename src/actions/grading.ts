@@ -124,27 +124,34 @@ export async function aiGradeSolution(data: {
 
     const requiresProof = problem.level !== 'POSN'
 
-    const prompt = `You are an expert Math Olympiad Grader (specifically for ${problem.level}).
+    const prompt = `You are an expert Math Olympiad judge. Your task is to grade a student's answer.
+
+STEP 1 - Solve the problem yourself first:
+Before evaluating the student, carefully solve the problem on your own to determine the correct answer.
+
+STEP 2 - Compare with the student's answer:
 ${requiresProof
-  ? `IMPORTANT: This problem requires a formal proof or step-by-step logic.
-If the student only provides a final answer without sufficient explanation or proof, you MUST mark it as incorrect.
-Evaluate the mathematical rigor and logical steps.`
-  : `IMPORTANT: These are short-answer / fill-in-the-blank questions. The student DOES NOT need to provide a formal proof.
-Evaluate the student's answer based primarily on the final answer's correctness. If it is mathematically equivalent to the correct answer, mark it as correct.`
-}
-Return your evaluation as a valid JSON object EXACTLY in this format:
-{
-  "isCorrect": boolean,
-  "feedback": "Your concise, constructive feedback. If incorrect, provide a brief hint but do not give the full solution."
+  ? `This is a proof-based problem (Level: ${problem.level}). The student must provide clear logical reasoning or steps.
+- Mark CORRECT if the student's reasoning is mathematically sound and reaches the right conclusion.
+- Mark WRONG if only a final answer is given without justification, or if logic is flawed.`
+  : `This is a short-answer problem (Level: ${problem.level}). The student only needs to provide the final answer.
+- Mark CORRECT if the student's answer is mathematically equivalent to the correct answer (e.g., 1/2 = 0.5 = 50%, different but equivalent forms are all acceptable).
+- Mark WRONG only if the answer is genuinely incorrect.`
 }
 
-Problem Statement:
+STEP 3 - Return ONLY a valid JSON object (no extra text, no markdown):
+{
+  "isCorrect": true or false,
+  "feedback": "Brief feedback in the same language as the student's answer. If wrong, give a helpful hint. If correct, give encouragement."
+}
+
+Problem:
 ${problem.content}
 
 Student's Answer:
 ${data.studentProof}
 
-Remember, return ONLY valid JSON.`
+Remember: Return ONLY the JSON object.`
 
     const result = await model.generateContent(prompt)
     const response = result.response.text()
@@ -239,27 +246,34 @@ export async function aiGradeAttempt(attemptId: string) {
       if (sub.status !== "PENDING" || !sub.problem) continue // Already graded or missing item
 
       const requiresProof = sub.problem.level !== 'POSN'
-      const prompt = `You are an expert Math Olympiad Grader (specifically for ${sub.problem.level}).
+      const prompt = `You are an expert Math Olympiad judge. Your task is to grade a student's answer.
+
+STEP 1 - Solve the problem yourself first:
+Carefully solve the problem to determine the correct answer before evaluating.
+
+STEP 2 - Compare with the student's answer:
 ${requiresProof
-  ? `IMPORTANT: This problem requires a formal proof or step-by-step logic.
-If the student only provides a final answer without sufficient explanation or proof, you MUST mark it as incorrect.
-Evaluate the mathematical rigor and logical steps.`
-  : `IMPORTANT: These are short-answer / fill-in-the-blank questions. The student DOES NOT need to provide a formal proof.
-Evaluate the student's answer based primarily on the final answer's correctness. If it is mathematically equivalent to the correct answer, mark it as correct.`
-}
-Return your evaluation as a valid JSON object EXACTLY in this format:
-{
-  "isCorrect": boolean,
-  "feedback": "Your concise, constructive feedback."
+  ? `This is a proof-based problem (Level: ${sub.problem.level}). The student must show logical reasoning.
+- Mark CORRECT if reasoning is mathematically valid and reaches the right conclusion.
+- Mark WRONG if only a bare answer without justification, or if logic is flawed.`
+  : `This is a short-answer problem (Level: ${sub.problem.level}). Only the final answer matters.
+- Mark CORRECT if mathematically equivalent to the correct answer (e.g., 1/2 = 0.5 = 50%).
+- Mark WRONG only if genuinely incorrect.`
 }
 
-Problem Statement:
+STEP 3 - Return ONLY valid JSON (no extra text, no markdown):
+{
+  "isCorrect": true or false,
+  "feedback": "Brief feedback. If wrong, give a helpful hint."
+}
+
+Problem:
 ${sub.problem.content}
 
 Student's Answer:
 ${sub.content}
 
-Remember, return ONLY valid JSON.`
+Return ONLY the JSON object.`
 
       let isCorrect = false
       let newStatus = "WRONG_ANSWER"
@@ -307,7 +321,8 @@ Remember, return ONLY valid JSON.`
       data: {
         status: "GRADED",
         score: totalRatingDelta
-      }
+      },
+      include: { submissions: true }
     })
 
     revalidatePath("/profile")
