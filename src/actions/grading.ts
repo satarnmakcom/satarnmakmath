@@ -162,7 +162,7 @@ Remember: Return ONLY the JSON object.`
           "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "gpt-oss-120b",
+          model: "llama-4-scout",
           messages: [{ role: "user", content: prompt }]
         })
       })
@@ -310,7 +310,7 @@ Return ONLY the JSON object.`
             "Authorization": `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: "gpt-oss-120b",
+            model: "llama-4-scout",
             messages: [{ role: "user", content: prompt }]
           })
         })
