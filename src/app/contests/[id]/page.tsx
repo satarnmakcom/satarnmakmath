@@ -8,8 +8,15 @@ export default async function ContestPage({ params }: { params: Promise<{ id: st
   const { id } = await params
   const session = await getServerSession(authOptions)
 
-  const problemSet = await prisma.problemSet.findUnique({
-    where: { id },
+  const decodedId = decodeURIComponent(id)
+  
+  const problemSet = await prisma.problemSet.findFirst({
+    where: {
+      OR: [
+        { id },
+        { title: decodedId }
+      ]
+    },
     include: {
       items: {
         orderBy: { order: "asc" },
@@ -28,7 +35,7 @@ export default async function ContestPage({ params }: { params: Promise<{ id: st
     attempt = await prisma.problemSetAttempt.findFirst({
       where: {
         userId: session.user.id,
-        problemSetId: id
+        problemSetId: problemSet.id
       },
       orderBy: { startedAt: "desc" },
       include: {

@@ -56,139 +56,144 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   return (
     <>
-      <motion.aside 
+      <motion.aside
         initial={false}
-        animate={{ 
+        animate={{
           width: collapsed ? 80 : 256,
           x: isOpen || typeof window !== 'undefined' && window.innerWidth >= 768 ? 0 : -256
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--border-color)] bg-[var(--bg-secondary)] z-50 overflow-hidden shadow-2xl md:shadow-none"
       >
-      {/* Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-[var(--border-color)] flex-shrink-0 cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
-        <motion.div 
-          whileHover={{ rotate: 180, scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ duration: 0.4 }}
-          className="w-9 h-9 rounded-xl bg-gradient-to-br from-electric-500 to-violet-600 flex items-center justify-center shadow-lg shadow-electric-500/25 mr-3 flex-shrink-0"
-        >
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-          </svg>
-        </motion.div>
-        
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.span 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10, display: 'none' }}
-              className="text-lg font-bold text-gradient tracking-tight whitespace-nowrap"
-            >
-              SatarnMath
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
+        {/* Logo */}
+        <div className="h-16 flex items-center px-6 border-b border-[var(--border-color)] flex-shrink-0 cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
+          <motion.div
+            whileHover={{ rotate: 180, scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.4 }}
+            className="w-9 h-9 rounded-xl bg-gradient-to-br from-electric-500 to-violet-600 flex items-center justify-center shadow-lg shadow-electric-500/25 mr-3 flex-shrink-0"
+          >
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          </motion.div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
-        {navItems.map((item, index) => {
-          const active = isActive(item.href)
-          return (
-            <Link href={item.href} key={item.id} className="block w-full">
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10, display: 'none' }}
+                className="text-lg font-bold text-gradient tracking-tight whitespace-nowrap"
+              >
+                SatarnMath
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-2">
+          {navItems.map((item, index) => {
+            const active = isActive(item.href)
+            return (
+              <Link href={item.href} key={item.id} className="block w-full">
+                <motion.div
+                  whileHover={{ scale: 1.02, x: collapsed ? 0 : 4 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${active
+                      ? 'text-electric-500 bg-[var(--bg-elevated)] shadow-sm'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
+                    }`}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl z-0"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>
+                    <svg className={`w-5 h-5 flex-shrink-0 ${active ? 'text-electric-500' : 'text-[var(--text-tertiary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
+                    </svg>
+                    <AnimatePresence>
+                      {!collapsed && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="ml-3 whitespace-nowrap"
+                        >
+                          {t(item.labelKey)}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </motion.div>
+              </Link>
+            )
+          })}
+
+          <AnimatePresence>
+            {!collapsed && (
               <motion.div
-                whileHover={{ scale: 1.02, x: collapsed ? 0 : 4 }}
-                whileTap={{ scale: 0.95 }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
-                  active 
-                    ? 'text-electric-500 bg-[var(--bg-elevated)] shadow-sm' 
-                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
-                }`}
+                exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                transition={{ delay: 0.3 }}
+                className="pt-4 mt-6 border-t border-[var(--border-color)]"
               >
-                {active && (
-                  <motion.div 
-                    layoutId="activeTab" 
-                    className="absolute inset-0 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl z-0"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
-                )}
-                <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>
-                  <svg className={`w-5 h-5 flex-shrink-0 ${active ? 'text-electric-500' : 'text-[var(--text-tertiary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon}/>
-                  </svg>
-                  <AnimatePresence>
-                    {!collapsed && (
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="ml-3 whitespace-nowrap"
-                      >
-                        {t(item.labelKey)}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                <div className="flex items-center justify-between mb-2 px-3">
+                  <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
+                    {t('sidebar.your_progress')}
+                  </span>
+                </div>
+                <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-[var(--text-secondary)] font-medium truncate max-w-[120px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
+                    <span className="text-electric-400 font-bold ml-2">{Math.round(progressInfo.percent)}%</span>
+                  </div>
+                  <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${progressInfo.percent}%` }}
+                      transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                      className="h-full bg-gradient-to-r from-electric-500 to-violet-500 rounded-full"
+                    />
+                  </div>
                 </div>
               </motion.div>
-            </Link>
-          )
-        })}
+            )}
+          </AnimatePresence>
+        </nav>
 
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-              transition={{ delay: 0.3 }}
-              className="pt-4 mt-6 border-t border-[var(--border-color)]"
+        {/* Sidebar Footer */}
+        <div className="p-3 border-t border-[var(--border-color)] flex-shrink-0">
+          <Link href="/settings">
+            <motion.div
+              whileHover={{ scale: 1.02, backgroundColor: 'var(--bg-elevated)' }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer`}
             >
-              <div className="flex items-center justify-between mb-2 px-3">
-                <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
-                  {t('sidebar.your_progress')}
-                </span>
-              </div>
-              <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
-                <div className="flex justify-between text-xs mb-2">
-                  <span className="text-[var(--text-secondary)] font-medium truncate max-w-[120px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
-                  <span className="text-electric-400 font-bold ml-2">{Math.round(progressInfo.percent)}%</span>
-                </div>
-                <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressInfo.percent}%` }}
-                    transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-                    className="h-full bg-gradient-to-r from-electric-500 to-violet-500 rounded-full" 
-                  />
-                </div>
-              </div>
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {!collapsed && <span>{t('sidebar.settings')}</span>}
             </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+          </Link>
+        </div>
+      </motion.aside>
+    </>
+  )
+}
 
-      {/* Sidebar Footer */}
-      <div className="p-3 border-t border-[var(--border-color)] flex-shrink-0">
-        <Link href="/settings">
-          <motion.div 
-            whileHover={{ scale: 1.02, backgroundColor: 'var(--bg-elevated)' }}
-            whileTap={{ scale: 0.95 }}
-            className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer`}
-          >
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-            </svg>
-            {!collapsed && <span>{t('sidebar.settings')}</span>}
-          </motion.div>
-        </Link>
-      </div>
-    </motion.aside>
+      </div >
+    </motion.aside >
     </>
   )
 }

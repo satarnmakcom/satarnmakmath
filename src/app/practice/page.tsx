@@ -270,7 +270,7 @@ export default function PracticePage() {
                         variants={{ hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } }}
                       >
                         <Link
-                          href={`/practice/${p.id}`}
+                          href={`/practice/${p.code}`}
                           className="card rounded-2xl p-5 border border-[var(--border-color)] hover:border-electric-500/40 hover:shadow-lg hover:shadow-electric-500/5 transition-all cursor-pointer group block bg-[var(--bg-card)]"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">

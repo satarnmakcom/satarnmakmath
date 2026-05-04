@@ -17,7 +17,7 @@ export default async function ContestsPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {sets.map(set => (
-          <Link key={set.id} href={`/contests/${set.id}`} className="card p-6 rounded-2xl border border-[var(--border-color)] hover:border-electric-500/50 hover:shadow-xl hover:shadow-electric-500/5 transition-all group block">
+          <Link key={set.id} href={`/contests/${encodeURIComponent(set.title)}`} className="card p-6 rounded-2xl border border-[var(--border-color)] hover:border-electric-500/50 hover:shadow-xl hover:shadow-electric-500/5 transition-all group block">
             <h3 className="text-xl font-bold text-[var(--text-primary)] group-hover:text-electric-400 transition-colors mb-2">{set.title}</h3>
             {set.description && (
               <p className="text-sm text-[var(--text-secondary)] line-clamp-2 mb-4">{set.description}</p>

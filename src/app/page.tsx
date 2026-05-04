@@ -128,7 +128,7 @@ export default function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {problems.map((p) => (
-                <Link key={p.id} href={`/practice/${p.id}`} className="card rounded-xl p-5 hover:border-electric-500/40 transition-all cursor-pointer group">
+                <Link key={p.id} href={`/practice/${p.code}`} className="card rounded-xl p-5 hover:border-electric-500/40 transition-all cursor-pointer group">
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="text-xs font-mono text-[var(--text-tertiary)] flex-shrink-0 font-medium">{p.code}</span>

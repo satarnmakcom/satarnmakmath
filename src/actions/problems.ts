@@ -62,8 +62,13 @@ export async function getProblemByCode(code: string) {
 
 export async function getProblemById(id: string) {
   try {
-    const problem = await prisma.problem.findUnique({
-      where: { id },
+    const problem = await prisma.problem.findFirst({
+      where: {
+        OR: [
+          { id },
+          { code: id }
+        ]
+      },
       include: {
         _count: {
           select: { submissions: true }

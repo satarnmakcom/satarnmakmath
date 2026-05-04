@@ -38,7 +38,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
     <header className="h-16 glass flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-30">
       {/* Left: Search & Mobile Menu */}
       <div className="flex items-center gap-3 flex-1">
-        <button 
+        <button
           onClick={onToggleSidebar}
           className="md:hidden p-2 -ml-2 rounded-xl text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] transition-colors"
         >
@@ -97,7 +97,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
         </motion.button>
 
         <div className="relative">
-          <button 
+          <button
             onClick={() => setIsLangOpen(!isLangOpen)}
             className="hidden sm:flex items-center gap-2 p-2 rounded-xl text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-all border border-transparent hover:border-[var(--border-color)]"
           >
@@ -122,7 +122,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
                 className="absolute right-0 mt-2 w-48 card rounded-xl shadow-2xl py-2 z-50 border border-[var(--border-color)] overflow-hidden bg-[var(--bg-primary)]"
               >
-                <button 
+                <button
                   className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors relative overflow-hidden group ${language === 'en' ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'}`}
                   onClick={() => {
                     setLanguage('en')
@@ -140,7 +140,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
                     </motion.div>
                   )}
                 </button>
-                <button 
+                <button
                   className={`w-full flex items-center justify-between p-3 rounded-xl transition-colors relative overflow-hidden group ${language === 'th' ? 'bg-[var(--bg-secondary)]' : 'hover:bg-[var(--bg-secondary)]'}`}
                   onClick={() => {
                     setLanguage('th')

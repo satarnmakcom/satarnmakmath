@@ -118,7 +118,7 @@ export default function AdminProblemsPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-3">
                       <Link
-                        href={`/practice/${problem.id}`}
+                        href={`/practice/${problem.code}`}
                         target="_blank"
                         className="text-[var(--text-tertiary)] hover:text-[var(--text-primary)] text-sm font-semibold transition-colors"
                       >
