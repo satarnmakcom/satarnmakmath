@@ -168,7 +168,7 @@ Remember: Return ONLY the JSON object.`
       })
 
       if (!res.ok) {
-        throw new Error(\`API returned \${res.status} \${res.statusText}\`)
+        throw new Error(`API returned ${res.status} ${res.statusText}`)
       }
 
       const result = await res.json()
@@ -314,7 +314,7 @@ Return ONLY the JSON object.`
           })
         })
 
-        if (!res.ok) throw new Error(\`API error: \${res.status}\`)
+        if (!res.ok) throw new Error(`API error: ${res.status}`)
 
         const result = await res.json()
         const responseText = result.choices?.[0]?.message?.content || ""
