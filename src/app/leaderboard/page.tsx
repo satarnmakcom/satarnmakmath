@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { getLeaderboard } from '@/actions/users'
+import Link from 'next/link'
 
 interface User {
   id: string
@@ -89,10 +90,10 @@ export default function LeaderboardPage() {
                     <tr key={u.id} className="hover:bg-[var(--bg-secondary)] transition-colors">
                       <td className={`px-6 py-4 font-bold ${u.rank <= 3 ? 'text-gold-400' : 'text-[var(--text-primary)]'}`}>#{u.rank || index + 1}</td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                        <Link href={`/user/${encodeURIComponent(u.name || u.id)}`} className="flex items-center gap-3 group hover:opacity-80 transition-opacity">
                           <img src={u.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`} className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] object-cover" alt="" />
-                          <span className={`font-semibold text-sm ${getRatingClass(u.rating)}`}>{u.name}</span>
-                        </div>
+                          <span className={`font-semibold text-sm ${getRatingClass(u.rating)} group-hover:underline`}>{u.name}</span>
+                        </Link>
                       </td>
                       <td className="px-6 py-4 text-lg">{u.country}</td>
                       <td className={`px-6 py-4 font-bold text-sm ${getRatingClass(u.rating)}`}>{u.rating}</td>
