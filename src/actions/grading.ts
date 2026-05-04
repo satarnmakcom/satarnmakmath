@@ -151,6 +151,7 @@ ${problem.content}
 Student's Answer:
 ${data.studentProof}
 
+IMPORTANT: You must properly escape all backslashes in your JSON strings. For example, use \\\\frac instead of \\frac.
 Remember: Return ONLY the JSON object.`
 
     let responseText = ""
@@ -183,7 +184,13 @@ Remember: Return ONLY the JSON object.`
     let aiResult
     try {
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-      const jsonString = jsonMatch ? jsonMatch[0] : responseText
+      let jsonString = jsonMatch ? jsonMatch[0] : responseText
+      
+      // Sanitize unescaped backslashes (common with LaTeX) and control characters
+      jsonString = jsonString
+        .replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
+        .replace(/[\u0000-\u0019]+/g, " ")
+        
       aiResult = JSON.parse(jsonString)
     } catch (e: any) {
       console.error("Failed to parse AI output:", responseText, e)
@@ -297,6 +304,7 @@ ${sub.problem.content}
 Student's Answer:
 ${sub.content}
 
+IMPORTANT: You must properly escape all backslashes in your JSON strings. For example, use \\\\frac instead of \\frac.
 Return ONLY the JSON object.`
 
       let isCorrect = false
@@ -323,7 +331,13 @@ Return ONLY the JSON object.`
         const result = await res.json()
         const responseText = result.choices?.[0]?.message?.content || ""
         const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-        const jsonString = jsonMatch ? jsonMatch[0] : responseText
+        let jsonString = jsonMatch ? jsonMatch[0] : responseText
+        
+        // Sanitize unescaped backslashes and control characters
+        jsonString = jsonString
+          .replace(/\\(?!["\\/bfnrtu])/g, "\\\\")
+          .replace(/[\u0000-\u0019]+/g, " ")
+          
         const aiResult = JSON.parse(jsonString)
         isCorrect = aiResult.isCorrect === true
         newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
