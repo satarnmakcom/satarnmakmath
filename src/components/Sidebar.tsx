@@ -192,9 +192,3 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   )
 }
 
-      </div >
-    </motion.aside >
-    </>
-  )
-}
-

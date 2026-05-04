@@ -206,9 +206,3 @@ export default function ProfilePage() {
     </section>
   )
 }
-          })}
-        </div >
-      </div >
-    </section >
-  )
-}
