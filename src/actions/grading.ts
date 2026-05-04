@@ -168,14 +168,15 @@ Remember: Return ONLY the JSON object.`
       })
 
       if (!res.ok) {
-        throw new Error(`API returned ${res.status} ${res.statusText}`)
+        const errorText = await res.text()
+        throw new Error(`API returned ${res.status}: ${errorText}`)
       }
 
       const result = await res.json()
       responseText = result.choices?.[0]?.message?.content || ""
     } catch (e: any) {
       console.error("Failed to fetch from Groq API:", e)
-      return { success: false, error: "AI API request failed" }
+      return { success: false, error: e.message || "AI API request failed" }
     }
 
     // Parse the JSON output safely
@@ -314,7 +315,10 @@ Return ONLY the JSON object.`
           })
         })
 
-        if (!res.ok) throw new Error(`API error: ${res.status}`)
+        if (!res.ok) {
+          const errText = await res.text()
+          throw new Error(`API error ${res.status}: ${errText}`)
+        }
 
         const result = await res.json()
         const responseText = result.choices?.[0]?.message?.content || ""
