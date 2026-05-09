@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import AppLayout from "@/components/AppLayout";
 import NextAuthProvider from "@/components/NextAuthProvider";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,8 +21,26 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SatarnMath — Global Competitive Mathematics",
-  description: "A world-class platform for competitive mathematics.",
+  title: {
+    template: "%s | SatarnMath",
+    default: "SatarnMath — Global Competitive Mathematics",
+  },
+  description: "A world-class platform for learning competitive mathematics, olympiad training, and tracking your progress.",
+  keywords: ["math", "olympiad", "competitive programming", "POSN", "IMO", "education"],
+  authors: [{ name: "Satarnmak" }],
+  openGraph: {
+    title: "SatarnMath — Global Competitive Mathematics",
+    description: "A world-class platform for learning competitive mathematics.",
+    url: "https://satarnmath.com",
+    siteName: "SatarnMath",
+    locale: "th_TH",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SatarnMath",
+    description: "Global Competitive Mathematics Platform",
+  },
 };
 
 export default function RootLayout({
@@ -43,6 +62,7 @@ export default function RootLayout({
         <NextAuthProvider>
           <AppLayout>{children}</AppLayout>
         </NextAuthProvider>
+        <Toaster position="bottom-right" theme="dark" richColors closeButton />
       </body>
     </html>
   );
