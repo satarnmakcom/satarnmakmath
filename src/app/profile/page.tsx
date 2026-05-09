@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { toast } from "sonner"
+import AdminRatingEditor from "@/components/AdminRatingEditor"
 
 const achievements = [
   { id: 'welcome', icon: 'fire', color: 'gold', title: 'Welcome to Satarnmak Math', locked: false },
@@ -90,6 +91,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user?.name || "Anonymous"}</h1>
                 <span className={`px-3 py-1 rounded-xl bg-gradient-to-r from-[var(--tw-gradient-from)] to-[var(--tw-gradient-to)] text-[var(--tw-gradient-from)] text-xs font-bold border border-white/10 ${ratingInfo.className.replace('rating', 'from')}`}>{ratingInfo.title}</span>
+                {user && <AdminRatingEditor userId={user.id} currentRating={user.rating || 1200} isAdmin={(user as any).role === "ADMIN"} />}
               </div>
               <p className="text-sm text-[var(--text-secondary)] mt-2 flex items-center gap-3 flex-wrap">
                 <span className="flex items-center gap-1 hover:text-electric-400 transition-colors cursor-pointer">

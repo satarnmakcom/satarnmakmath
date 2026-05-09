@@ -2,6 +2,32 @@
 
 import prisma from "@/lib/prisma"
 import { CompetitionLevel } from "@prisma/client"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { revalidatePath } from "next/cache"
+
+export async function adminUpdateRating(userId: string, newRating: number) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session || (session.user as any).role !== "ADMIN") {
+      return { success: false, error: "Unauthorized: Admins only" }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { rating: newRating }
+    })
+
+    revalidatePath(`/user/${userId}`)
+    revalidatePath(`/profile`)
+    revalidatePath(`/leaderboard`)
+
+    return { success: true, data: updatedUser }
+  } catch (error) {
+    console.error("Failed to update rating:", error)
+    return { success: false, error: "Failed to update rating" }
+  }
+}
 
 export async function getUserProfile(userId: string) {
   try {

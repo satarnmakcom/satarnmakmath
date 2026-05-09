@@ -1,6 +1,9 @@
 import prisma from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import AdminRatingEditor from "@/components/AdminRatingEditor"
 
 const getRatingInfo = (rating: number) => {
   if (rating < 1200) return { title: 'Newbie', className: 'from-gray-500 to-gray-400' }
@@ -13,6 +16,8 @@ const getRatingInfo = (rating: number) => {
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
+  const session = await getServerSession(authOptions)
+  const isAdmin = (session?.user as any)?.role === "ADMIN"
   
   const user = await prisma.user.findFirst({
     where: { 
@@ -74,6 +79,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user.name || "Anonymous"}</h1>
                 <span className={`px-3 py-1 rounded-xl bg-gradient-to-r ${ratingInfo.className} text-white text-xs font-bold border border-white/10 shadow-lg`}>{ratingInfo.title}</span>
+                <AdminRatingEditor userId={user.id} currentRating={user.rating} isAdmin={isAdmin} />
               </div>
               <p className="text-sm text-[var(--text-secondary)] mt-2 flex items-center gap-3 flex-wrap">
                 <span className="flex items-center gap-1">
