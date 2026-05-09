@@ -40,6 +40,15 @@ export default function ProfilePage() {
   const { data: session } = useSession()
   const user = session?.user
   const ratingInfo = getRatingInfo(user?.rating || 1200)
+
+  const handleShare = () => {
+    if (typeof window !== 'undefined' && user) {
+      const url = `${window.location.origin}/user/${encodeURIComponent(user.name || user.id || '')}`
+      navigator.clipboard.writeText(url)
+      toast.success("Profile link copied to clipboard!")
+    }
+  }
+
   return (
     <section className="max-w-6xl mx-auto space-y-6">
       {/* Hero Banner */}
