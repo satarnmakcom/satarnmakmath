@@ -13,7 +13,7 @@ export default async function ContestsPage() {
   return (
     <div className="max-w-6xl mx-auto py-8">
       {/* Header Section */}
-      <div className="relative mb-12 p-8 rounded-3xl overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] shadow-2xl">
+      <div className="relative mb-12 p-8 md:p-12 rounded-[2.5rem] overflow-hidden border border-[var(--border-color)] bg-[var(--glass-bg)] backdrop-blur-2xl shadow-2xl shadow-black/5">
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-electric-500/20 rounded-full blur-[80px] pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-violet-500/20 rounded-full blur-[80px] pointer-events-none"></div>
         
@@ -34,12 +34,13 @@ export default async function ContestsPage() {
           <Link 
             key={set.id} 
             href={`/contests/${encodeURIComponent(set.title)}`} 
-            className="group relative flex flex-col bg-[var(--bg-card)] rounded-3xl p-1 overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-electric-500/10 cursor-pointer"
+            className="group relative flex flex-col bg-gradient-to-br from-[var(--bg-card)] to-transparent rounded-3xl p-[1px] overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-electric-500/10 cursor-pointer"
           >
             {/* Animated border gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[var(--border-color)] to-[var(--border-color)] group-hover:from-electric-500/50 group-hover:to-violet-500/50 transition-colors duration-500 rounded-3xl"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--border-color)] to-transparent group-hover:from-electric-500/50 group-hover:to-violet-500/50 transition-colors duration-500 rounded-3xl"></div>
             
-            <div className="relative h-full flex flex-col bg-[var(--bg-card)] rounded-[22px] p-6">
+            <div className="relative h-full flex flex-col bg-[var(--glass-bg)] backdrop-blur-xl rounded-[23px] p-6">
+              <div className="absolute inset-0 bg-gradient-to-br from-electric-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[23px]" />
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-electric-500/10 to-violet-500/10 border border-electric-500/20 flex items-center justify-center text-electric-400 group-hover:scale-110 transition-transform duration-300">
                   <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

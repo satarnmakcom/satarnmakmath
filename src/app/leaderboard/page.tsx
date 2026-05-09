@@ -38,12 +38,18 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <section className="max-w-5xl mx-auto space-y-5 md:space-y-6">
+    <section className="max-w-5xl mx-auto space-y-5 md:space-y-6 relative px-4 md:px-6">
+      {/* Background glow for the header */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-electric-500/10 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
+
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 pt-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] tracking-tight">Global Leaderboard</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Real-time rankings of competitive mathematicians</p>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-500/10 border border-electric-500/20 mb-3 backdrop-blur-md">
+            <span className="text-xs font-semibold tracking-wide text-electric-400 uppercase">Hall of Fame</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">Global Leaderboard</h1>
+          <p className="text-[var(--text-secondary)] mt-3 text-lg">Real-time rankings of competitive mathematicians</p>
         </div>
         <div className="flex gap-2">
           <select className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors">
@@ -62,8 +68,9 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Leaderboard Table */}
-      <div className="card rounded-2xl overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="card rounded-3xl overflow-hidden shadow-2xl shadow-black/5 border border-[var(--border-color)] bg-gradient-to-b from-[var(--bg-card)] to-transparent relative z-10 backdrop-blur-xl">
+        <div className="absolute inset-0 bg-white/5 pointer-events-none" />
+        <div className="overflow-x-auto relative z-10">
           <table className="w-full min-w-[600px] data-table">
             <thead>
               <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
@@ -77,17 +84,27 @@ export default function LeaderboardPage() {
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-500 mx-auto"></div>
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={`skel-${i}`} className="border-b border-[var(--border-color)]">
+                    <td className="px-6 py-5"><div className="w-8 h-4 bg-[var(--bg-elevated)] rounded-md animate-pulse"></div></td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-[var(--bg-elevated)] animate-pulse"></div>
+                        <div className="w-24 h-4 bg-[var(--bg-elevated)] rounded-md animate-pulse"></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5"><div className="w-12 h-4 bg-[var(--bg-elevated)] rounded-md animate-pulse"></div></td>
+                    <td className="px-6 py-5"><div className="w-12 h-4 bg-[var(--bg-elevated)] rounded-md animate-pulse"></div></td>
+                    <td className="px-6 py-5"><div className="w-8 h-4 bg-[var(--bg-elevated)] rounded-md animate-pulse"></div></td>
+                    <td className="px-6 py-5"><div className="w-4 h-4 bg-[var(--bg-elevated)] rounded-md animate-pulse"></div></td>
+                  </tr>
+                ))
               ) : (
                 users.map((u, index) => {
                   const trends = ['up', 'down', 'same']
                   const trend = trends[index % 3]
                   return (
-                    <tr key={u.id} className="hover:bg-[var(--bg-secondary)] transition-colors">
+                    <tr key={u.id} className="hover:bg-white/[0.03] transition-colors border-b border-[var(--border-color)] last:border-0">
                       <td className={`px-6 py-4 font-bold ${u.rank <= 3 ? 'text-gold-400' : 'text-[var(--text-primary)]'}`}>#{u.rank || index + 1}</td>
                       <td className="px-6 py-4">
                         <Link href={`/user/${encodeURIComponent(u.name || u.id)}`} className="flex items-center gap-3 group hover:opacity-80 transition-opacity">

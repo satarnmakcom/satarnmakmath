@@ -51,14 +51,14 @@ export default function ProfilePage() {
           <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[var(--bg-card)] to-transparent"></div>
 
           {/* Floating Stats on Banner */}
-          <div className="absolute top-6 right-6 md:right-10 flex gap-3">
-            <div className="px-4 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center hover:bg-white/10 transition-colors">
-              <div className="text-lg font-bold text-white">{ratingInfo.title}</div>
-              <div className="text-[10px] text-white/60 uppercase tracking-wider">Rank</div>
+          <div className="absolute top-6 right-6 md:right-10 flex gap-3 z-10">
+            <div className="px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-center hover:bg-white/20 transition-all shadow-xl">
+              <div className="text-lg font-extrabold text-white">{ratingInfo.title}</div>
+              <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">Rank</div>
             </div>
-            <div className="px-4 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center hover:bg-white/10 transition-colors">
-              <div className="text-lg font-bold text-neon-400">{user?.streak || 0}d</div>
-              <div className="text-[10px] text-white/60 uppercase tracking-wider">Streak</div>
+            <div className="px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-center hover:bg-white/20 transition-all shadow-xl">
+              <div className="text-lg font-extrabold text-neon-400">{user?.streak || 0}d</div>
+              <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">Streak</div>
             </div>
           </div>
         </div>
@@ -142,7 +142,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Achievements */}
-      <div className="card rounded-2xl p-6">
+      <div className="card rounded-3xl p-6 bg-gradient-to-br from-[var(--bg-card)] to-transparent backdrop-blur-xl shadow-xl shadow-black/5 border border-[var(--border-color)]">
         <h3 className="font-bold text-[var(--text-primary)] mb-4 text-base flex items-center gap-2">
           <svg className="w-5 h-5 text-gold-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -184,7 +184,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Skills */}
-      <div className="card rounded-2xl p-6">
+      <div className="card rounded-3xl p-6 bg-gradient-to-br from-[var(--bg-card)] to-transparent backdrop-blur-xl shadow-xl shadow-black/5 border border-[var(--border-color)]">
         <h3 className="font-bold text-[var(--text-primary)] mb-5 text-base">Top Skills</h3>
         <div className="space-y-4">
           {skills.map((skill) => {
