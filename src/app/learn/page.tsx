@@ -89,16 +89,22 @@ export default function LearnPage() {
   }, [])
 
   return (
-    <section className="max-w-7xl mx-auto py-6">
+    <section className="max-w-7xl mx-auto py-6 px-4 md:px-8 relative">
+      {/* Background glow for the header */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-violet-500/10 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
+
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-10 text-center"
+        className="mb-12 text-center"
       >
-        <h1 className="text-3xl md:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 mb-4 backdrop-blur-md">
+          <span className="text-xs font-semibold tracking-wide text-violet-400 uppercase">Structured Learning</span>
+        </div>
+        <h1 className="text-4xl md:text-6xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight mb-4">
           Global <span className="text-transparent bg-clip-text bg-gradient-to-r from-electric-400 to-violet-500">Competitive Math</span>
         </h1>
-        <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto">
+        <p className="text-[var(--text-secondary)] text-lg max-w-2xl mx-auto leading-relaxed">
           เส้นทางสู่คณิตศาสตร์โอลิมปิก เนื้อหาถูกย่อยและออกแบบมาเพื่อให้เข้าใจง่ายที่สุด 
           ผ่านการฝึกฝนที่เป็นระบบ
         </p>
@@ -192,35 +198,38 @@ export default function LearnPage() {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <div className="card rounded-3xl p-6 md:p-10 border border-[var(--border-color)] overflow-hidden relative group">
-                      <div className={`absolute top-0 right-0 w-64 h-64 blur-3xl opacity-20 transition-opacity duration-700 pointer-events-none rounded-full translate-x-1/3 -translate-y-1/3 ${colorClasses.split(' ')[1]}`}></div>
+                    <div className="card rounded-3xl p-6 md:p-10 border border-[var(--border-color)] overflow-hidden relative group bg-[var(--glass-bg)] backdrop-blur-xl shadow-xl shadow-black/5">
+                      <div className={`absolute top-0 right-0 w-80 h-80 blur-3xl opacity-20 transition-opacity duration-700 pointer-events-none rounded-full translate-x-1/3 -translate-y-1/3 ${colorClasses.split(' ')[1]}`}></div>
                       
                       <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border ${colorClasses}`}>
+                        <div className="flex items-center gap-3 mb-5">
+                          <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider border ${colorClasses}`}>
                             {id}
                           </span>
                         </div>
                         
-                        <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-3">{info.title}</h2>
-                        <p className="text-[var(--text-secondary)] leading-relaxed mb-8 max-w-xl">
+                        <h2 className="text-3xl md:text-4xl font-heading font-extrabold text-[var(--text-primary)] mb-4">{info.title}</h2>
+                        <p className="text-[var(--text-secondary)] leading-relaxed mb-10 max-w-xl text-lg">
                           {info.desc}
                         </p>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {modules.map((mod) => (
                             <Link key={mod.id} href={`/learn/${mod.id}`} className="group/item">
-                              <div className="bg-[var(--bg-secondary)] border border-[var(--border-color)] group-hover/item:border-electric-500/50 p-5 rounded-2xl transition-all h-full">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <div className="w-2 h-2 rounded-full bg-electric-500 group-hover/item:scale-150 transition-transform"></div>
-                                  <h4 className="font-bold text-[var(--text-primary)] group-hover/item:text-electric-400 transition-colors">{mod.title}</h4>
+                              <div className="bg-gradient-to-br from-[var(--bg-card)] to-transparent border border-[var(--border-color)] group-hover/item:border-electric-500/40 group-hover/item:shadow-xl group-hover/item:shadow-electric-500/10 p-6 rounded-3xl transition-all duration-300 h-full relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-electric-500/5 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                                <div className="flex items-center gap-3 mb-3 relative z-10">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-electric-500 group-hover/item:scale-150 transition-transform"></div>
+                                  <h4 className="font-bold text-lg text-[var(--text-primary)] group-hover/item:text-electric-400 transition-colors">{mod.title}</h4>
                                 </div>
-                                {mod.description && <p className="text-xs text-[var(--text-secondary)] mb-3 pl-5 line-clamp-2">{mod.description}</p>}
-                                <div className="pl-5 flex items-center justify-between mt-auto pt-2 border-t border-[var(--border-color)]/50">
+                                {mod.description && <p className="text-sm text-[var(--text-secondary)] mb-6 pl-6 line-clamp-2 relative z-10">{mod.description}</p>}
+                                <div className="pl-6 flex items-center justify-between mt-auto pt-4 border-t border-[var(--border-color)]/50 relative z-10">
                                   <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
                                     {mod.lessons.length} Lessons
                                   </span>
-                                  <svg className="w-4 h-4 text-[var(--text-tertiary)] group-hover/item:text-electric-400 group-hover/item:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"/></svg>
+                                  <div className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] flex items-center justify-center group-hover/item:bg-electric-500 group-hover/item:text-white text-[var(--text-tertiary)] transition-colors">
+                                    <svg className="w-4 h-4 group-hover/item:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"/></svg>
+                                  </div>
                                 </div>
                               </div>
                             </Link>

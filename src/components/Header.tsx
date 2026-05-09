@@ -35,7 +35,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
   }
 
   return (
-    <header className="h-16 glass flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-30">
+    <header className="h-16 flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-30 bg-[var(--glass-bg)] backdrop-blur-2xl border-b border-[var(--glass-border)] supports-[backdrop-filter]:bg-[var(--glass-bg)] transition-colors duration-300">
       {/* Left: Search & Mobile Menu */}
       <div className="flex items-center gap-3 flex-1">
         <button
@@ -55,7 +55,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
           <input
             type="text"
             placeholder={t('header.search')}
-            className="w-full pl-10 pr-12 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-electric-500/50 focus:border-electric-500/50 transition-all placeholder:text-[var(--text-tertiary)] shadow-sm"
+            className="w-full pl-10 pr-12 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-electric-500/30 focus:border-electric-500/50 hover:border-[var(--text-tertiary)] transition-all placeholder:text-[var(--text-tertiary)] shadow-sm"
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
           />

@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           x: isOpen || typeof window !== 'undefined' && window.innerWidth >= 768 ? 0 : -256
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--border-color)] bg-[var(--bg-secondary)] z-50 overflow-hidden shadow-2xl md:shadow-none"
+        className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--glass-bg)] z-50 overflow-hidden shadow-2xl md:shadow-none transition-colors duration-300"
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-6 border-b border-[var(--border-color)] flex-shrink-0 cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
@@ -105,15 +105,15 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${active
-                      ? 'text-electric-500 bg-[var(--bg-elevated)] shadow-sm'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
+                      ? 'text-electric-400 bg-white/5 shadow-sm border border-white/10'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 border border-transparent'
                     }`}
                 >
                   {active && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl z-0"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                      className="absolute inset-0 bg-electric-500/10 border border-electric-500/20 rounded-xl z-0"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}
                   <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>

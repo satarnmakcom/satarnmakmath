@@ -103,15 +103,21 @@ export default function PracticePage() {
   const hasFilters = selectedLevels.size > 0 || selectedTags.size > 0 || maxDifficulty < 4000
 
   return (
-    <section className="max-w-6xl mx-auto py-6">
+    <section className="max-w-6xl mx-auto py-6 px-4 md:px-6 relative">
+      {/* Background glow for the header */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-electric-500/10 blur-[120px] rounded-full pointer-events-none -z-10 mix-blend-screen" />
+
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-10 text-center md:text-left"
       >
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight mb-2">Practice Arena</h1>
-        <p className="text-[var(--text-secondary)]">ฝึกฝนโจทย์คณิตศาสตร์โอลิมปิกตั้งแต่ระดับพื้นฐานจนถึง IMO</p>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-500/10 border border-electric-500/20 mb-4 backdrop-blur-md">
+          <span className="text-xs font-semibold tracking-wide text-electric-400 uppercase">Interactive Problems</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight mb-3">Practice Arena</h1>
+        <p className="text-lg text-[var(--text-secondary)] max-w-2xl">ฝึกฝนโจทย์คณิตศาสตร์โอลิมปิกตั้งแต่ระดับพื้นฐานจนถึง IMO ไต่แรงก์และพัฒนาตัวเองในทุกๆ วัน</p>
       </motion.div>
 
       <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
@@ -119,9 +125,9 @@ export default function PracticePage() {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="lg:w-64 flex-shrink-0"
+          className="lg:w-72 flex-shrink-0"
         >
-          <div className="card rounded-2xl p-6 lg:sticky lg:top-4 border border-[var(--border-color)] shadow-sm">
+          <div className="card rounded-3xl p-6 lg:sticky lg:top-8 border border-[var(--border-color)] shadow-xl shadow-black/5 bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] backdrop-blur-xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-[var(--text-primary)]">Filters</h3>
               {hasFilters && (
@@ -211,7 +217,7 @@ export default function PracticePage() {
 
         {/* Problem List */}
         <div className="flex-1">
-          <div className="flex items-center justify-between mb-6 bg-[var(--bg-card)] p-3 rounded-2xl border border-[var(--border-color)]">
+          <div className="flex items-center justify-between mb-6 bg-[var(--glass-bg)] backdrop-blur-md p-2 pl-4 rounded-2xl border border-[var(--glass-border)] shadow-sm">
             <span className="text-sm text-[var(--text-secondary)] pl-3">
               Showing <b className="text-[var(--text-primary)]">{filteredProblems.length}</b> of {problems.length} problems
               {hasFilters && <span className="ml-1 text-electric-400 font-medium">(filtered)</span>}
@@ -271,9 +277,10 @@ export default function PracticePage() {
                       >
                         <Link
                           href={`/practice/${p.code}`}
-                          className="card rounded-2xl p-5 border border-[var(--border-color)] hover:border-electric-500/40 hover:shadow-lg hover:shadow-electric-500/5 transition-all cursor-pointer group block bg-[var(--bg-card)]"
+                          className="card rounded-3xl p-5 border border-[var(--border-color)] hover:border-electric-500/40 hover:shadow-2xl hover:shadow-electric-500/10 transition-all duration-300 cursor-pointer group block bg-gradient-to-br from-[var(--bg-card)] to-transparent relative overflow-hidden"
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+                          <div className="absolute inset-0 bg-gradient-to-br from-electric-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                             <div className="flex items-center gap-4 min-w-0">
                               <div className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)] flex items-center justify-center flex-shrink-0 group-hover:bg-electric-500/10 transition-colors">
                                 <svg className="w-5 h-5 text-[var(--text-tertiary)] group-hover:text-electric-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,15 +303,15 @@ export default function PracticePage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between mt-4 pt-4 border-t border-[var(--border-color)]">
+                          <div className="relative z-10 flex items-center justify-between mt-5 pt-5 border-t border-[var(--border-color)]">
                             <div className="flex flex-wrap gap-2">
                               {p.tags.map((tag) => (
                                 <span
                                   key={tag}
-                                  className={`px-2 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wide transition-colors ${
+                                  className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wide transition-colors ${
                                     selectedTags.has(tag)
-                                      ? 'bg-electric-500/10 text-electric-400 border border-electric-500/20'
-                                      : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)]'
+                                      ? 'bg-electric-500/15 text-electric-400 border border-electric-500/30'
+                                      : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] border border-[var(--border-color)]'
                                   }`}
                                 >
                                   {tag}
