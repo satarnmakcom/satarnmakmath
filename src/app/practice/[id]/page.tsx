@@ -242,6 +242,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
               </button>
             )}
           </div>
+          </div>
         </div>
 
         {/* Editor or Grade Panel */}
