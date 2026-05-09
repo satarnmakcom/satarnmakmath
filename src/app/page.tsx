@@ -48,7 +48,7 @@ function Dashboard() {
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-electric-400 animate-pulse"></span>
-              <span className="text-xs font-semibold tracking-wide text-electric-400">Welcome back to SatarnMath</span>
+              <span className="text-xs font-semibold tracking-wide text-electric-400">Welcome back to Satarnmak Math</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight mb-2 leading-tight">
               {user?.name || "Anonymous"}

@@ -86,7 +86,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 exit={{ opacity: 0, x: -10, display: 'none' }}
                 className="text-lg font-bold text-gradient tracking-tight whitespace-nowrap"
               >
-                SatarnMath
+                Satarnmak Math
               </motion.span>
             )}
           </AnimatePresence>

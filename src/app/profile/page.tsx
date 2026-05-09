@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 
 const achievements = [
-  { id: 'welcome', icon: 'fire', color: 'gold', title: 'Welcome to SatarnMath', locked: false },
+  { id: 'welcome', icon: 'fire', color: 'gold', title: 'Welcome to Satarnmak Math', locked: false },
   { id: 'solver', icon: 'lock', color: 'electric', title: 'Problem Solver', locked: true },
   { id: 'geometry', icon: 'lock', color: 'violet', title: 'Geometry Wizard', locked: true },
   { id: 'speed', icon: 'lock', color: 'neon', title: 'Speed Demon', locked: true },

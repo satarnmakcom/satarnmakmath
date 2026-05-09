@@ -104,14 +104,14 @@ export default function LandingPage() {
         transition={{ duration: 0.6 }}
         className="relative z-50 flex items-center justify-between px-6 md:px-10 lg:px-16 py-5"
       >
-        <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
             <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-gradient">SatarnMath</span>
-        </div>
+          <span className="text-xl font-extrabold tracking-tight text-gradient">Satarnmak Math</span>
+        </Link>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
@@ -381,10 +381,10 @@ export default function LandingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
             </div>
-            <span className="text-sm font-bold text-[var(--text-secondary)]">SatarnMath</span>
+            <span className="text-sm font-bold text-[var(--text-secondary)]">Satarnmak Math</span>
           </div>
           <p className="text-xs text-[var(--text-tertiary)]">
-            © 2026 SatarnMath. Empowering mathematical minds worldwide.
+            © 2026 Satarnmak Math. Empowering mathematical minds worldwide.
           </p>
           <div className="flex items-center gap-5 text-xs text-[var(--text-tertiary)]">
             <Link href="/login" className="hover:text-[var(--text-primary)] transition-colors">Sign In</Link>

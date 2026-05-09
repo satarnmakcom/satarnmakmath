@@ -22,23 +22,23 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | SatarnMath",
-    default: "SatarnMath — Global Competitive Mathematics",
+    template: "%s | Satarnmak Math",
+    default: "Satarnmak Math — Global Competitive Mathematics",
   },
   description: "A world-class platform for learning competitive mathematics, olympiad training, and tracking your progress.",
   keywords: ["math", "olympiad", "competitive programming", "POSN", "IMO", "education"],
   authors: [{ name: "Satarnmak" }],
   openGraph: {
-    title: "SatarnMath — Global Competitive Mathematics",
+    title: "Satarnmak Math — Global Competitive Mathematics",
     description: "A world-class platform for learning competitive mathematics.",
     url: "https://satarnmath.com",
-    siteName: "SatarnMath",
+    siteName: "Satarnmak Math",
     locale: "th_TH",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SatarnMath",
+    title: "Satarnmak Math",
     description: "Global Competitive Mathematics Platform",
   },
 };

@@ -51,7 +51,7 @@ export default function LoginPage() {
           </div>
           <h2 className="text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">Welcome Back</h2>
           <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            Log in to continue your journey on SatarnMath
+            Log in to continue your journey on Satarnmak Math
           </p>
         </div>
 
