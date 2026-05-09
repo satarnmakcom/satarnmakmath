@@ -104,17 +104,19 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${active
-                      ? 'text-electric-400 bg-white/5 shadow-sm border border-white/10'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-white/5 border border-transparent'
+                  className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${active
+                      ? 'text-electric-400'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/50'
                     }`}
                 >
                   {active && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-electric-500/10 border border-electric-500/20 rounded-xl z-0"
+                      className="absolute inset-0 bg-gradient-to-r from-electric-500/10 to-transparent rounded-xl z-0"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    />
+                    >
+                      <div className="absolute left-0 top-[15%] bottom-[15%] w-1 bg-electric-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                    </motion.div>
                   )}
                   <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>
                     <svg className={`w-5 h-5 flex-shrink-0 ${active ? 'text-electric-500' : 'text-[var(--text-tertiary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
