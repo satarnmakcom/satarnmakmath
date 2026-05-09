@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Outfit } from "next/font/google";
 import "./globals.css";
+import "katex/dist/katex.min.css";
 import AppLayout from "@/components/AppLayout";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import { Toaster } from "sonner";

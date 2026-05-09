@@ -42,6 +42,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
   const [submitting, setSubmitting] = useState(false)
   const [gradeResult, setGradeResult] = useState<GradeResult | null>(null)
   const [isAIGrading, setIsAIGrading] = useState(false)
+  const [isPreview, setIsPreview] = useState(false)
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null)
 
   useEffect(() => {
@@ -206,7 +207,24 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
             </svg>
             <span className="timer-digit font-mono font-bold text-[var(--text-primary)] text-base">{formatTime(timeLeft)}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
+            {!gradeResult && !isAIGrading && (
+              <div className="flex bg-[var(--bg-primary)] rounded-lg p-0.5 border border-[var(--border-color)]">
+                <button 
+                  onClick={() => setIsPreview(false)} 
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${!isPreview ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
+                >
+                  Write
+                </button>
+                <button 
+                  onClick={() => setIsPreview(true)} 
+                  className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${isPreview ? 'bg-[var(--bg-secondary)] shadow-sm text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'}`}
+                >
+                  Preview
+                </button>
+              </div>
+            )}
+            <div className="flex gap-2">
             {gradeResult ? (
               <button
                 onClick={handleTryAgain}
@@ -330,13 +348,22 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
                 <p className="text-xs text-[var(--text-tertiary)] mt-2">Checking mathematical correctness</p>
               </div>
             </motion.div>
+          ) : isPreview ? (
+            // === MARKDOWN PREVIEW ===
+            <div className="w-full flex-1 p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl overflow-y-auto shadow-sm">
+              {solution ? (
+                <MarkdownRenderer content={solution} />
+              ) : (
+                <p className="text-[var(--text-tertiary)] text-sm italic">Nothing to preview. Go to Write mode to type your answer.</p>
+              )}
+            </div>
           ) : (
             // === TEXTAREA EDITOR ===
             <textarea
               className="w-full flex-1 p-4 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] font-mono text-sm resize-none outline-none focus:border-electric-500/50 focus:shadow-md transition-all shadow-sm"
               placeholder={problem.level === 'POSN'
-                ? 'Type your answer here (e.g. 42, or \\frac{1}{2})...'
-                : 'Write your full proof here. Include your reasoning and all steps...'}
+                ? 'Type your answer here. Use $...$ for math formulas (e.g. $\\frac{1}{2}$)...'
+                : 'Write your full proof here. Use $$...$$ for block math equations...'}
               value={solution}
               onChange={(e) => setSolution(e.target.value)}
             />
