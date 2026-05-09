@@ -4,12 +4,14 @@ import { useState } from 'react'
 import { adminUpdateRating } from '@/actions/users'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 export default function AdminRatingEditor({ userId, currentRating, isAdmin }: { userId: string, currentRating: number, isAdmin: boolean }) {
   const [isEditing, setIsEditing] = useState(false)
   const [rating, setRating] = useState(currentRating)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { update } = useSession()
 
   if (!isAdmin) return null
 
@@ -20,6 +22,7 @@ export default function AdminRatingEditor({ userId, currentRating, isAdmin }: { 
     if (res.success) {
       toast.success("Rating updated successfully!")
       setIsEditing(false)
+      await update()
       router.refresh()
     } else {
       toast.error(res.error || "Failed to update rating")
