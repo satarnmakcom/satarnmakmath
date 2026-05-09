@@ -65,18 +65,18 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--glass-bg)] z-50 overflow-hidden shadow-2xl md:shadow-none transition-colors duration-300"
       >
-        {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-[var(--border-color)] flex-shrink-0 cursor-pointer" onClick={() => setCollapsed(!collapsed)}>
-          <motion.div
-            whileHover={{ rotate: 180, scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ duration: 0.4 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-electric-500 to-violet-600 flex items-center justify-center shadow-lg shadow-electric-500/25 mr-3 flex-shrink-0"
+        {/* Hamburger & Title */}
+        <div className="h-16 flex items-center px-4 md:px-6 border-b border-[var(--border-color)] flex-shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors mr-2 flex-shrink-0"
           >
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-          </motion.div>
+          </motion.button>
 
           <AnimatePresence>
             {!collapsed && (
@@ -105,17 +105,17 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${active
-                      ? 'text-electric-400'
+                      ? 'text-[var(--text-primary)] bg-[var(--bg-elevated)]'
                       : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/50'
                     }`}
                 >
                   {active && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-r from-electric-500/10 to-transparent rounded-xl z-0"
+                      className="absolute inset-0 z-0"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     >
-                      <div className="absolute left-0 top-[15%] bottom-[15%] w-1 bg-electric-500 rounded-r-full shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                      <div className="absolute left-0 top-[20%] bottom-[20%] w-1 bg-[var(--text-primary)] rounded-r-full" />
                     </motion.div>
                   )}
                   <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>
