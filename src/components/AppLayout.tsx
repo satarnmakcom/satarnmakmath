@@ -6,6 +6,7 @@ import Header from './Header'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePathname } from 'next/navigation'
 import { LanguageProvider } from '@/context/LanguageContext'
+import { useSession } from 'next-auth/react'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -15,6 +16,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const pathname = usePathname()
   const [mounted, setMounted] = useState(false)
+  const { status } = useSession()
 
   useEffect(() => {
     setMounted(true)
@@ -24,6 +26,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     setIsSidebarOpen(false)
   }, [pathname])
+
+  // Show landing page without app chrome (sidebar/header)
+  const isLandingPage = pathname === '/' && status === 'unauthenticated'
 
   if (!mounted) {
     return (
@@ -35,6 +40,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </div>
         </div>
       </div>
+    )
+  }
+
+  // Landing page: render children directly without sidebar/header
+  if (isLandingPage) {
+    return (
+      <LanguageProvider>
+        <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
+          {children}
+        </div>
+      </LanguageProvider>
     )
   }
 

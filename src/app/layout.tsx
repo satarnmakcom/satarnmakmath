@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import AppLayout from "@/components/AppLayout";
 import NextAuthProvider from "@/components/NextAuthProvider";
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -32,8 +37,9 @@ export default function RootLayout({
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
       </head>
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} antialiased min-h-screen`}
+        className={`${inter.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-primary text-primary overflow-x-hidden`}
       >
+        <div className="noise-overlay pointer-events-none fixed inset-0 z-[-1] opacity-20 mix-blend-overlay"></div>
         <NextAuthProvider>
           <AppLayout>{children}</AppLayout>
         </NextAuthProvider>

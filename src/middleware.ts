@@ -7,8 +7,8 @@ export default withAuth({
 })
 
 export const config = {
-  // Protect all routes except auth pages, api routes, and static files
+  // Protect all routes except landing page, auth pages, api routes, and static files
   matcher: [
-    "/((?!login|register|forgot-password|reset-password|api/auth|api/forgot-password|api/reset-password|_next/static|_next/image|favicon.ico).*)",
+    "/((?!login|register|forgot-password|reset-password|api/auth|api/forgot-password|api/reset-password|_next/static|_next/image|favicon.ico)(?!$).*)",
   ],
 }
