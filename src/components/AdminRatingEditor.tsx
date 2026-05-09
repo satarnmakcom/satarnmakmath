@@ -22,7 +22,7 @@ export default function AdminRatingEditor({ userId, currentRating, isAdmin }: { 
     if (res.success) {
       toast.success("Rating updated successfully!")
       setIsEditing(false)
-      await update()
+      await update({ rating: rating })
       router.refresh()
     } else {
       toast.error(res.error || "Failed to update rating")

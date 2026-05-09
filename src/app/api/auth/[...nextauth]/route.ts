@@ -67,7 +67,12 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, trigger, session }) {
+      if (trigger === "update" && session) {
+        if (session.rating !== undefined) token.rating = session.rating
+        if (session.streak !== undefined) token.streak = session.streak
+      }
+
       if (user || trigger === "update") {
         const userId = user?.id || token.sub
         if (!userId) return token
