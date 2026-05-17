@@ -5,14 +5,27 @@ import bcrypt from "bcrypt"
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { email, name, password } = body
+    const { email, name, password, otp } = body
 
-    if (!email || !name || !password) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    if (!email || !name || !password || !otp) {
+      return NextResponse.json({ error: "Missing required fields (including OTP)" }, { status: 400 })
     }
 
     if (password.length < 6) {
       return NextResponse.json({ error: "Password should be at least 6 characters" }, { status: 400 })
+    }
+
+    // Verify OTP
+    const verification = await prisma.verificationToken.findFirst({
+      where: { identifier: email, token: otp }
+    })
+
+    if (!verification) {
+      return NextResponse.json({ error: "Invalid OTP code" }, { status: 400 })
+    }
+
+    if (verification.expires < new Date()) {
+      return NextResponse.json({ error: "OTP has expired" }, { status: 400 })
     }
 
     // Check if user already exists
@@ -33,7 +46,13 @@ export async function POST(req: Request) {
         email,
         name,
         password: hashedPassword,
+        emailVerified: new Date(), // Mark email as verified since they used OTP
       }
+    })
+
+    // Delete used OTP
+    await prisma.verificationToken.deleteMany({
+      where: { identifier: email }
     })
 
     return NextResponse.json({

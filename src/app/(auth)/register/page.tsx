@@ -8,14 +8,48 @@ import { signIn } from "next-auth/react"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const [data, setData] = useState({ name: "", email: "", password: "" })
+  const [data, setData] = useState({ name: "", email: "", password: "", otp: "" })
   const [error, setError] = useState("")
+  const [message, setMessage] = useState("")
   const [loading, setLoading] = useState(false)
+  const [sendingOtp, setSendingOtp] = useState(false)
+
+  const handleSendOtp = async () => {
+    if (!data.email) {
+      setError("Please enter your email address first")
+      return
+    }
+
+    setSendingOtp(true)
+    setError("")
+    setMessage("")
+
+    try {
+      const res = await fetch("/api/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email }),
+      })
+
+      const json = await res.json()
+
+      if (!res.ok) {
+        setError(json.error || "Failed to send OTP")
+      } else {
+        setMessage(json.message || "OTP sent to your email!")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred while sending OTP")
+    } finally {
+      setSendingOtp(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
+    setMessage("")
 
     try {
       const res = await fetch("/api/register", {
@@ -82,6 +116,11 @@ export default function RegisterPage() {
               {error}
             </motion.div>
           )}
+          {message && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-sm rounded-xl p-3 text-center font-medium">
+              {message}
+            </motion.div>
+          )}
 
           <div className="space-y-4">
             <div>
@@ -97,6 +136,7 @@ export default function RegisterPage() {
                 onChange={(e) => setData({ ...data, name: e.target.value })}
               />
             </div>
+            
             <div>
               <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2" htmlFor="email">Email address</label>
               <input
@@ -110,6 +150,32 @@ export default function RegisterPage() {
                 onChange={(e) => setData({ ...data, email: e.target.value })}
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2" htmlFor="otp">Verification Code</label>
+              <div className="flex gap-2">
+                <input
+                  id="otp"
+                  name="otp"
+                  type="text"
+                  required
+                  maxLength={6}
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-[var(--text-tertiary)] tracking-widest"
+                  placeholder="123456"
+                  value={data.otp}
+                  onChange={(e) => setData({ ...data, otp: e.target.value.replace(/\D/g, '') })}
+                />
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={sendingOtp || !data.email}
+                  className="px-4 py-3 shrink-0 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm font-bold hover:bg-[var(--border-color)] transition-all disabled:opacity-50"
+                >
+                  {sendingOtp ? "Sending..." : "Send code"}
+                </button>
+              </div>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2" htmlFor="password">Password</label>
               <input
