@@ -33,7 +33,7 @@ export async function changePassword(userId: string, data: {
   newPassword: string
 }) {
   try {
-    const bcrypt = await import("bcrypt")
+    const bcrypt = await import("bcryptjs")
 
     const user = await prisma.user.findUnique({
       where: { id: userId }
