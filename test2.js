@@ -1,0 +1,1 @@
+fetch('http://localhost:3000/api/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'test4@example.com' }) }).then(res => res.text().then(text => console.log('STATUS:', res.status, 'BODY:', text.substring(0, 500))))
