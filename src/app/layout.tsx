@@ -5,26 +5,31 @@ import "katex/dist/katex.min.css";
 import AppLayout from "@/components/AppLayout";
 import NextAuthProvider from "@/components/NextAuthProvider";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const kanit = Kanit({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-kanit",
   subsets: ["latin", "thai"],
+  display: "swap",
 });
 
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -58,9 +63,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
-        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+        <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="afterInteractive" />
+        <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" strategy="afterInteractive" />
       </head>
       <body
         className={`${inter.variable} ${kanit.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-primary text-primary overflow-x-hidden`}
