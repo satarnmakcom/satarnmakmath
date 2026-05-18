@@ -4,6 +4,7 @@ import "./globals.css";
 import "katex/dist/katex.min.css";
 import AppLayout from "@/components/AppLayout";
 import NextAuthProvider from "@/components/NextAuthProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import Script from "next/script";
 
@@ -61,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
@@ -71,11 +72,13 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${kanit.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-primary text-primary overflow-x-hidden`}
       >
-        <div className="noise-overlay pointer-events-none fixed inset-0 z-[-1] opacity-20 mix-blend-overlay"></div>
-        <NextAuthProvider>
-          <AppLayout>{children}</AppLayout>
-        </NextAuthProvider>
-        <Toaster position="bottom-right" theme="dark" richColors closeButton />
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+          <div className="noise-overlay pointer-events-none fixed inset-0 z-[-1] opacity-20 mix-blend-overlay"></div>
+          <NextAuthProvider>
+            <AppLayout>{children}</AppLayout>
+          </NextAuthProvider>
+          <Toaster position="bottom-right" theme="system" richColors closeButton />
+        </ThemeProvider>
       </body>
     </html>
   );
