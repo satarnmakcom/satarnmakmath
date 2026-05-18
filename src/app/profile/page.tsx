@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { toast } from "sonner"
 import AdminRatingEditor from "@/components/AdminRatingEditor"
+import { useLanguage } from "@/context/LanguageContext"
 
 const achievements = [
   { id: 'welcome', icon: 'fire', color: 'gold', title: 'Welcome to Satarnmak Math', locked: false },
@@ -41,12 +42,13 @@ export default function ProfilePage() {
   const { data: session } = useSession()
   const user = session?.user
   const ratingInfo = getRatingInfo(user?.rating || 1200)
+  const { t } = useLanguage()
 
   const handleShare = () => {
     if (typeof window !== 'undefined' && user) {
       const url = `${window.location.origin}/user/${encodeURIComponent(user.name || user.id || '')}`
       navigator.clipboard.writeText(url)
-      toast.success("Profile link copied to clipboard!")
+      toast.success(t('profile.share'))
     }
   }
 
@@ -65,11 +67,11 @@ export default function ProfilePage() {
           <div className="absolute top-6 right-6 md:right-10 flex gap-3 z-10">
             <div className="px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-center hover:bg-white/20 transition-all shadow-xl">
               <div className="text-lg font-extrabold text-white">{ratingInfo.title}</div>
-              <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">Rank</div>
+              <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">{t('profile.rank')}</div>
             </div>
             <div className="px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-center hover:bg-white/20 transition-all shadow-xl">
               <div className="text-lg font-extrabold text-neon-400">{user?.streak || 0}d</div>
-              <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">Streak</div>
+              <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">{t('profile.streak')}</div>
             </div>
           </div>
         </div>
@@ -101,14 +103,14 @@ export default function ProfilePage() {
                   @{user?.email?.split('@')[0] || "user"}
                 </span>
                 <span className="text-[var(--text-tertiary)]">•</span>
-                <span>Joined recently</span>
+                <span>{t('profile.joined')}</span>
                 <span className="text-[var(--text-tertiary)]">•</span>
                 <span className="flex items-center gap-1">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Thailand
+                  {t('profile.location')}
                 </span>
               </p>
             </div>
@@ -117,12 +119,12 @@ export default function ProfilePage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
-                Edit Profile
+                {t('profile.edit')}
               </Link>
               <button 
                 onClick={handleShare}
                 className="p-2.5 rounded-xl border border-[var(--border-color)] hover:border-electric-500/40 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all hover:bg-[var(--bg-secondary)]"
-                title="Share Profile"
+                title={t('profile.share_title')}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
@@ -137,23 +139,23 @@ export default function ProfilePage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
           <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.rating || 1200}</div>
-          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Rating</div>
-          <div className="text-xs text-neon-400 mt-1 font-bold">+0 this week</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">{t('profile.rating')}</div>
+          <div className="text-xs text-neon-400 mt-1 font-bold">{t('profile.this_week')}</div>
         </div>
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
           <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.solvedCount || 0}</div>
-          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Solved</div>
-          <div className="text-xs text-electric-400 mt-1 font-bold">0 this month</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">{t('profile.solved')}</div>
+          <div className="text-xs text-electric-400 mt-1 font-bold">{t('profile.this_month')}</div>
         </div>
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
           <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">0</div>
-          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Challenges</div>
-          <div className="text-xs text-gold-400 mt-1 font-bold">Just started</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">{t('profile.challenges')}</div>
+          <div className="text-xs text-gold-400 mt-1 font-bold">{t('profile.just_started')}</div>
         </div>
         <div className="profile-stat-card rounded-2xl p-5 text-center cursor-default">
           <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.globalRank ? `#${user.globalRank}` : '-'}</div>
-          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">Global</div>
-          <div className="text-xs text-rose-400 mt-1 font-bold">Unranked</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-1.5 uppercase tracking-wider font-bold">{t('profile.global')}</div>
+          <div className="text-xs text-rose-400 mt-1 font-bold">{t('profile.unranked')}</div>
         </div>
       </div>
 
@@ -163,7 +165,7 @@ export default function ProfilePage() {
           <svg className="w-5 h-5 text-gold-400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
           </svg>
-          Achievements
+          {t('profile.achievements')}
         </h3>
         <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
           {achievements.map((a) => (
@@ -201,7 +203,7 @@ export default function ProfilePage() {
 
       {/* Skills */}
       <div className="card rounded-3xl p-6 bg-gradient-to-br from-[var(--bg-card)] to-transparent backdrop-blur-xl shadow-xl shadow-black/5 border border-[var(--border-color)]">
-        <h3 className="font-bold text-[var(--text-primary)] mb-5 text-base">Top Skills</h3>
+        <h3 className="font-bold text-[var(--text-primary)] mb-5 text-base">{t('profile.top_skills')}</h3>
         <div className="space-y-4">
           {skills.map((skill) => {
             const colors = colorMap[skill.color]

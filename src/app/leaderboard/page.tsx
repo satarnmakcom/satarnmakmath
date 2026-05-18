@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { getLeaderboard } from '@/actions/users'
 import Link from 'next/link'
+import { useLanguage } from '@/context/LanguageContext'
 
 interface User {
   id: string
@@ -17,6 +18,7 @@ interface User {
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const { t } = useLanguage()
 
   useEffect(() => {
     async function loadData() {
@@ -46,20 +48,20 @@ export default function LeaderboardPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10 pt-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-electric-500/10 border border-electric-500/20 mb-3 backdrop-blur-md">
-            <span className="text-xs font-semibold tracking-wide text-electric-400 uppercase">Hall of Fame</span>
+            <span className="text-xs font-semibold tracking-wide text-electric-400 uppercase">{t('leaderboard.badge')}</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">Global Leaderboard</h1>
-          <p className="text-[var(--text-secondary)] mt-3 text-lg">Real-time rankings of competitive mathematicians</p>
+          <h1 className="text-4xl md:text-5xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight">{t('leaderboard.title')}</h1>
+          <p className="text-[var(--text-secondary)] mt-3 text-lg">{t('leaderboard.desc')}</p>
         </div>
         <div className="flex gap-2">
           <select className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors">
-            <option>All Regions</option>
-            <option>Thailand</option>
-            <option>Asia</option>
-            <option>Europe</option>
+            <option>{t('leaderboard.region_all')}</option>
+            <option>{t('leaderboard.region_th')}</option>
+            <option>{t('leaderboard.region_asia')}</option>
+            <option>{t('leaderboard.region_eu')}</option>
           </select>
           <select className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors">
-            <option>All Levels</option>
+            <option>{t('leaderboard.level_all')}</option>
             <option>สอวน. ค่าย 1</option>
             <option>TMO</option>
             <option>IMO</option>
@@ -74,12 +76,12 @@ export default function LeaderboardPage() {
           <table className="w-full min-w-[600px] data-table">
             <thead>
               <tr className="border-b border-[var(--border-color)] bg-[var(--bg-secondary)]">
-                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">User</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Country</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Rating</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Solved</th>
-                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Trend</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('leaderboard.th_rank')}</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('leaderboard.th_user')}</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('leaderboard.th_country')}</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('leaderboard.th_rating')}</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('leaderboard.th_solved')}</th>
+                <th className="px-6 py-4 text-left text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('leaderboard.th_trend')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
