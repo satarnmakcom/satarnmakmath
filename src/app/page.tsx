@@ -23,10 +23,13 @@ function getDiffClass(diff: number) {
   return 'diff-insane'
 }
 
+import { useLanguage } from '@/context/LanguageContext'
+
 function Dashboard() {
   const [problems, setProblems] = useState<Problem[]>([])
   const [loading, setLoading] = useState(true)
   const { data: session } = useSession()
+  const { t } = useLanguage()
   const user = session?.user
 
   useEffect(() => {
@@ -48,14 +51,14 @@ function Dashboard() {
           <div className="max-w-xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-electric-400 animate-pulse"></span>
-              <span className="text-xs font-semibold tracking-wide text-electric-400">Welcome back to Satarnmak Math</span>
+              <span className="text-xs font-semibold tracking-wide text-electric-400">{t('dashboard.welcome')}</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-heading font-extrabold text-[var(--text-primary)] tracking-tight mb-2 leading-tight">
               {user?.name || "Anonymous"}
             </h1>
             <p className="text-base text-[var(--text-secondary)] mt-3 leading-relaxed">
-              You are currently on a <span className="text-neon-400 font-bold">{user?.streak || 0}-day streak</span>. 
-              Keep up the momentum and tackle today&apos;s challenges!
+              {t('dashboard.streak_msg1')} <span className="text-neon-400 font-bold">{user?.streak || 0} {t('dashboard.streak_msg2')}</span> 
+              {t('dashboard.streak_msg3')}
             </p>
           </div>
           <div className="flex gap-3 shrink-0 mt-4 sm:mt-0">
@@ -63,13 +66,13 @@ function Dashboard() {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
               </svg>
-              <span>Practice Now</span>
+              <span>{t('dashboard.practice_now')}</span>
             </Link>
             <Link href="/leaderboard" className="btn-secondary px-6 py-3 text-[var(--text-primary)] rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-[var(--bg-elevated)] transition-colors">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
               </svg>
-              <span>Rankings</span>
+              <span>{t('dashboard.rankings')}</span>
             </Link>
           </div>
         </div>
@@ -80,7 +83,7 @@ function Dashboard() {
         <div className="card rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-electric-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-electric-500/10 transition-all duration-500"></div>
           <div className="relative">
-            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Rating</div>
+            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">{t('dashboard.rating')}</div>
             <div className="text-2xl md:text-3xl font-extrabold text-electric-400 tracking-tight group-hover:text-electric-300 transition-colors">{user?.rating || 1200}</div>
             <div className="text-xs text-neon-400 mt-1.5 flex items-center gap-1 font-bold bg-neon-500/10 w-fit px-2 py-0.5 rounded-lg">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,29 +96,29 @@ function Dashboard() {
         <div className="card rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-neon-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-neon-500/10 transition-all duration-500"></div>
           <div className="relative">
-            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Solved</div>
+            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">{t('dashboard.solved')}</div>
             <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.solvedCount || 0}</div>
-            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">0 this month</div>
+            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">0 {t('dashboard.this_month')}</div>
           </div>
         </div>
         <div className="card rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gold-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-gold-500/10 transition-all duration-500"></div>
           <div className="relative">
-            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Streak</div>
-            <div className="text-2xl md:text-3xl font-extrabold text-gold-400 tracking-tight">{user?.streak || 0} <span className="text-sm font-medium text-[var(--text-secondary)]">days</span></div>
-            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">Best: {user?.streak || 0}</div>
+            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">{t('dashboard.streak')}</div>
+            <div className="text-2xl md:text-3xl font-extrabold text-gold-400 tracking-tight">{user?.streak || 0} <span className="text-sm font-medium text-[var(--text-secondary)]">{t('dashboard.days')}</span></div>
+            <div className="text-xs text-[var(--text-secondary)] mt-1.5 font-medium">{t('dashboard.best')} {user?.streak || 0}</div>
           </div>
         </div>
         <div className="card rounded-2xl p-5 relative overflow-hidden group hover:-translate-y-1 transition-transform">
           <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-violet-500/10 transition-all duration-500"></div>
           <div className="relative">
-            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">Global Rank</div>
+            <div className="text-[11px] text-[var(--text-tertiary)] uppercase tracking-widest font-bold mb-2">{t('dashboard.global_rank')}</div>
             <div className="text-2xl md:text-3xl font-extrabold text-[var(--text-primary)] tracking-tight">{user?.globalRank ? `#${user.globalRank}` : '-'}</div>
             <div className="text-xs text-[var(--text-secondary)] mt-1.5 flex items-center gap-1 font-bold bg-[var(--bg-secondary)] w-fit px-2 py-0.5 rounded-lg">
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 12h14"/>
               </svg>
-              Unranked
+              {t('dashboard.unranked')}
             </div>
           </div>
         </div>
@@ -125,12 +128,12 @@ function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
         <div className="lg:col-span-2 card rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="font-bold text-[var(--text-primary)] text-base">Recommended Problems</h3>
+            <h3 className="font-bold text-[var(--text-primary)] text-base">{t('dashboard.recommended')}</h3>
             <select className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-3 py-1.5 text-xs text-[var(--text-primary)] outline-none cursor-pointer hover:border-electric-500/40 transition-colors">
-              <option>All Difficulties</option>
-              <option>Easy</option>
-              <option>Medium</option>
-              <option>Hard</option>
+              <option>{t('dashboard.diff_all')}</option>
+              <option>{t('dashboard.diff_easy')}</option>
+              <option>{t('dashboard.diff_medium')}</option>
+              <option>{t('dashboard.diff_hard')}</option>
             </select>
           </div>
           {loading ? (
@@ -154,8 +157,8 @@ function Dashboard() {
                     ))}
                   </div>
                   <div className="flex items-center justify-between text-xs text-[var(--text-secondary)]">
-                    <span className="font-mono">{p.difficulty} rating</span>
-                    <span>{p._count.submissions} solved</span>
+                    <span className="font-mono">{p.difficulty} {t('dashboard.rating_text')}</span>
+                    <span>{p._count.submissions} {t('dashboard.solved_text')}</span>
                   </div>
                 </Link>
               ))}
@@ -163,14 +166,14 @@ function Dashboard() {
           )}
         </div>
         <div className="card rounded-2xl p-6">
-          <h3 className="font-bold text-[var(--text-primary)] mb-5 text-base">Continue Learning</h3>
+          <h3 className="font-bold text-[var(--text-primary)] mb-5 text-base">{t('dashboard.continue_learning')}</h3>
           <div className="space-y-5">
             <div className="p-6 text-center border-2 border-dashed border-[var(--border-color)] rounded-2xl">
-              <p className="text-[var(--text-secondary)] font-medium text-sm">Start your first curriculum module to see progress here.</p>
+              <p className="text-[var(--text-secondary)] font-medium text-sm">{t('dashboard.no_module')}</p>
             </div>
           </div>
           <Link href="/learn" className="w-full mt-6 py-2.5 rounded-xl border border-[var(--border-color)] hover:border-electric-500/40 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all hover:bg-[var(--bg-secondary)] text-center block">
-            View Curriculum
+            {t('dashboard.view_curriculum')}
           </Link>
         </div>
       </div>
@@ -178,13 +181,13 @@ function Dashboard() {
       {/* Recent Activity */}
       <div className="card rounded-2xl p-6">
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-bold text-[var(--text-primary)] text-base">Recent Activity</h3>
-          <button className="text-xs text-electric-400 hover:text-electric-500 font-bold transition-colors">View All</button>
+          <h3 className="font-bold text-[var(--text-primary)] text-base">{t('dashboard.recent_activity')}</h3>
+          <button className="text-xs text-electric-400 hover:text-electric-500 font-bold transition-colors">{t('dashboard.view_all')}</button>
         </div>
         <div className="space-y-3">
           <div className="p-8 text-center border-2 border-dashed border-[var(--border-color)] rounded-2xl">
             <div className="text-3xl mb-3">📭</div>
-            <p className="text-[var(--text-secondary)] font-medium text-sm">You have no recent activity yet.<br/>Go solve some problems!</p>
+            <p className="text-[var(--text-secondary)] font-medium text-sm">{t('dashboard.no_activity')}</p>
           </div>
         </div>
       </div>

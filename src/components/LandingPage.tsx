@@ -141,7 +141,7 @@ export default function LandingPage() {
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 backdrop-blur-md mb-8"
         >
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-xs font-semibold tracking-wide text-emerald-400">Platform Active — Join the community</span>
+          <span className="text-xs font-semibold tracking-wide text-emerald-400">{t('landing.platform_active')}</span>
         </motion.div>
 
         {/* Main Headline */}
@@ -180,7 +180,7 @@ export default function LandingPage() {
             className="group relative px-8 py-4 text-base font-bold text-white rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 shadow-2xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all overflow-hidden"
           >
             <span className="relative z-10 flex items-center gap-2">
-              Start Practicing — It&apos;s Free
+              {t('landing.start_free')}
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
@@ -191,7 +191,7 @@ export default function LandingPage() {
             href="/learn"
             className="px-8 py-4 text-base font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-2xl border border-[var(--border-color)] hover:border-white/20 hover:bg-white/[0.03] transition-all"
           >
-            Explore Curriculum
+            {t('landing.explore_curriculum')}
           </Link>
         </motion.div>
 
@@ -237,18 +237,23 @@ export default function LandingPage() {
           transition={{ duration: 0.7 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-1 rounded-3xl overflow-hidden border border-white/[0.06] bg-white/[0.02] backdrop-blur-sm"
         >
-          {stats.map((s, i) => (
-            <div key={i} className="p-6 md:p-8 text-center border-white/[0.04] relative group hover:bg-white/[0.03] transition-colors"
-              style={{ borderRight: i < stats.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
-            >
-              <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] mb-1 tracking-tight" style={{ fontFamily: 'var(--font-outfit)' }}>
-                {s.value}
+          {stats.map((s, i) => {
+            const labelKey = s.label === 'Problems' ? 'landing.stats.problems' :
+                             s.label === 'Users' ? 'landing.stats.users' :
+                             s.label === 'Difficulty Tiers' ? 'landing.stats.tiers' : 'landing.stats.possibilities'
+            return (
+              <div key={i} className="p-6 md:p-8 text-center border-white/[0.04] relative group hover:bg-white/[0.03] transition-colors"
+                style={{ borderRight: i < stats.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+              >
+                <div className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] mb-1 tracking-tight" style={{ fontFamily: 'var(--font-outfit)' }}>
+                  {s.value}
+                </div>
+                <div className="text-xs md:text-sm font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
+                  {t(labelKey)}
+                </div>
               </div>
-              <div className="text-xs md:text-sm font-medium text-[var(--text-tertiary)] uppercase tracking-wider">
-                {s.label}
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </motion.div>
       </section>
 
@@ -262,41 +267,45 @@ export default function LandingPage() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight mb-4" style={{ fontFamily: 'var(--font-outfit)' }}>
-            Everything You Need to
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent"> Excel</span>
+            {t('landing.features.title1')}
+            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">{t('landing.features.title2')}</span>
           </h2>
           <p className="text-base md:text-lg text-[var(--text-secondary)] max-w-xl mx-auto">
-            Built by math olympiad veterans for the next generation of problem solvers.
+            {t('landing.features.subtitle')}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {features.map((f, i) => (
-            <motion.div
-              key={i}
-              custom={i}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-7 md:p-8 overflow-hidden hover:border-white/[0.12] transition-all duration-500 cursor-default"
-            >
-              {/* Hover glow */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-                style={{ background: `radial-gradient(600px circle at 50% 0%, ${f.glow}, transparent 70%)` }}
-              />
-              <div className="relative z-10">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={f.icon} />
-                  </svg>
+          {features.map((f, i) => {
+            const titleKey = `landing.features.f${i+1}.title`
+            const descKey = `landing.features.f${i+1}.desc`
+            return (
+              <motion.div
+                key={i}
+                custom={i}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="group relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-7 md:p-8 overflow-hidden hover:border-white/[0.12] transition-all duration-500 cursor-default"
+              >
+                {/* Hover glow */}
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                  style={{ background: `radial-gradient(600px circle at 50% 0%, ${f.glow}, transparent 70%)` }}
+                />
+                <div className="relative z-10">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={f.icon} />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 tracking-tight">{t(titleKey)}</h3>
+                  <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{t(descKey)}</p>
                 </div>
-                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 tracking-tight">{f.title}</h3>
-                <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{f.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </div>
       </section>
 
@@ -356,16 +365,16 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-violet-600/20 to-purple-600/20 blur-xl" />
           <div className="relative border border-white/[0.08] rounded-3xl bg-white/[0.03] backdrop-blur-md p-10 md:p-16 text-center">
             <h2 className="text-3xl md:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight mb-4" style={{ fontFamily: 'var(--font-outfit)' }}>
-              Ready to Begin?
+              {t('landing.cta.title')}
             </h2>
             <p className="text-base md:text-lg text-[var(--text-secondary)] mb-8 max-w-lg mx-auto">
-              Join thousands of students and competitors leveling up their mathematical thinking every day.
+              {t('landing.cta.desc')}
             </p>
             <Link
               href="/register"
               className="inline-flex items-center gap-2 px-10 py-4 text-base font-bold text-white rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 active:scale-[0.98] transition-all"
             >
-              Create Free Account
+              {t('landing.cta.btn')}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
