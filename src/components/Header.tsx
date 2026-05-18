@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSession, signOut } from 'next-auth/react'
 import { useLanguage } from '@/context/LanguageContext'
+import CommandPalette from './CommandPalette'
 
 interface HeaderProps {
   onToggleSidebar?: () => void
@@ -21,7 +22,6 @@ const getRatingInfo = (rating: number) => {
 
 export default function Header({ onToggleSidebar }: HeaderProps) {
   const [isLangOpen, setIsLangOpen] = useState(false)
-  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(true)
 
   const { data: session } = useSession()
@@ -47,21 +47,9 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
           </svg>
         </button>
 
-        {/* Search Bar */}
-        <div className="hidden md:flex flex-1 max-w-md ml-4 relative">
-          <div className={`absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors ${isSearchFocused ? 'text-electric-500' : 'text-[var(--text-tertiary)]'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          </div>
-          <input
-            type="text"
-            placeholder={t('header.search')}
-            className="w-full pl-10 pr-12 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-primary)] text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-electric-500/30 focus:border-electric-500/50 hover:border-[var(--text-tertiary)] transition-all placeholder:text-[var(--text-tertiary)] shadow-sm"
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setIsSearchFocused(false)}
-          />
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <span className="text-[10px] font-bold text-[var(--text-tertiary)] bg-[var(--bg-primary)] px-1.5 py-0.5 rounded border border-[var(--border-color)]">⌘K</span>
-          </div>
+        {/* Search - Command Palette */}
+        <div className="flex-1 flex justify-start ml-2 md:ml-4">
+          <CommandPalette />
         </div>
       </div>
 

@@ -105,5 +105,16 @@
   "profile.global": "อันดับโลก",
   "profile.unranked": "ยังไม่จัดอันดับ",
   "profile.achievements": "ความสำเร็จ",
-  "profile.top_skills": "ทักษะเด่น"
+  "profile.top_skills": "ทักษะเด่น",
+  "search.placeholder": "ค้นหา...",
+  "search.input_placeholder": "ค้นหาโจทย์, บทเรียน, ผู้ใช้...",
+  "search.recent": "ค้นหาล่าสุด",
+  "search.clear": "ล้าง",
+  "search.quick_nav": "นำทางด่วน",
+  "search.results": "ผลลัพธ์",
+  "search.no_results": "ไม่พบผลลัพธ์",
+  "search.try_different": "ลองค้นหาด้วยคำอื่น",
+  "search.navigate": "เลื่อน",
+  "search.select": "เลือก",
+  "search.close": "ปิด"
 }

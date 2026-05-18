@@ -105,5 +105,16 @@
   "profile.global": "Global",
   "profile.unranked": "Unranked",
   "profile.achievements": "Achievements",
-  "profile.top_skills": "Top Skills"
+  "profile.top_skills": "Top Skills",
+  "search.placeholder": "Search...",
+  "search.input_placeholder": "Search problems, lessons, users...",
+  "search.recent": "Recent Searches",
+  "search.clear": "Clear",
+  "search.quick_nav": "Quick Navigation",
+  "search.results": "Results",
+  "search.no_results": "No results found",
+  "search.try_different": "Try a different search term",
+  "search.navigate": "Navigate",
+  "search.select": "Select",
+  "search.close": "Close"
 }
