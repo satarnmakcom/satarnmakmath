@@ -9,5 +9,9 @@
   "sidebar.profile": "Profile",
   "sidebar.settings": "Settings",
   "sidebar.your_progress": "Your Progress",
-  "sidebar.contests": "Mock Exams"
+  "sidebar.contests": "Contests",
+  "landing.title1": "Master ",
+  "landing.title_highlight": "Mathematics",
+  "landing.title2": "Like Never Before",
+  "landing.subtitle": "A world-class competitive mathematics platform. From POSN to IMO — structured curricula, adaptive ratings, and a global community pushing the boundaries of problem solving."
 }

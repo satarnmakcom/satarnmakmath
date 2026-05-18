@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 
+import { useLanguage } from '@/context/LanguageContext'
+
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
   visible: (i: number) => ({
@@ -58,6 +60,7 @@ function AnimatedCounter({ target, suffix = '' }: { target: string; suffix?: str
 
 export default function LandingPage() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const { t } = useLanguage()
 
   useEffect(() => {
     const handleMove = (e: MouseEvent) => {
@@ -149,10 +152,10 @@ export default function LandingPage() {
           className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] max-w-5xl mx-auto mb-6"
           style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }}
         >
-          <span className="text-[var(--text-primary)]">Master </span>
-          <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">Mathematics</span>
+          <span className="text-[var(--text-primary)]">{t('landing.title1')}</span>
+          <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">{t('landing.title_highlight')}</span>
           <br />
-          <span className="text-[var(--text-primary)]">Like Never Before</span>
+          <span className="text-[var(--text-primary)]">{t('landing.title2')}</span>
         </motion.h1>
 
         {/* Subtitle */}
@@ -162,8 +165,7 @@ export default function LandingPage() {
           transition={{ delay: 0.5, duration: 0.7 }}
           className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed mb-10"
         >
-          A world-class competitive mathematics platform. From POSN to IMO — structured curricula, 
-          adaptive ratings, and a global community pushing the boundaries of problem solving.
+          {t('landing.subtitle')}
         </motion.p>
 
         {/* CTA Buttons */}

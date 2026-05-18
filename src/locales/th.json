@@ -9,5 +9,9 @@
   "sidebar.profile": "โปรไฟล์",
   "sidebar.settings": "ตั้งค่า",
   "sidebar.your_progress": "ความคืบหน้าของคุณ",
-  "sidebar.contests": "จำลองสอบ"
+  "sidebar.contests": "จำลองสอบ",
+  "landing.title1": "เชี่ยวชาญ",
+  "landing.title_highlight": "คณิตศาสตร์",
+  "landing.title2": "ในแบบที่ไม่เคยมีมาก่อน",
+  "landing.subtitle": "แพลตฟอร์มคณิตศาสตร์แข่งขันระดับโลก ตั้งแต่ สอวน. ถึง IMO - หลักสูตรเป็นระบบ, ระบบเรตติ้งปรับตัวตามผู้ใช้, และคอมมูนิตี้ระดับโลก"
 }
