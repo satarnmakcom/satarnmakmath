@@ -54,7 +54,7 @@ export default function CommandPalette() {
   const listRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const { t } = useLanguage()
-  const debounceRef = useRef<NodeJS.Timeout>()
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
 
   // Load recent searches from localStorage
   useEffect(() => {

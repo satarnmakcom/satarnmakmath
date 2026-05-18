@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma"
 
 export interface SearchResult {
   id: string
-  type: 'problem' | 'module' | 'lesson' | 'user'
+  type: 'problem' | 'module' | 'lesson' | 'user' | 'nav'
   title: string
   subtitle: string
   href: string
