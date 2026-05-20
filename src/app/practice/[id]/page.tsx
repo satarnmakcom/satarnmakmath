@@ -139,7 +139,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
         setProblem(res.data as any)
       }
       if (bookmarkRes.success) {
-        setIsBookmarked(bookmarkRes.bookmarked ?? false)
+        setIsBookmarked(bookmarkRes.bookmarked)
       }
       setLoading(false)
     }
