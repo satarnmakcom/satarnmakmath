@@ -77,60 +77,64 @@ export const authOptions: NextAuthOptions = {
         const userId = user?.id || token.sub
         if (!userId) return token
 
-        // Fetch fresh stats from the database
-        const dbUser = await prisma.user.findUnique({
-          where: { id: userId },
-          include: {
-            submissions: {
-              where: { status: "ACCEPTED" }
+        try {
+          // Fetch fresh stats from the database
+          const dbUser = await prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+              submissions: {
+                where: { status: "ACCEPTED" }
+              }
             }
-          }
-        })
+          })
 
-        if (dbUser) {
-          // --- Streak Auto-Update ---
-          const now = new Date()
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-          let newStreak = dbUser.streak
+          if (dbUser) {
+            // --- Streak Auto-Update ---
+            const now = new Date()
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+            let newStreak = dbUser.streak
 
-          if (dbUser.lastLoginAt) {
-            const lastLogin = new Date(dbUser.lastLoginAt)
-            const lastLoginDay = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate())
-            const diffDays = Math.floor((today.getTime() - lastLoginDay.getTime()) / (1000 * 60 * 60 * 24))
+            if (dbUser.lastLoginAt) {
+              const lastLogin = new Date(dbUser.lastLoginAt)
+              const lastLoginDay = new Date(lastLogin.getFullYear(), lastLogin.getMonth(), lastLogin.getDate())
+              const diffDays = Math.floor((today.getTime() - lastLoginDay.getTime()) / (1000 * 60 * 60 * 24))
 
-            if (diffDays === 1) {
-              // Yesterday → increment streak
-              newStreak = dbUser.streak + 1
-            } else if (diffDays === 0) {
-              // Same day → keep streak
-              newStreak = dbUser.streak
+              if (diffDays === 1) {
+                // Yesterday → increment streak
+                newStreak = dbUser.streak + 1
+              } else if (diffDays === 0) {
+                // Same day → keep streak
+                newStreak = dbUser.streak
+              } else {
+                // Missed a day → reset to 1
+                newStreak = 1
+              }
             } else {
-              // Missed a day → reset to 1
+              // First ever login
               newStreak = 1
             }
-          } else {
-            // First ever login
-            newStreak = 1
-          }
 
-          // Update streak and lastLoginAt in DB if it changed
-          if (newStreak !== dbUser.streak || !dbUser.lastLoginAt || dbUser.lastLoginAt.toDateString() !== now.toDateString()) {
-            await prisma.user.update({
-              where: { id: userId },
-              data: {
-                streak: newStreak,
-                lastLoginAt: now,
-              }
-            })
-          }
+            // Update streak and lastLoginAt in DB if it changed
+            if (newStreak !== dbUser.streak || !dbUser.lastLoginAt || dbUser.lastLoginAt.toDateString() !== now.toDateString()) {
+              await prisma.user.update({
+                where: { id: userId },
+                data: {
+                  streak: newStreak,
+                  lastLoginAt: now,
+                }
+              })
+            }
 
-          token.role = dbUser.role
-          token.rating = dbUser.rating
-          token.streak = newStreak
-          token.globalRank = dbUser.globalRank
-          token.solvedCount = dbUser.submissions.length
-          token.picture = dbUser.image
-          token.name = dbUser.name
+            token.role = dbUser.role
+            token.rating = dbUser.rating
+            token.streak = newStreak
+            token.globalRank = dbUser.globalRank
+            token.solvedCount = dbUser.submissions.length
+            token.picture = dbUser.image
+            token.name = dbUser.name
+          }
+        } catch (err) {
+          console.error("Error in JWT callback:", err)
         }
       }
       return token

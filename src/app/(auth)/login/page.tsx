@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
@@ -11,6 +11,13 @@ export default function LoginPage() {
   const [data, setData] = useState({ email: "", password: "" })
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const { data: session, status } = useSession()
+
+  if (status === "authenticated") {
+    if (typeof window !== "undefined") {
+      window.location.href = "/dashboard"
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,8 +33,7 @@ export default function LoginPage() {
       setError(res.error)
       setLoading(false)
     } else {
-      router.push("/")
-      router.refresh()
+      window.location.href = "/dashboard"
     }
   }
 
