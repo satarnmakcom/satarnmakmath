@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { getLeaderboard } from '@/actions/users'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
+import { getRatingInfo } from '@/lib/rating'
 
 interface User {
   id: string
@@ -30,14 +31,7 @@ export default function LeaderboardPage() {
     loadData()
   }, [])
 
-  const getRatingClass = (rating: number) => {
-    if (rating >= 2600) return 'rating-grandmaster'
-    if (rating >= 2200) return 'rating-master'
-    if (rating >= 1800) return 'rating-expert'
-    if (rating >= 1400) return 'rating-specialist'
-    if (rating >= 1000) return 'rating-pupil'
-    return 'rating-newbie'
-  }
+
 
   return (
     <section className="max-w-5xl mx-auto space-y-5 md:space-y-6 relative px-4 md:px-6">
@@ -111,11 +105,11 @@ export default function LeaderboardPage() {
                       <td className="px-6 py-4">
                         <Link href={`/user/${encodeURIComponent(u.name || u.id)}`} className="flex items-center gap-3 group hover:opacity-80 transition-opacity">
                           <img src={u.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${u.name}`} className="w-8 h-8 rounded-full bg-[var(--bg-secondary)] object-cover" alt="" />
-                          <span className={`font-semibold text-sm ${getRatingClass(u.rating)} group-hover:underline`}>{u.name}</span>
+                          <span className={`font-semibold text-sm ${getRatingInfo(u.rating).className} group-hover:underline`}>{u.name}</span>
                         </Link>
                       </td>
                       <td className="px-6 py-4 text-lg">{u.country}</td>
-                      <td className={`px-6 py-4 font-bold text-sm ${getRatingClass(u.rating)}`}>{u.rating}</td>
+                      <td className={`px-6 py-4 font-bold text-sm ${getRatingInfo(u.rating).className}`}>{u.rating}</td>
                       <td className="px-6 py-4 text-[var(--text-secondary)] text-sm">{u.solvedCount}</td>
                       <td className="px-6 py-4">
                         {trend === 'up' && <span className="text-neon-400 font-bold">▲</span>}
