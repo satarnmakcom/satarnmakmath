@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useLanguage } from "@/context/LanguageContext"
+import { EmptyState } from "@/components/EmptyState"
 
 interface ProblemSet {
   id: string
@@ -98,14 +99,12 @@ export default function ContestsClient({ sets }: ContestsClientProps) {
         ))}
 
         {sets.length === 0 && (
-          <div className="col-span-full flex flex-col items-center justify-center py-24 bg-[var(--bg-card)] rounded-3xl border border-dashed border-[var(--border-color)]">
-            <div className="w-20 h-20 bg-[var(--bg-secondary)] rounded-full flex items-center justify-center mb-6">
-              <span className="text-4xl">⏳</span>
-            </div>
-            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">{t('contests.empty_title')}</h3>
-            <p className="text-[var(--text-secondary)] text-center max-w-md">
-              {t('contests.empty_desc')}
-            </p>
+          <div className="col-span-full mt-12">
+            <EmptyState
+              icon={<span className="text-4xl">⏳</span>}
+              title={t('contests.empty_title')}
+              description={t('contests.empty_desc')}
+            />
           </div>
         )}
       </div>

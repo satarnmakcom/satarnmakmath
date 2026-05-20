@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react'
 import Link from 'next/link'
 import { getProblems } from '@/actions/problems'
 import { motion, AnimatePresence } from 'framer-motion'
+import { EmptyState } from "@/components/EmptyState"
 
 interface Problem {
   id: string
@@ -248,13 +249,15 @@ export default function PracticePage() {
                   key="empty"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-center py-16 text-[var(--text-secondary)]"
+                  className="py-12"
                 >
-                  <div className="text-4xl mb-4">🔍</div>
-                  <p className="font-semibold">No problems match your filters</p>
-                  <button onClick={resetFilters} className="mt-4 text-electric-400 hover:text-electric-300 text-sm font-semibold">
-                    Clear all filters
-                  </button>
+                  <EmptyState 
+                    icon={<span className="text-4xl">🔍</span>}
+                    title="No problems found"
+                    description="No problems match your filters. Try adjusting your search or clearing filters."
+                    actionLabel="Clear all filters"
+                    actionOnClick={resetFilters}
+                  />
                 </motion.div>
               ) : (
                 <motion.div
