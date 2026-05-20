@@ -13,15 +13,6 @@ interface HeaderProps {
   onToggleSidebar?: () => void
 }
 
-const getRatingInfo = (rating: number) => {
-  if (rating < 1200) return { title: 'Newbie', className: 'rating-newbie' }
-  if (rating < 1400) return { title: 'Pupil', className: 'rating-pupil' }
-  if (rating < 1600) return { title: 'Specialist', className: 'rating-specialist' }
-  if (rating < 1900) return { title: 'Expert', className: 'rating-expert' }
-  if (rating < 2400) return { title: 'Master', className: 'rating-master' }
-  return { title: 'Grandmaster', className: 'rating-grandmaster' }
-}
-
 export default function Header({ onToggleSidebar }: HeaderProps) {
   const [isLangOpen, setIsLangOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
