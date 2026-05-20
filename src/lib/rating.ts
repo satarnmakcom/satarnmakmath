@@ -67,7 +67,7 @@ export const getRatingInfo = (rating: number) => {
   if (rating < 2600) return { title: 'Grandmaster', className: 'rating-grandmaster' }
   if (rating < 3000) return { title: 'International Grandmaster', className: 'text-[#f00] font-bold' }
   if (rating < 4000) return { title: 'Legendary Grandmaster', className: 'text-[#f00] font-extrabold drop-shadow-[0_0_8px_rgba(255,0,0,0.5)]' }
-  return { title: 'Tourist', className: 'text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 font-black drop-shadow-[0_0_10px_rgba(139,92,246,0.6)]' }
+  return { title: 'Supreme', className: 'text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 font-black drop-shadow-[0_0_10px_rgba(139,92,246,0.6)]' }
 }
 
 export const getRankProgress = (rating: number) => {
@@ -80,6 +80,6 @@ export const getRankProgress = (rating: number) => {
   if (rating < 2400) return { current: 'Int. Master', next: 'Grandmaster', percent: Math.max(0, ((rating - 2300) / 100) * 100) }
   if (rating < 2600) return { current: 'Grandmaster', next: 'Int. Grandmaster', percent: Math.max(0, ((rating - 2400) / 200) * 100) }
   if (rating < 3000) return { current: 'Int. Grandmaster', next: 'Leg. Grandmaster', percent: Math.max(0, ((rating - 2600) / 400) * 100) }
-  if (rating < 4000) return { current: 'Leg. Grandmaster', next: 'Tourist', percent: Math.max(0, ((rating - 3000) / 1000) * 100) }
-  return { current: 'Tourist', next: 'Max', percent: 100 }
+  if (rating < 4000) return { current: 'Leg. Grandmaster', next: 'Supreme', percent: Math.max(0, ((rating - 3000) / 1000) * 100) }
+  return { current: 'Supreme', next: 'Max', percent: 100 }
 }
