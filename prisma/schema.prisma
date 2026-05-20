@@ -43,6 +43,7 @@ model User {
   submissions   Submission[]
   achievements  UserAchievement[]
   problemSetAttempts ProblemSetAttempt[]
+  bookmarks     Bookmark[]
 }
 
 model Account {
@@ -90,9 +91,11 @@ model Problem {
   tags          String[]
   
   createdAt     DateTime  @default(now())
+  hints         String[]  @default([])
   
   submissions   Submission[]
   problemSets   ProblemSetItem[]
+  bookmarks     Bookmark[]
 }
 
 model Submission {
@@ -179,4 +182,16 @@ model ProblemSetAttempt {
   user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   problemSet     ProblemSet @relation(fields: [problemSetId], references: [id], onDelete: Cascade)
   submissions    Submission[]
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  problemId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
 }

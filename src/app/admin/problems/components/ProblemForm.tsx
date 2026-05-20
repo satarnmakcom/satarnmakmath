@@ -14,6 +14,7 @@ interface ProblemFormProps {
     level: CompetitionLevel
     difficulty: number
     tags: string[]
+    hints?: string[]
   }
   onSubmit: (data: any) => Promise<{ success: boolean, error?: string }>
   isEditing?: boolean
@@ -29,7 +30,8 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
     content: initialData?.content || '',
     level: initialData?.level || 'POSN',
     difficulty: initialData?.difficulty || 1200,
-    tags: initialData?.tags?.join(', ') || ''
+    tags: initialData?.tags?.join(', ') || '',
+    hints: initialData?.hints || []
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,7 +44,8 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
     const res = await onSubmit({
       ...formData,
       difficulty: Number(formData.difficulty),
-      tags: tagsArray
+      tags: tagsArray,
+      hints: formData.hints.filter(h => h.trim() !== '')
     })
 
     if (res.success) {
@@ -97,6 +100,55 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                 value={formData.content}
                 onChange={e => setFormData({ ...formData, content: e.target.value })}
               />
+            </div>
+            
+            {/* Hints Section */}
+            <div className="pt-4 border-t border-[var(--border-color)]">
+              <div className="flex items-center justify-between mb-4">
+                <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Hints</label>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, hints: [...formData.hints, ''] })}
+                  className="text-xs px-3 py-1 rounded-lg bg-electric-500/10 text-electric-400 font-bold hover:bg-electric-500/20 transition-colors"
+                >
+                  + Add Hint
+                </button>
+              </div>
+              <div className="space-y-3">
+                {formData.hints.map((hint, index) => (
+                  <div key={index} className="flex gap-2">
+                    <span className="flex-shrink-0 w-6 h-6 mt-2 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-xs font-bold text-[var(--text-tertiary)]">
+                      {index + 1}
+                    </span>
+                    <textarea
+                      rows={2}
+                      className="flex-1 bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-electric-500/50 transition-all resize-y font-mono"
+                      value={hint}
+                      onChange={(e) => {
+                        const newHints = [...formData.hints]
+                        newHints[index] = e.target.value
+                        setFormData({ ...formData, hints: newHints })
+                      }}
+                      placeholder={`Hint ${index + 1} (LaTeX supported)`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newHints = formData.hints.filter((_, i) => i !== index)
+                        setFormData({ ...formData, hints: newHints })
+                      }}
+                      className="flex-shrink-0 mt-2 w-8 h-8 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-500/10 transition-colors"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {formData.hints.length === 0 && (
+                  <div className="text-sm text-[var(--text-tertiary)] text-center py-4 bg-[var(--bg-card)] rounded-xl border border-dashed border-[var(--border-color)]">
+                    No hints added yet.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
