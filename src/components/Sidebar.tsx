@@ -149,8 +149,8 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 </div>
                 <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                   <div className="flex justify-between text-xs mb-2">
-                    <span className="text-[var(--text-secondary)] font-medium truncate max-w-[120px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
-                    <span className="text-electric-400 font-bold ml-2">{Math.round(progressInfo.percent)}%</span>
+                    <span className="text-[var(--text-secondary)] font-medium truncate max-w-[150px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
+                    <span className="text-electric-400 font-bold ml-2 shrink-0">{Math.round(progressInfo.percent)}%</span>
                   </div>
                   <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
                     <motion.div

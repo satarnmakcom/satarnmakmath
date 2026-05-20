@@ -83,7 +83,7 @@ export default function ProfilePage() {
             </div>
             <div className="flex-1 mb-0 md:mb-2">
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user?.name || "Anonymous"}</h1>
+                <h1 className={`text-2xl md:text-4xl tracking-tight ${ratingInfo.className}`}>{user?.name || "Anonymous"}</h1>
                 <span className={`px-3 py-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm text-xs ${ratingInfo.className}`}>{ratingInfo.title}</span>
                 {user && <AdminRatingEditor userId={user.id} currentRating={user.rating || 1200} isAdmin={(user as any).role === "ADMIN"} />}
               </div>
