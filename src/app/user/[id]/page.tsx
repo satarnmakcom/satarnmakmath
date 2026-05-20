@@ -4,15 +4,7 @@ import Link from "next/link"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import AdminRatingEditor from "@/components/AdminRatingEditor"
-
-const getRatingInfo = (rating: number) => {
-  if (rating < 1200) return { title: 'Newbie', className: 'from-gray-500 to-gray-400' }
-  if (rating < 1400) return { title: 'Pupil', className: 'from-green-500 to-green-400' }
-  if (rating < 1600) return { title: 'Specialist', className: 'from-cyan-500 to-cyan-400' }
-  if (rating < 1900) return { title: 'Expert', className: 'from-blue-500 to-blue-400' }
-  if (rating < 2400) return { title: 'Master', className: 'from-purple-500 to-purple-400' }
-  return { title: 'Grandmaster', className: 'from-red-500 to-red-400' }
-}
+import { getRatingInfo } from "@/lib/rating"
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

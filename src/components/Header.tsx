@@ -7,6 +7,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useLanguage } from '@/context/LanguageContext'
 import { useTheme } from 'next-themes'
 import CommandPalette from './CommandPalette'
+import { getRatingInfo } from '@/lib/rating'
 
 interface HeaderProps {
   onToggleSidebar?: () => void

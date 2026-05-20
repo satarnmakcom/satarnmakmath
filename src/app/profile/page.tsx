@@ -5,6 +5,7 @@ import Link from "next/link"
 import { toast } from "sonner"
 import AdminRatingEditor from "@/components/AdminRatingEditor"
 import { useLanguage } from "@/context/LanguageContext"
+import { getRatingInfo } from "@/lib/rating"
 
 const achievements = [
   { id: 'welcome', icon: 'fire', color: 'gold', title: 'Welcome to Satarnmak Math', locked: false },
@@ -27,15 +28,6 @@ const colorMap: Record<string, { from: string; to: string }> = {
   violet: { from: 'from-violet-500', to: 'to-violet-400' },
   orange: { from: 'from-orange-500', to: 'to-orange-400' },
   emerald: { from: 'from-emerald-500', to: 'to-emerald-400' }
-}
-
-const getRatingInfo = (rating: number) => {
-  if (rating < 1200) return { title: 'Newbie', className: 'rating-newbie' }
-  if (rating < 1400) return { title: 'Pupil', className: 'rating-pupil' }
-  if (rating < 1600) return { title: 'Specialist', className: 'rating-specialist' }
-  if (rating < 1900) return { title: 'Expert', className: 'rating-expert' }
-  if (rating < 2400) return { title: 'Master', className: 'rating-master' }
-  return { title: 'Grandmaster', className: 'rating-grandmaster' }
 }
 
 export default function ProfilePage() {

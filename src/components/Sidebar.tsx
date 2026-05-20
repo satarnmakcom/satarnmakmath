@@ -21,14 +21,7 @@ interface SidebarProps {
   onClose?: () => void
 }
 
-const getRankProgress = (rating: number) => {
-  if (rating < 1200) return { current: 'Newbie', next: 'Pupil', percent: Math.max(0, (rating / 1200) * 100) }
-  if (rating < 1400) return { current: 'Pupil', next: 'Specialist', percent: Math.max(0, ((rating - 1200) / 200) * 100) }
-  if (rating < 1600) return { current: 'Specialist', next: 'Expert', percent: Math.max(0, ((rating - 1400) / 200) * 100) }
-  if (rating < 1900) return { current: 'Expert', next: 'Master', percent: Math.max(0, ((rating - 1600) / 300) * 100) }
-  if (rating < 2400) return { current: 'Master', next: 'Grandmaster', percent: Math.max(0, ((rating - 1900) / 500) * 100) }
-  return { current: 'Grandmaster', next: 'Max', percent: 100 }
-}
+import { getRankProgress } from '@/lib/rating'
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname()
