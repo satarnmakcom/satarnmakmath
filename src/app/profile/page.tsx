@@ -58,7 +58,7 @@ export default function ProfilePage() {
           {/* Floating Stats on Banner */}
           <div className="absolute top-6 right-6 md:right-10 flex gap-3 z-10">
             <div className="px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-center hover:bg-white/20 transition-all shadow-xl">
-              <div className="text-lg font-extrabold text-white">{ratingInfo.title}</div>
+              <div className={`text-lg font-extrabold ${ratingInfo.className}`}>{ratingInfo.title}</div>
               <div className="text-[10px] text-white/70 uppercase tracking-wider font-bold">{t('profile.rank')}</div>
             </div>
             <div className="px-5 py-2.5 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 text-center hover:bg-white/20 transition-all shadow-xl">
@@ -84,7 +84,7 @@ export default function ProfilePage() {
             <div className="flex-1 mb-0 md:mb-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user?.name || "Anonymous"}</h1>
-                <span className={`px-3 py-1 rounded-xl bg-gradient-to-r from-[var(--tw-gradient-from)] to-[var(--tw-gradient-to)] text-[var(--tw-gradient-from)] text-xs font-bold border border-white/10 ${ratingInfo.className.replace('rating', 'from')}`}>{ratingInfo.title}</span>
+                <span className={`px-3 py-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm text-xs ${ratingInfo.className}`}>{ratingInfo.title}</span>
                 {user && <AdminRatingEditor userId={user.id} currentRating={user.rating || 1200} isAdmin={(user as any).role === "ADMIN"} />}
               </div>
               <p className="text-sm text-[var(--text-secondary)] mt-2 flex items-center gap-3 flex-wrap">

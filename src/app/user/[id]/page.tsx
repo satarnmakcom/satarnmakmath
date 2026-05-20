@@ -47,7 +47,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
           {/* Floating Stats on Banner */}
           <div className="absolute top-6 right-6 md:right-10 flex gap-3">
             <div className="px-4 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center">
-              <div className="text-lg font-bold text-white">{ratingInfo.title}</div>
+              <div className={`text-lg font-bold ${ratingInfo.className}`}>{ratingInfo.title}</div>
               <div className="text-[10px] text-white/60 uppercase tracking-wider">Rank</div>
             </div>
             <div className="px-4 py-2 rounded-xl bg-white/5 backdrop-blur-md border border-white/10 text-center">
@@ -70,7 +70,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             <div className="flex-1 mb-0 md:mb-2">
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-2xl md:text-4xl font-bold text-[var(--text-primary)] tracking-tight">{user.name || "Anonymous"}</h1>
-                <span className={`px-3 py-1 rounded-xl bg-gradient-to-r ${ratingInfo.className} text-white text-xs font-bold border border-white/10 shadow-lg`}>{ratingInfo.title}</span>
+                <span className={`px-3 py-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-color)] shadow-sm text-xs ${ratingInfo.className}`}>{ratingInfo.title}</span>
                 <AdminRatingEditor userId={user.id} currentRating={user.rating} isAdmin={isAdmin} />
               </div>
               <p className="text-sm text-[var(--text-secondary)] mt-2 flex items-center gap-3 flex-wrap">
