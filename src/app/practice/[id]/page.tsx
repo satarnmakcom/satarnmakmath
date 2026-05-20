@@ -139,7 +139,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
         setProblem(res.data as any)
       }
       if (bookmarkRes.success) {
-        setIsBookmarked(bookmarkRes.bookmarked)
+        setIsBookmarked(bookmarkRes.bookmarked ?? false)
       }
       setLoading(false)
     }
@@ -149,7 +149,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
   const handleBookmarkToggle = async () => {
     const res = await toggleBookmark(id)
     if (res.success) {
-      setIsBookmarked(res.bookmarked)
+      setIsBookmarked(res.bookmarked ?? false)
       setToast({ message: res.bookmarked ? 'Saved to bookmarks' : 'Removed from bookmarks', type: 'success' })
     }
   }
