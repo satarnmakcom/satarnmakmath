@@ -73,14 +73,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
           <AnimatePresence>
             {!collapsed && (
-              <motion.span
+              <motion.div
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10, display: 'none' }}
-                className="text-lg font-bold text-gradient tracking-tight whitespace-nowrap"
+                className="flex items-center"
               >
-                Satarnmak Math
-              </motion.span>
+                <img src="/logo1.png" alt="Satarnmak Math" className="h-8 w-auto object-contain" />
+              </motion.div>
             )}
           </AnimatePresence>
         </div>

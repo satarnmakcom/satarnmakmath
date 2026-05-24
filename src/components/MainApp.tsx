@@ -58,10 +58,7 @@ export default function MainApp() {
         {/* LEFT SIDEBAR */}
         <aside className={`${sidebarOpen ? 'w-64' : 'sidebar-collapsed'} flex-shrink-0 flex flex-col border-r border-[var(--border-color)] bg-[var(--bg-secondary)] z-40 transition-all duration-300`}>
           <div className="h-16 flex items-center px-6 border-b border-[var(--border-color)] flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-electric-500 to-violet-600 flex items-center justify-center shadow-lg shadow-electric-500/25 mr-3 flex-shrink-0 float-anim">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            </div>
-            <span className="text-lg font-bold text-gradient tracking-tight whitespace-nowrap">SatarnMath</span>
+            <img src="/logo1.png" alt="SatarnMath" className="h-8 w-auto object-contain" />
           </div>
 
           <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
