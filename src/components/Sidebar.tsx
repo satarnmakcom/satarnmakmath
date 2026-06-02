@@ -55,8 +55,8 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           width: collapsed ? 80 : 256,
           x: isOpen || typeof window !== 'undefined' && window.innerWidth >= 768 ? 0 : -256
         }}
-        transition={{ type: "spring", stiffness: 350, damping: 40 }}
-        className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--border-color)] bg-[var(--bg-primary)] z-50 overflow-hidden shadow-2xl md:shadow-none transition-all duration-300"
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="fixed md:relative flex-shrink-0 flex flex-col h-full border-r border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--glass-bg)] z-50 overflow-hidden shadow-2xl md:shadow-none transition-colors duration-300"
       >
         {/* Hamburger & Title */}
         <div className="h-16 flex items-center px-4 md:px-6 border-b border-[var(--border-color)] flex-shrink-0">
@@ -64,7 +64,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setCollapsed(!collapsed)}
-            className="p-2 -ml-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors mr-2 flex-shrink-0"
+            className="p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-colors mr-2 flex-shrink-0"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -79,9 +79,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 exit={{ opacity: 0, x: -10, display: 'none' }}
                 className="flex items-center"
               >
-                <span className="text-[17px] font-bold tracking-tight text-[var(--text-primary)]">
-                  Satarnmak Math
-                </span>
+                <img src="/logo1.png" alt="Satarnmak Math" className="h-8 w-auto object-contain" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -94,25 +92,27 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             return (
               <Link href={item.href} key={item.id} className="block w-full">
                 <motion.div
-                  whileHover={{ x: collapsed ? 0 : 2 }}
-                  whileTap={{ scale: 0.98 }}
-                  initial={{ opacity: 0, y: 10 }}
+                  whileHover={{ scale: 1.02, x: collapsed ? 0 : 4 }}
+                  whileTap={{ scale: 0.95 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03, duration: 0.2 }}
-                  className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all duration-200 group ${active
+                  transition={{ delay: index * 0.05 }}
+                  className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${active
                       ? 'text-[var(--text-primary)] bg-[var(--bg-elevated)]'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/40'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/50'
                     }`}
                 >
                   {active && (
                     <motion.div
-                      layoutId="activeTabIndicator"
-                      className="absolute left-0 top-[15%] bottom-[15%] w-[3px] bg-electric-500 rounded-r-full"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
+                      layoutId="activeTab"
+                      className="absolute inset-0 z-0"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    >
+                      <div className="absolute left-0 top-[20%] bottom-[20%] w-1 bg-[var(--text-primary)] rounded-r-full" />
+                    </motion.div>
                   )}
-                  <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : 'ml-1'}`}>
-                    <svg className={`w-5 h-5 flex-shrink-0 transition-colors ${active ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className={`relative z-10 flex items-center ${collapsed ? 'justify-center w-full' : ''}`}>
+                    <svg className={`w-5 h-5 flex-shrink-0 ${active ? 'text-electric-500' : 'text-[var(--text-tertiary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
                     </svg>
                     <AnimatePresence>
@@ -136,28 +136,28 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <AnimatePresence>
             {!collapsed && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                transition={{ delay: 0.2 }}
-                className="pt-4 mt-4 border-t border-[var(--border-color)]"
+                transition={{ delay: 0.3 }}
+                className="pt-4 mt-6 border-t border-[var(--border-color)]"
               >
                 <div className="flex items-center justify-between mb-2 px-3">
-                  <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-widest">
+                  <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
                     {t('sidebar.your_progress')}
                   </span>
                 </div>
-                <div className="px-3 py-3 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)]">
-                  <div className="flex justify-between items-baseline mb-2">
-                    <span className="text-[11px] font-mono text-[var(--text-secondary)] truncate">{progressInfo.current}</span>
-                    <span className="text-[11px] font-mono text-[var(--text-primary)] font-medium ml-2 shrink-0">{Math.round(progressInfo.percent)}%</span>
+                <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
+                  <div className="flex justify-between text-xs mb-2">
+                    <span className="text-[var(--text-secondary)] font-medium truncate max-w-[150px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
+                    <span className="text-electric-400 font-bold ml-2 shrink-0">{Math.round(progressInfo.percent)}%</span>
                   </div>
-                  <div className="h-1.5 bg-[var(--bg-elevated)] rounded-full overflow-hidden">
+                  <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progressInfo.percent}%` }}
-                      transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-                      className="h-full bg-electric-500 rounded-full"
+                      transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                      className="h-full bg-gradient-to-r from-electric-500 to-violet-500 rounded-full"
                     />
                   </div>
                 </div>
@@ -170,16 +170,15 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <div className="p-3 border-t border-[var(--border-color)] flex-shrink-0">
           <Link href="/settings">
             <motion.div
-              whileHover={{ backgroundColor: 'var(--bg-elevated)' }}
-              whileTap={{ scale: 0.98 }}
-              className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-lg text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer group`}
+              whileHover={{ scale: 1.02, backgroundColor: 'var(--bg-elevated)' }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-3 py-2.5 rounded-xl text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors cursor-pointer`}
             >
-              <img
-                src={session?.user?.image || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session?.user?.name}
-                alt="Profile"
-                className="w-6 h-6 rounded-full bg-gradient-to-br from-electric-400 to-violet-500 ring-1 ring-[var(--border-color)] object-cover flex-shrink-0 grayscale group-hover:grayscale-0 transition-all"
-              />
-              {!collapsed && <span className="truncate">{session?.user?.name || t('sidebar.settings')}</span>}
+              <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {!collapsed && <span>{t('sidebar.settings')}</span>}
             </motion.div>
           </Link>
         </div>

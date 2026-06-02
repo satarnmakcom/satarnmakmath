@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { globalSearch, type SearchResult } from '@/actions/search'
@@ -45,6 +46,7 @@ const typeLabels: Record<string, string> = {
 
 export default function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
@@ -55,6 +57,10 @@ export default function CommandPalette() {
   const router = useRouter()
   const { t } = useLanguage()
   const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -192,174 +198,179 @@ export default function CommandPalette() {
       </button>
 
       {/* Modal */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
-              onClick={() => setIsOpen(false)}
-            />
+      {mounted && typeof document !== 'undefined'
+        ? createPortal(
+            <AnimatePresence>
+              {isOpen && (
+                <div className="relative z-[9999]">
+                  {/* Backdrop */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]"
+                    onClick={() => setIsOpen(false)}
+                  />
 
-            {/* Palette */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-[95vw] max-w-[640px] z-[101] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-2xl shadow-black/40 overflow-hidden"
-            >
-              {/* Search Input */}
-              <div className="flex items-center gap-3 px-5 border-b border-[var(--border-color)]">
-                <svg className={`w-5 h-5 flex-shrink-0 transition-colors ${loading ? 'text-electric-400 animate-pulse' : 'text-[var(--text-tertiary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={t('search.input_placeholder')}
-                  className="flex-1 py-4 bg-transparent text-[var(--text-primary)] text-base outline-none placeholder:text-[var(--text-tertiary)]"
-                  autoComplete="off"
-                  spellCheck={false}
-                />
-                {query && (
-                  <button onClick={() => setQuery('')} className="p-1 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                )}
-                <kbd className="hidden sm:inline-flex px-2 py-1 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[10px] font-mono font-bold text-[var(--text-tertiary)]">
-                  ESC
-                </kbd>
-              </div>
-
-              {/* Results */}
-              <div ref={listRef} className="max-h-[50vh] overflow-y-auto overscroll-contain">
-                {/* Section headers */}
-                {!query.trim() && recentSearches.length > 0 && (
-                  <div className="px-5 pt-3 pb-1 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('search.recent')}</span>
-                    <button onClick={clearRecent} className="text-[10px] font-bold text-[var(--text-tertiary)] hover:text-rose-400 transition-colors uppercase tracking-wider">
-                      {t('search.clear')}
-                    </button>
-                  </div>
-                )}
-
-                {!query.trim() && (
-                  <div className="px-5 pt-3 pb-1">
-                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('search.quick_nav')}</span>
-                  </div>
-                )}
-
-                {query.trim() && results.length > 0 && (
-                  <div className="px-5 pt-3 pb-1">
-                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
-                      {t('search.results')} ({results.length})
-                    </span>
-                  </div>
-                )}
-
-                {displayItems.map((item, i) => {
-                  const isSelected = i === selectedIndex
-                  const icon = typeIcons[item.type] || typeIcons.nav
-                  const color = typeColors[item.type] || typeColors.nav
-                  const label = typeLabels[item.type] || ''
-
-                  return (
-                    <button
-                      key={`${item.type}-${item.id}`}
-                      onClick={() => goToResult(item)}
-                      onMouseEnter={() => setSelectedIndex(i)}
-                      className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${
-                        isSelected
-                          ? 'bg-electric-500/10'
-                          : 'hover:bg-[var(--bg-secondary)]'
-                      }`}
-                    >
-                      {/* Icon */}
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
-                        <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={icon} />
-                        </svg>
-                      </div>
-
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className={`font-semibold text-sm truncate ${isSelected ? 'text-electric-400' : 'text-[var(--text-primary)]'}`}>
-                            {item.title}
-                          </span>
-                          {label && item.type !== 'nav' && (
-                            <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${color}`}>
-                              {label}
-                            </span>
-                          )}
-                        </div>
-                        {item.subtitle && item.subtitle !== 'Navigate' && (
-                          <p className="text-xs text-[var(--text-tertiary)] truncate mt-0.5">{item.subtitle}</p>
-                        )}
-                      </div>
-
-                      {/* Meta / shortcut hint */}
-                      {item.meta && (
-                        <span className="text-[11px] font-mono text-[var(--text-tertiary)] flex-shrink-0">{item.meta}</span>
-                      )}
-
-                      {isSelected && (
-                        <div className="flex-shrink-0">
-                          <svg className="w-4 h-4 text-electric-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                  {/* Palette */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                    className="fixed top-[15vh] left-1/2 -translate-x-1/2 w-[95vw] max-w-[640px] z-[101] rounded-2xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-2xl shadow-black/40 overflow-hidden"
+                  >
+                    {/* Search Input */}
+                    <div className="flex items-center gap-3 px-5 border-b border-[var(--border-color)]">
+                      <svg className={`w-5 h-5 flex-shrink-0 transition-colors ${loading ? 'text-electric-400 animate-pulse' : 'text-[var(--text-tertiary)]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        ref={inputRef}
+                        type="text"
+                        value={query}
+                        onChange={e => setQuery(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder={t('search.input_placeholder')}
+                        className="flex-1 py-4 bg-transparent text-[var(--text-primary)] text-base outline-none placeholder:text-[var(--text-tertiary)]"
+                        autoComplete="off"
+                        spellCheck={false}
+                      />
+                      {query && (
+                        <button onClick={() => setQuery('')} className="p-1 rounded-lg hover:bg-[var(--bg-secondary)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                           </svg>
+                        </button>
+                      )}
+                      <kbd className="hidden sm:inline-flex px-2 py-1 rounded-md bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[10px] font-mono font-bold text-[var(--text-tertiary)]">
+                        ESC
+                      </kbd>
+                    </div>
+
+                    {/* Results */}
+                    <div ref={listRef} className="max-h-[50vh] overflow-y-auto overscroll-contain">
+                      {/* Section headers */}
+                      {!query.trim() && recentSearches.length > 0 && (
+                        <div className="px-5 pt-3 pb-1 flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('search.recent')}</span>
+                          <button onClick={clearRecent} className="text-[10px] font-bold text-[var(--text-tertiary)] hover:text-rose-400 transition-colors uppercase tracking-wider">
+                            {t('search.clear')}
+                          </button>
                         </div>
                       )}
-                    </button>
-                  )
-                })}
 
-                {/* Empty state */}
-                {query.trim() && !loading && results.length === 0 && (
-                  <div className="px-5 py-12 text-center">
-                    <div className="text-3xl mb-3">🔍</div>
-                    <p className="text-sm font-semibold text-[var(--text-secondary)]">{t('search.no_results')}</p>
-                    <p className="text-xs text-[var(--text-tertiary)] mt-1">{t('search.try_different')}</p>
-                  </div>
-                )}
+                      {!query.trim() && (
+                        <div className="px-5 pt-3 pb-1">
+                          <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">{t('search.quick_nav')}</span>
+                        </div>
+                      )}
 
-                {/* Loading state */}
-                {loading && (
-                  <div className="px-5 py-8 flex justify-center">
-                    <div className="w-6 h-6 border-2 border-electric-500/30 border-t-electric-500 rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
+                      {query.trim() && results.length > 0 && (
+                        <div className="px-5 pt-3 pb-1">
+                          <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase tracking-wider">
+                            {t('search.results')} ({results.length})
+                          </span>
+                        </div>
+                      )}
 
-              {/* Footer */}
-              <div className="flex items-center gap-4 px-5 py-2.5 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/50">
-                <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
-                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono font-bold">↑↓</kbd>
-                  <span>{t('search.navigate')}</span>
+                      {displayItems.map((item, i) => {
+                        const isSelected = i === selectedIndex
+                        const icon = typeIcons[item.type] || typeIcons.nav
+                        const color = typeColors[item.type] || typeColors.nav
+                        const label = typeLabels[item.type] || ''
+
+                        return (
+                          <button
+                            key={`${item.type}-${item.id}`}
+                            onClick={() => goToResult(item)}
+                            onMouseEnter={() => setSelectedIndex(i)}
+                            className={`w-full flex items-center gap-3 px-5 py-3 text-left transition-colors ${
+                              isSelected
+                                ? 'bg-electric-500/10'
+                                : 'hover:bg-[var(--bg-secondary)]'
+                            }`}
+                          >
+                            {/* Icon */}
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+                              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={icon} />
+                              </svg>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className={`font-semibold text-sm truncate ${isSelected ? 'text-electric-400' : 'text-[var(--text-primary)]'}`}>
+                                  {item.title}
+                                </span>
+                                {label && item.type !== 'nav' && (
+                                  <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${color}`}>
+                                    {label}
+                                  </span>
+                                )}
+                              </div>
+                              {item.subtitle && item.subtitle !== 'Navigate' && (
+                                <p className="text-xs text-[var(--text-tertiary)] truncate mt-0.5">{item.subtitle}</p>
+                              )}
+                            </div>
+
+                            {/* Meta / shortcut hint */}
+                            {item.meta && (
+                              <span className="text-[11px] font-mono text-[var(--text-tertiary)] flex-shrink-0">{item.meta}</span>
+                            )}
+
+                            {isSelected && (
+                              <div className="flex-shrink-0">
+                                <svg className="w-4 h-4 text-electric-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        )
+                      })}
+
+                      {/* Empty state */}
+                      {query.trim() && !loading && results.length === 0 && (
+                        <div className="px-5 py-12 text-center">
+                          <div className="text-3xl mb-3">🔍</div>
+                          <p className="text-sm font-semibold text-[var(--text-secondary)]">{t('search.no_results')}</p>
+                          <p className="text-xs text-[var(--text-tertiary)] mt-1">{t('search.try_different')}</p>
+                        </div>
+                      )}
+
+                      {/* Loading state */}
+                      {loading && (
+                        <div className="px-5 py-8 flex justify-center">
+                          <div className="w-6 h-6 border-2 border-electric-500/30 border-t-electric-500 rounded-full animate-spin" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="flex items-center gap-4 px-5 py-2.5 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/50">
+                      <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
+                        <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono font-bold">↑↓</kbd>
+                        <span>{t('search.navigate')}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
+                        <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono font-bold">↵</kbd>
+                        <span>{t('search.select')}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
+                        <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono font-bold">esc</kbd>
+                        <span>{t('search.close')}</span>
+                      </div>
+                    </div>
+                  </motion.div>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
-                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono font-bold">↵</kbd>
-                  <span>{t('search.select')}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-[var(--text-tertiary)]">
-                  <kbd className="px-1.5 py-0.5 rounded bg-[var(--bg-primary)] border border-[var(--border-color)] font-mono font-bold">esc</kbd>
-                  <span>{t('search.close')}</span>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              )}
+            </AnimatePresence>,
+            document.body
+          )
+        : null}
     </>
   )
 }
