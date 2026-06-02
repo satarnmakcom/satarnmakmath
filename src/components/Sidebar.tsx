@@ -79,7 +79,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 exit={{ opacity: 0, x: -10, display: 'none' }}
                 className="flex items-center"
               >
-                <img src="/logo1.png" alt="Satarnmak Math" className="h-8 w-auto object-contain" />
+                <span className="text-[17px] font-bold tracking-tight text-[var(--text-primary)]">
+                  Satarnmak Math
+                </span>
               </motion.div>
             )}
           </AnimatePresence>

@@ -70,9 +70,9 @@ export default function RootLayout({
         <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" strategy="afterInteractive" />
       </head>
       <body
-        className={`${inter.variable} ${kanit.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-primary text-primary overflow-x-hidden`}
+        className={`${inter.variable} ${kanit.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased min-h-screen bg-primary text-primary overflow-x-hidden transition-colors duration-500`}
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <div className="noise-overlay pointer-events-none fixed inset-0 z-[-1] opacity-20 mix-blend-overlay"></div>
           <NextAuthProvider>
             <AppLayout>{children}</AppLayout>
