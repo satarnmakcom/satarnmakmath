@@ -106,6 +106,8 @@ model Submission {
   status           String    @default("PENDING")
   submittedAt      DateTime  @default(now())
   attemptId        String?
+  ratingDelta      Int?
+  feedback         String?   @db.Text
 
   user             User               @relation(fields: [userId], references: [id])
   problem          Problem            @relation(fields: [problemId], references: [id], onDelete: Cascade)

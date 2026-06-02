@@ -204,13 +204,7 @@ ${data.studentProof}`
     const isCorrect = aiResult.isCorrect === true
     const newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
 
-    // Update submission status
-    await prisma.submission.update({
-      where: { id: data.submissionId },
-      data: { status: newStatus }
-    })
-
-    // Only update rating on FIRST successful solve
+    // Get user first to calculate rating
     const user = await prisma.user.findUnique({ where: { id: data.userId } })
     if (!user) return { success: false, error: "User not found" }
 
@@ -226,6 +220,16 @@ ${data.studentProof}`
       })
       await recalculateGlobalRanks(prisma)
     }
+
+    // Update submission status, ratingDelta, and feedback
+    await prisma.submission.update({
+      where: { id: data.submissionId },
+      data: {
+        status: newStatus,
+        ratingDelta: alreadySolved ? 0 : ratingDelta,
+        feedback: aiResult.feedback as string
+      }
+    })
 
     revalidatePath("/")
     revalidatePath("/profile")

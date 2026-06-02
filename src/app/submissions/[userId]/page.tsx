@@ -10,6 +10,37 @@ export async function generateMetadata({ params }: { params: Promise<{ userId: s
   return { title: user ? `${user.name}'s Submissions` : 'Submissions' }
 }
 
+function RatingBadge({ delta }: { delta: number | null }) {
+  if (delta === null || delta === undefined) {
+    return <span className="text-xs text-[var(--text-tertiary)]">—</span>
+  }
+  if (delta > 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 font-bold text-emerald-400 text-sm">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 17a1 1 0 01-1-1V6.414l-3.293 3.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0l5 5a1 1 0 01-1.414 1.414L11 6.414V16a1 1 0 01-1 1z" clipRule="evenodd" />
+        </svg>
+        +{delta}
+      </span>
+    )
+  }
+  if (delta < 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 font-bold text-rose-400 text-sm">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 3a1 1 0 011 1v9.586l3.293-3.293a1 1 0 011.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 011.414-1.414L9 13.586V4a1 1 0 011-1z" clipRule="evenodd" />
+        </svg>
+        {delta}
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-0.5 font-bold text-[var(--text-tertiary)] text-sm">
+      <span className="text-base leading-none">–</span>0
+    </span>
+  )
+}
+
 export default async function UserSubmissionsPage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params
   const user = await prisma.user.findFirst({
@@ -36,7 +67,7 @@ export default async function UserSubmissionsPage({ params }: { params: Promise<
   const accepted = submissions.filter(s => s.status === 'ACCEPTED').length
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
+    <div className="max-w-5xl mx-auto space-y-6 px-4 py-6">
 
       {/* Header */}
       <div className="flex items-center gap-4">
@@ -65,13 +96,14 @@ export default async function UserSubmissionsPage({ params }: { params: Promise<
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Problem</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Level</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Status</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest text-center">Rating</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest text-right">Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
               {submissions.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-14 text-center">
+                  <td colSpan={5} className="px-5 py-14 text-center">
                     <div className="text-4xl mb-3">😴</div>
                     <p className="font-semibold text-[var(--text-secondary)]">No submissions yet</p>
                   </td>
@@ -97,6 +129,13 @@ export default async function UserSubmissionsPage({ params }: { params: Promise<
                           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                           {cfg.label}
                         </span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        {sub.status === 'PENDING' ? (
+                          <span className="text-xs text-[var(--text-tertiary)]">…</span>
+                        ) : (
+                          <RatingBadge delta={(sub as any).ratingDelta} />
+                        )}
                       </td>
                       <td className="px-5 py-4 text-right text-xs text-[var(--text-tertiary)] whitespace-nowrap">
                         {new Date(sub.submittedAt).toLocaleString()}

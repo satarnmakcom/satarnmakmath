@@ -7,6 +7,37 @@ import { redirect } from "next/navigation"
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'My Submissions' }
 
+function RatingBadge({ delta }: { delta: number | null }) {
+  if (delta === null || delta === undefined) {
+    return <span className="text-xs text-[var(--text-tertiary)]">—</span>
+  }
+  if (delta > 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 font-bold text-emerald-400 text-sm">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 17a1 1 0 01-1-1V6.414l-3.293 3.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0l5 5a1 1 0 01-1.414 1.414L11 6.414V16a1 1 0 01-1 1z" clipRule="evenodd" />
+        </svg>
+        +{delta}
+      </span>
+    )
+  }
+  if (delta < 0) {
+    return (
+      <span className="inline-flex items-center gap-0.5 font-bold text-rose-400 text-sm">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M10 3a1 1 0 011 1v9.586l3.293-3.293a1 1 0 011.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 011.414-1.414L9 13.586V4a1 1 0 011-1z" clipRule="evenodd" />
+        </svg>
+        {delta}
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center gap-0.5 font-bold text-[var(--text-tertiary)] text-sm">
+      <span className="text-base leading-none">–</span>0
+    </span>
+  )
+}
+
 export default async function SubmissionsPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect('/login')
@@ -22,7 +53,7 @@ export default async function SubmissionsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
+    <div className="max-w-5xl mx-auto space-y-6 px-4 py-6">
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -52,13 +83,14 @@ export default async function SubmissionsPage() {
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Problem</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Level</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest">Status</th>
+                <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest text-center">Rating</th>
                 <th className="px-5 py-3.5 text-[11px] font-bold text-[var(--text-tertiary)] uppercase tracking-widest text-right">Time</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border-color)]">
               {submissions.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-14 text-center">
+                  <td colSpan={5} className="px-5 py-14 text-center">
                     <div className="text-4xl mb-3">📭</div>
                     <p className="font-semibold text-[var(--text-secondary)]">No submissions yet</p>
                     <p className="text-sm text-[var(--text-tertiary)] mt-1">
@@ -70,12 +102,18 @@ export default async function SubmissionsPage() {
                 submissions.map((sub: any) => {
                   const cfg = statusConfig[sub.status] ?? statusConfig.PENDING
                   return (
-                    <tr key={sub.id} className="hover:bg-[var(--bg-secondary)]/40 transition-colors">
+                    <tr key={sub.id} className="hover:bg-[var(--bg-secondary)]/40 transition-colors group">
                       <td className="px-5 py-4">
-                        <Link href={`/practice/${sub.problemId}`} className="group">
+                        <Link href={`/practice/${sub.problemId}`} className="group/link">
                           <span className="text-xs font-bold text-electric-500 bg-electric-500/10 px-2 py-0.5 rounded-md mr-2">{sub.problem.code}</span>
-                          <span className="font-semibold text-[var(--text-primary)] group-hover:text-electric-400 transition-colors text-sm">{sub.problem.title}</span>
+                          <span className="font-semibold text-[var(--text-primary)] group-hover/link:text-electric-400 transition-colors text-sm">{sub.problem.title}</span>
                         </Link>
+                        {/* AI Feedback tooltip */}
+                        {sub.feedback && sub.status !== 'PENDING' && (
+                          <p className="text-xs text-[var(--text-tertiary)] mt-1 line-clamp-1 italic">
+                            💬 {sub.feedback}
+                          </p>
+                        )}
                       </td>
                       <td className="px-5 py-4">
                         <span className="px-2.5 py-1 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-color)] text-xs font-semibold text-[var(--text-secondary)]">
@@ -87,6 +125,13 @@ export default async function SubmissionsPage() {
                           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                           {cfg.label}
                         </span>
+                      </td>
+                      <td className="px-5 py-4 text-center">
+                        {sub.status === 'PENDING' ? (
+                          <span className="text-xs text-[var(--text-tertiary)]">…</span>
+                        ) : (
+                          <RatingBadge delta={sub.ratingDelta} />
+                        )}
                       </td>
                       <td className="px-5 py-4 text-right text-xs text-[var(--text-tertiary)] whitespace-nowrap">
                         {new Date(sub.submittedAt).toLocaleString()}
@@ -100,7 +145,6 @@ export default async function SubmissionsPage() {
         </div>
       </div>
 
-      {/* Auto-refresh when pending items exist */}
       {hasPending && (
         <script dangerouslySetInnerHTML={{ __html: `setTimeout(() => window.location.reload(), 5000)` }} />
       )}
