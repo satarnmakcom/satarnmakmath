@@ -30,6 +30,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // Show landing page without app chrome (sidebar/header)
   const isLandingPage = pathname === '/' && status === 'unauthenticated'
 
+  // Admin pages use their own full-screen layout — no main sidebar/header
+  const isAdminPage = pathname.startsWith('/admin')
+
   if (!mounted) {
     return (
       <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
@@ -48,6 +51,17 @@ export default function AppLayout({ children }: AppLayoutProps) {
     return (
       <LanguageProvider>
         <div className="antialiased min-h-screen bg-[var(--bg-primary)]">
+          {children}
+        </div>
+      </LanguageProvider>
+    )
+  }
+
+  // Admin pages: full screen, no main sidebar or header
+  if (isAdminPage) {
+    return (
+      <LanguageProvider>
+        <div className="antialiased min-h-screen bg-[var(--bg-secondary)]">
           {children}
         </div>
       </LanguageProvider>

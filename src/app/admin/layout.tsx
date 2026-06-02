@@ -16,7 +16,7 @@ export default async function AdminLayout({
     }
 
     return (
-      <div className="flex h-[calc(100vh-4rem)] -mx-4 md:-mx-6 lg:-mx-8 -my-4 md:-my-6 lg:-my-8 bg-[var(--bg-secondary)]">
+      <div className="flex h-screen w-full bg-[var(--bg-secondary)]">
         <AdminSidebar />
 
         {/* Admin Content */}
