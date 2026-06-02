@@ -106,12 +106,18 @@ export default function ProfilePage() {
                 </span>
               </p>
             </div>
-            <div className="flex gap-3 mb-2">
+            <div className="flex gap-3 mb-2 flex-wrap">
               <Link href="/profile/edit" className="btn-primary px-5 py-2.5 text-white rounded-xl text-sm font-semibold flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
                 {t('profile.edit')}
+              </Link>
+              <Link href="/submissions" className="px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-electric-500/40 transition-all hover:bg-[var(--bg-secondary)]">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                My Submissions
               </Link>
               <button 
                 onClick={handleShare}
@@ -212,6 +218,30 @@ export default function ProfilePage() {
             )
           })}
         </div>
+      </div>
+
+      {/* Recent Submissions shortcut */}
+      <div className="card rounded-3xl p-6 bg-gradient-to-br from-[var(--bg-card)] to-transparent backdrop-blur-xl shadow-xl shadow-black/5 border border-[var(--border-color)]">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-[var(--text-primary)] text-base flex items-center gap-2">
+            <svg className="w-5 h-5 text-electric-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Submissions
+          </h3>
+          <Link href="/submissions" className="text-xs font-semibold text-electric-400 hover:text-electric-300 transition-colors">
+            View all →
+          </Link>
+        </div>
+        <p className="text-sm text-[var(--text-secondary)]">
+          Track all your submitted answers, see grading status, and review AI feedback.
+        </p>
+        <Link href="/submissions" className="mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-electric-500/10 border border-electric-500/20 text-electric-400 hover:bg-electric-500/20 transition-colors text-sm font-semibold">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Open My Submissions
+        </Link>
       </div>
     </section>
   )

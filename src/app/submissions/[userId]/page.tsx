@@ -1,19 +1,31 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { getUserSubmissions } from "@/actions/submissions"
+import prisma from "@/lib/prisma"
+import { notFound } from "next/navigation"
 import Link from "next/link"
-import { redirect } from "next/navigation"
 
 export const dynamic = 'force-dynamic'
-export const metadata = { title: 'My Submissions' }
 
-export default async function SubmissionsPage() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) redirect('/login')
+export async function generateMetadata({ params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params
+  const user = await prisma.user.findFirst({ where: { OR: [{ id: userId }, { name: decodeURIComponent(userId) }] } })
+  return { title: user ? `${user.name}'s Submissions` : 'Submissions' }
+}
 
-  const res = await getUserSubmissions(session.user.id)
-  const submissions = res.data || []
-  const hasPending = submissions.some((s: any) => s.status === 'PENDING')
+export default async function UserSubmissionsPage({ params }: { params: Promise<{ userId: string }> }) {
+  const { userId } = await params
+  const user = await prisma.user.findFirst({
+    where: { OR: [{ id: userId }, { name: decodeURIComponent(userId) }] },
+    select: { id: true, name: true, image: true }
+  })
+
+  if (!user) notFound()
+
+  const submissions = await prisma.submission.findMany({
+    where: { userId: user.id },
+    orderBy: { submittedAt: 'desc' },
+    include: {
+      problem: { select: { id: true, code: true, title: true, level: true } }
+    }
+  })
 
   const statusConfig: Record<string, { label: string; className: string; dot: string }> = {
     PENDING:     { label: 'Evaluating', className: 'bg-orange-500/10 text-orange-400 border-orange-500/20', dot: 'bg-orange-400 animate-pulse' },
@@ -21,27 +33,28 @@ export default async function SubmissionsPage() {
     WRONG_ANSWER:{ label: 'Wrong',      className: 'bg-rose-500/10 text-rose-400 border-rose-500/20', dot: 'bg-rose-400' },
   }
 
+  const accepted = submissions.filter(s => s.status === 'ACCEPTED').length
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 px-4 py-6">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">My Submissions</h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{submissions.length} submission{submissions.length !== 1 ? 's' : ''} total</p>
+      <div className="flex items-center gap-4">
+        <img
+          src={user.image || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`}
+          className="w-12 h-12 rounded-xl object-cover border-2 border-[var(--border-color)]"
+          alt=""
+        />
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-[var(--text-primary)]">{user.name}'s Submissions</h1>
+          <p className="text-sm text-[var(--text-secondary)]">
+            {accepted} solved · {submissions.length} total
+          </p>
         </div>
-        <Link href="/practice" className="px-4 py-2 bg-electric-500/10 text-electric-400 rounded-xl hover:bg-electric-500/20 transition-colors text-sm font-semibold border border-electric-500/20">
-          ← Practice
+        <Link href={`/user/${encodeURIComponent(user.name || user.id)}`} className="px-4 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl hover:border-electric-500/30 transition-colors text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+          ← Profile
         </Link>
       </div>
-
-      {/* Pending notice */}
-      {hasPending && (
-        <div className="flex items-center gap-3 px-5 py-3.5 bg-orange-500/10 border border-orange-500/20 rounded-2xl text-sm text-orange-400">
-          <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse flex-shrink-0" />
-          <span>AI is still grading some submissions. This page refreshes automatically every 5 seconds.</span>
-        </div>
-      )}
 
       {/* Table */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl overflow-hidden shadow-lg">
@@ -59,15 +72,12 @@ export default async function SubmissionsPage() {
               {submissions.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-5 py-14 text-center">
-                    <div className="text-4xl mb-3">📭</div>
+                    <div className="text-4xl mb-3">😴</div>
                     <p className="font-semibold text-[var(--text-secondary)]">No submissions yet</p>
-                    <p className="text-sm text-[var(--text-tertiary)] mt-1">
-                      <Link href="/practice" className="text-electric-400 hover:underline">Go solve some problems!</Link>
-                    </p>
                   </td>
                 </tr>
               ) : (
-                submissions.map((sub: any) => {
+                submissions.map((sub) => {
                   const cfg = statusConfig[sub.status] ?? statusConfig.PENDING
                   return (
                     <tr key={sub.id} className="hover:bg-[var(--bg-secondary)]/40 transition-colors">
@@ -99,11 +109,6 @@ export default async function SubmissionsPage() {
           </table>
         </div>
       </div>
-
-      {/* Auto-refresh when pending items exist */}
-      {hasPending && (
-        <script dangerouslySetInnerHTML={{ __html: `setTimeout(() => window.location.reload(), 5000)` }} />
-      )}
     </div>
   )
 }
