@@ -211,7 +211,8 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
           userId: session.user.id,
           problemId: problem.id,
           studentProof: solution
-        })
+        }),
+        keepalive: true
       }).catch(console.error)
 
       // Redirect immediately so user can do other things
