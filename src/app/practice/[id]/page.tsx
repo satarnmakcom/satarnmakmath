@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { submitProblemSolution } from '@/actions/submissions'
 import { getProblemById } from '@/actions/problems'
@@ -106,6 +107,7 @@ function StarIcon({ className, filled }: { className?: string; filled?: boolean 
 }
 
 export default function ProblemSolverPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter()
   const [id, setId] = useState<string>('')
 
   useEffect(() => {
