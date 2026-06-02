@@ -102,15 +102,16 @@ export async function aiGradeSolution(data: {
       return { success: false, error: "Problem not found" }
     }
 
-    // Check if user already solved this problem before (for rating purposes)
-    const alreadySolved = await prisma.submission.findFirst({
+    // Check if this is the user's FIRST EVER attempt at this problem
+    // In Hardcore mode, rating ONLY changes on the first try.
+    const previousSubmissionsCount = await prisma.submission.count({
       where: {
         userId: data.userId,
         problemId: data.problemId,
-        status: "ACCEPTED",
         id: { not: data.submissionId }
       }
     })
+    const isFirstAttempt = previousSubmissionsCount === 0
 
     // Use environment variable for API key to prevent leaks
     const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY
@@ -211,7 +212,7 @@ ${data.studentProof}`
     let ratingDelta = 0
     let newRating = user.rating
 
-    if (!alreadySolved) {
+    if (isFirstAttempt) {
       ratingDelta = calculateRatingChange(user.rating, problem.difficulty, isCorrect)
       newRating = Math.max(0, user.rating + ratingDelta)
       await prisma.user.update({
@@ -226,7 +227,7 @@ ${data.studentProof}`
       where: { id: data.submissionId },
       data: {
         status: newStatus,
-        ratingDelta: alreadySolved ? 0 : ratingDelta,
+        ratingDelta: ratingDelta,
         feedback: aiResult.feedback as string
       }
     })
