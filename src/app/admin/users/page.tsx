@@ -2,11 +2,21 @@ import prisma from "@/lib/prisma"
 import Link from "next/link"
 import AdminUserActions from "@/components/AdminUserActions"
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 30 // cache for 30 seconds
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
-    orderBy: { rating: 'desc' }
+    orderBy: { rating: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      role: true,
+      isBanned: true,
+      rating: true,
+      streak: true,
+      createdAt: true,
+    }
   })
 
   return (
