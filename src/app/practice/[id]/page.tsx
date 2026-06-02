@@ -198,29 +198,26 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
     })
 
     if (res.success && res.data) {
-      setToast({ message: 'Submitted! AI is now evaluating...', type: 'success' })
+      setToast({ message: 'Submitted! Redirecting to submissions...', type: 'success' })
 
-      setIsAIGrading(true)
-      const gradeRes = await aiGradeSolution({
-        submissionId: res.data.id,
-        userId: session.user.id,
-        problemId: problem.id,
-        studentProof: solution
-      })
+      // Trigger background grading
+      fetch('/api/grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          submissionId: res.data.id,
+          userId: session.user.id,
+          problemId: problem.id,
+          studentProof: solution
+        })
+      }).catch(console.error)
 
-      if (gradeRes.success && gradeRes.data) {
-        setGradeResult(gradeRes.data as GradeResult)
-        if (!gradeRes.data.isRetry) {
-          await update()
-        }
-      } else {
-        setToast({ message: gradeRes.error || 'AI Grading failed', type: 'error' })
-      }
-      setIsAIGrading(false)
+      // Redirect immediately so user can do other things
+      router.push('/submissions')
     } else {
       setToast({ message: res.error || 'Submission failed', type: 'error' })
+      setSubmitting(false)
     }
-    setSubmitting(false)
   }
 
   if (loading) {
