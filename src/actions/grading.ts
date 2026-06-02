@@ -244,7 +244,7 @@ ${data.studentProof}`
         ratingDelta,
         newRating,
         isCorrect,
-        isRetry: !!alreadySolved,
+        isRetry: !isFirstAttempt,
         feedback: aiResult.feedback as string
       }
     }
