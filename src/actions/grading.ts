@@ -132,8 +132,9 @@ ${requiresProof
 - Mark CORRECT if the student's reasoning is mathematically sound and reaches the right conclusion.
 - Mark WRONG if only a final answer is given without justification, or if logic is flawed.`
   : `This is a short-answer problem (Level: ${problem.level}). The student only needs to provide the final answer.
-- Mark CORRECT if the student's answer is mathematically equivalent to the correct answer (e.g., 1/2 = 0.5 = 50%, different but equivalent forms are all acceptable).
-- Mark WRONG only if the answer is genuinely incorrect.`
+- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "2+2" or "2*2" is WRONG. They must evaluate it to the simplest form (e.g., 4, 1/2, 0.5, etc.).
+- Mark CORRECT if the student's answer is the final evaluated form and is mathematically equivalent to the correct answer.
+- Mark WRONG if the answer is an unevaluated expression (like 2+2) when it can be easily simplified, or if it is genuinely incorrect.`
 }
 
 STEP 3 - Format your response:
@@ -288,8 +289,9 @@ ${requiresProof
 - Mark CORRECT if reasoning is mathematically valid and reaches the right conclusion.
 - Mark WRONG if only a bare answer without justification, or if logic is flawed.`
   : `This is a short-answer problem (Level: ${sub.problem.level}). Only the final answer matters.
-- Mark CORRECT if mathematically equivalent to the correct answer (e.g., 1/2 = 0.5 = 50%).
-- Mark WRONG only if genuinely incorrect.`
+- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "2+2" or "2*2" is WRONG. They must evaluate it to the simplest form.
+- Mark CORRECT if the student's answer is the final evaluated form and is mathematically equivalent to the correct answer.
+- Mark WRONG if the answer is an unevaluated expression (like 2+2) when it can be easily simplified, or if it is genuinely incorrect.`
 }
 
 STEP 3 - Format your response:
