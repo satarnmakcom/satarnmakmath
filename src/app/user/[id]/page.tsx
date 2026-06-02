@@ -4,6 +4,7 @@ import Link from "next/link"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import AdminRatingEditor from "@/components/AdminRatingEditor"
+import AdminUserActions from "@/components/AdminUserActions"
 import { getRatingInfo } from "@/lib/rating"
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
@@ -84,7 +85,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                 <span className="text-[var(--text-tertiary)]">•</span>
                 <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
               </p>
-              <div className="mt-3">
+              <div className="mt-3 flex flex-wrap gap-2">
                 <Link
                   href={`/submissions/${encodeURIComponent(user.name || user.id)}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--border-color)] text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-electric-500/40 transition-all hover:bg-[var(--bg-secondary)]"
@@ -94,6 +95,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
                   </svg>
                   View Submissions
                 </Link>
+                
+                {isAdmin && (
+                  <AdminUserActions 
+                    userId={user.id} 
+                    currentRole={user.role} 
+                    isBanned={user.isBanned} 
+                  />
+                )}
               </div>
             </div>
           </div>

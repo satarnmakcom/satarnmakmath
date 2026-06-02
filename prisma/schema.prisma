@@ -35,6 +35,7 @@ model User {
   globalRank    Int?
   streak        Int       @default(0)
   country       String    @default("TH")
+  isBanned      Boolean   @default(false)
   lastLoginAt   DateTime?
   createdAt     DateTime  @default(now())
   

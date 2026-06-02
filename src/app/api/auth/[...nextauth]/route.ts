@@ -37,6 +37,10 @@ export const authOptions: NextAuthOptions = {
           throw new Error("Invalid email or password")
         }
 
+        if (user.isBanned) {
+          throw new Error("Your account has been suspended.")
+        }
+
         return {
           id: user.id,
           name: user.name,
@@ -54,6 +58,17 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async signIn({ user }) {
+      if (user.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email }
+        })
+        if (dbUser?.isBanned) {
+          throw new Error("Your account has been suspended.")
+        }
+      }
+      return true
+    },
     async session({ session, token }) {
       if (session.user && token.sub) {
         session.user.id = token.sub
