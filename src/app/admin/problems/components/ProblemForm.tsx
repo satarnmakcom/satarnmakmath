@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CompetitionLevel } from '@prisma/client'
 import { uploadSvgAction } from '@/actions/admin'
+import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface ProblemFormProps {
   initialData?: {
@@ -28,6 +29,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
   const [formData, setFormData] = useState({
     code: initialData?.code || '',
     title: initialData?.title || '',
@@ -90,6 +92,9 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
         fileInputRef.current.value = ''
       }
       
+      // Auto-show preview after inserting
+      setShowPreview(true)
+      
       setTimeout(() => {
         textarea.focus()
         textarea.setSelectionRange(start + tag.length, start + tag.length)
@@ -120,7 +125,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-5xl">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-[var(--text-primary)]">
           {isEditing ? 'Edit Problem' : 'Create New Problem'}
@@ -159,6 +164,23 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                 <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Content (LaTeX Supported)</label>
                 
                 <div className="flex items-center gap-2">
+                  {/* Preview Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(!showPreview)}
+                    className={`text-xs px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1 ${
+                      showPreview
+                        ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
+                        : 'bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                    }`}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    {showPreview ? 'Hide Preview' : 'Show Preview'}
+                  </button>
+
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -236,10 +258,27 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                     </button>
                   </div>
 
-                  <div className="pt-2 border-t border-[var(--border-color)] flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Preview:</span>
-                    <img src={uploadedUrl} className="h-8 max-w-[100px] object-contain rounded border border-[var(--border-color)] bg-[var(--bg-card)]" alt="Preview" />
-                    <code className="text-[10px] text-[var(--text-tertiary)] truncate">{uploadedUrl}</code>
+                  {/* Image preview with position indicator */}
+                  <div className="pt-2 border-t border-[var(--border-color)]">
+                    <div className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-2">Preview (จะแสดงผลแบบนี้ใน Content):</div>
+                    <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-3 overflow-hidden">
+                      <div className={`${
+                        imgAlign === 'left' ? 'float-left mr-4 mb-2' :
+                        imgAlign === 'right' ? 'float-right ml-4 mb-2' :
+                        'mx-auto block'
+                      }`} style={{ width: (() => {
+                        const num = parseInt(imgWidth, 10)
+                        if (!isNaN(num)) {
+                          const unit = imgWidth.replace(/[0-9]/g, '') || 'px'
+                          return `${num}${unit}`
+                        }
+                        return imgWidth || 'auto'
+                      })() }}>
+                        <img src={uploadedUrl} alt="preview" className="max-w-full h-auto rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]" />
+                      </div>
+                      <div className="clear-both" />
+                      <p className="text-[var(--text-tertiary)] text-xs mt-1">← ข้อความโจทย์จะอยู่ที่นี่</p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -250,14 +289,54 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                 </div>
               )}
 
-              <textarea
-                required
-                ref={textareaRef}
-                rows={15}
-                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
-                value={formData.content}
-                onChange={e => setFormData({ ...formData, content: e.target.value })}
-              />
+              {/* Editor + Live Preview side by side when preview is open */}
+              {showPreview ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <div className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1.5 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Editor
+                    </div>
+                    <textarea
+                      required
+                      ref={textareaRef}
+                      rows={18}
+                      className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
+                      value={formData.content}
+                      onChange={e => setFormData({ ...formData, content: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-bold text-emerald-400 uppercase mb-1.5 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      Live Preview (เหมือนที่นักเรียนเห็น)
+                    </div>
+                    <div className="bg-[var(--bg-secondary)] border border-emerald-500/30 rounded-xl px-4 py-3 overflow-y-auto" style={{ minHeight: '18rem', maxHeight: '36rem' }}>
+                      {formData.content ? (
+                        <MarkdownRenderer content={formData.content} />
+                      ) : (
+                        <div className="text-[var(--text-tertiary)] text-sm italic text-center py-8">
+                          เริ่มพิมพ์โจทย์ด้านซ้าย เพื่อดู preview ที่นี่...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <textarea
+                  required
+                  ref={textareaRef}
+                  rows={15}
+                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
+                  value={formData.content}
+                  onChange={e => setFormData({ ...formData, content: e.target.value })}
+                />
+              )}
             </div>
             
             {/* Hints Section */}
