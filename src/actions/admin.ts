@@ -5,6 +5,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { revalidatePath } from "next/cache"
 import { CompetitionLevel } from "@prisma/client"
+import { writeFileSync, mkdirSync } from "fs"
+import { join } from "path"
 
 async function ensureAdmin() {
   const session = await getServerSession(authOptions)
@@ -365,5 +367,36 @@ export async function toggleUserBan(userId: string) {
     return { success: true, isBanned: newBanStatus }
   } catch (error: any) {
     return { success: false, error: error?.message || "Failed" }
+  }
+}
+
+export async function uploadSvgAction(formData: FormData) {
+  try {
+    await ensureAdmin()
+    const file = formData.get("file") as File
+    if (!file) {
+      return { success: false, error: "No file provided" }
+    }
+
+    const validExtensions = [".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif"]
+    const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
+    if (!validExtensions.includes(ext)) {
+      return { success: false, error: "Only SVG, PNG, JPG, JPEG, WEBP, or GIF files are allowed" }
+    }
+
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    const uploadDir = join(process.cwd(), "public", "uploads")
+    mkdirSync(uploadDir, { recursive: true })
+
+    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "")}`
+    const filepath = join(uploadDir, filename)
+    writeFileSync(filepath, buffer)
+
+    return { success: true, url: `/uploads/${filename}` }
+  } catch (error: any) {
+    console.error("Upload error:", error)
+    return { success: false, error: error.message || "Upload failed" }
   }
 }

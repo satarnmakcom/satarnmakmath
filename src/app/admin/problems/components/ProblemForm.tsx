@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CompetitionLevel } from '@prisma/client'
+import { uploadSvgAction } from '@/actions/admin'
 
 interface ProblemFormProps {
   initialData?: {
@@ -22,6 +23,9 @@ interface ProblemFormProps {
 
 export default function ProblemForm({ initialData, onSubmit, isEditing = false }: ProblemFormProps) {
   const router = useRouter()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -33,6 +37,65 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
     tags: initialData?.tags?.join(', ') || '',
     hints: initialData?.hints || []
   })
+
+  // Upload States
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const [uploadedUrl, setUploadedUrl] = useState('')
+  const [imgAlign, setImgAlign] = useState<'left' | 'center' | 'right'>('center')
+  const [imgWidth, setImgWidth] = useState('300')
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setUploadError('')
+    setUploadedUrl('')
+
+    try {
+      const data = new FormData()
+      data.append('file', file)
+      const res = await uploadSvgAction(data)
+      if (res.success && res.url) {
+        setUploadedUrl(res.url)
+      } else {
+        setUploadError(res.error || 'Failed to upload image')
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Upload error')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const insertImageMarkdown = () => {
+    if (!uploadedUrl) return
+    const tag = `\n![${imgAlign}|${imgWidth}](${uploadedUrl})\n`
+    
+    const textarea = textareaRef.current
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const text = formData.content
+      const before = text.substring(0, start)
+      const after = text.substring(end)
+      setFormData({
+        ...formData,
+        content: before + tag + after
+      })
+      
+      setUploadedUrl('')
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      
+      setTimeout(() => {
+        textarea.focus()
+        textarea.setSelectionRange(start + tag.length, start + tag.length)
+      }, 50)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,9 +155,104 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Content (LaTeX Supported)</label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Content (LaTeX Supported)</label>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    accept=".svg,.png,.jpg,.jpeg,.webp,.gif"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-electric-500/10 text-electric-400 font-bold hover:bg-electric-500/20 transition-colors flex items-center gap-1 disabled:opacity-50"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    {uploading ? 'Uploading...' : 'Upload Image/SVG'}
+                  </button>
+                </div>
+              </div>
+
+              {uploadedUrl && (
+                <div className="mb-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[var(--text-primary)]">Image Settings:</span>
+                    <button
+                      type="button"
+                      onClick={() => setUploadedUrl('')}
+                      className="text-xs text-rose-500 hover:underline"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 text-sm">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase">Align:</span>
+                      <div className="flex rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)]">
+                        {(['left', 'center', 'right'] as const).map(align => (
+                          <button
+                            key={align}
+                            type="button"
+                            onClick={() => setImgAlign(align)}
+                            className={`px-2.5 py-1 text-xs font-semibold transition-all capitalize ${
+                              imgAlign === align
+                                ? 'bg-electric-500 text-white'
+                                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                            }`}
+                          >
+                            {align}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase">Width:</span>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="text"
+                          value={imgWidth}
+                          onChange={e => setImgWidth(e.target.value)}
+                          placeholder="e.g. 300 or 50%"
+                          className="w-20 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-2 py-1 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={insertImageMarkdown}
+                      className="ml-auto px-3 py-1.5 bg-electric-500 hover:bg-electric-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                    >
+                      Insert Image Code
+                    </button>
+                  </div>
+
+                  <div className="pt-2 border-t border-[var(--border-color)] flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Preview:</span>
+                    <img src={uploadedUrl} className="h-8 max-w-[100px] object-contain rounded border border-[var(--border-color)] bg-[var(--bg-card)]" alt="Preview" />
+                    <code className="text-[10px] text-[var(--text-tertiary)] truncate">{uploadedUrl}</code>
+                  </div>
+                </div>
+              )}
+
+              {uploadError && (
+                <div className="mb-3 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs rounded-xl font-medium">
+                  ⚠️ {uploadError}
+                </div>
+              )}
+
               <textarea
                 required
+                ref={textareaRef}
                 rows={15}
                 className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
                 value={formData.content}
