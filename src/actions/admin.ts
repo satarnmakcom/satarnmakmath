@@ -387,14 +387,14 @@ export async function uploadSvgAction(formData: FormData) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const uploadDir = join(process.cwd(), "public", "uploads")
-    mkdirSync(uploadDir, { recursive: true })
+    // For Vercel deployment, we cannot write to the local filesystem.
+    // Instead, we convert the image (especially SVG) to a Base64 Data URI
+    // which can be embedded directly in the markdown.
+    const mimeType = file.type || "image/svg+xml"
+    const base64Data = buffer.toString("base64")
+    const dataUri = `data:${mimeType};base64,${base64Data}`
 
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.\-_]/g, "")}`
-    const filepath = join(uploadDir, filename)
-    writeFileSync(filepath, buffer)
-
-    return { success: true, url: `/uploads/${filename}` }
+    return { success: true, url: dataUri }
   } catch (error: any) {
     console.error("Upload error:", error)
     return { success: false, error: error.message || "Upload failed" }
