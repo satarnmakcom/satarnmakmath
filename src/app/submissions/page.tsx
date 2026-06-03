@@ -33,7 +33,7 @@ function RatingBadge({ delta }: { delta: number | null }) {
   }
   return (
     <span className="inline-flex items-center gap-0.5 font-bold text-[var(--text-tertiary)] text-sm">
-      <span className="text-base leading-none">–</span>0
+      +0
     </span>
   )
 }
