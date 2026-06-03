@@ -41,11 +41,12 @@ export default function AdminSidebar() {
               href={item.href} 
               className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 isActive 
-                  ? "bg-electric-500 text-white shadow-md shadow-electric-500/20" 
+                  ? "shadow-md" 
                   : "text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]"
               }`}
+              style={isActive ? { background: "#3b82f6", color: "#ffffff", boxShadow: "0 4px 12px rgba(59,130,246,0.3)" } : {}}
             >
-              <svg className={`w-5 h-5 ${isActive ? "text-white" : "text-[var(--text-tertiary)]"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" style={isActive ? { color: "#ffffff" } : { color: "var(--text-tertiary)" }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
               </svg>
               {item.name}

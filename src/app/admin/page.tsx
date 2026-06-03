@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma"
 import Link from "next/link"
 import { Suspense } from "react"
 
-export const revalidate = 60 // cache for 60 seconds
+export const revalidate = 30 // cache for 30 seconds
 
 export default async function AdminDashboardPage() {
   const [

@@ -29,14 +29,20 @@ export async function selfGradeSolution(data: {
       return { success: false, error: "This submission has already been graded" }
     }
 
-    // 2. Update submission status
-    const newStatus = data.isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
-    await prisma.submission.update({
-      where: { id: data.submissionId },
-      data: { status: newStatus }
+    // 2. Check if this is the FIRST attempt at this problem (no rating change on retry)
+    const previousCount = await prisma.submission.count({
+      where: {
+        userId: data.userId,
+        problemId: submission.problemId,
+        id: { not: data.submissionId }
+      }
     })
+    const isFirstAttempt = previousCount === 0
 
-    // 3. Get user's current rating
+    // 3. Update submission status
+    const newStatus = data.isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
+
+    // 4. Get user's current rating
     const user = await prisma.user.findUnique({
       where: { id: data.userId }
     })
@@ -45,24 +51,27 @@ export async function selfGradeSolution(data: {
       return { success: false, error: "User not found" }
     }
 
-    // 4. Calculate rating change
-    const difficulty = submission.problem?.difficulty ?? 1200
-    const ratingDelta = calculateRatingChange(
-      user.rating,
-      difficulty,
-      data.isCorrect
-    )
+    let ratingDelta = 0
+    let newRating = user.rating
 
-    const newRating = Math.max(0, user.rating + ratingDelta) // Never go below 0
+    if (isFirstAttempt) {
+      // 5. Calculate rating change only on first attempt
+      const difficulty = submission.problem?.difficulty ?? 1200
+      ratingDelta = calculateRatingChange(user.rating, difficulty, data.isCorrect)
+      newRating = Math.max(0, user.rating + ratingDelta)
 
-    // 5. Update user rating
-    await prisma.user.update({
-      where: { id: data.userId },
-      data: { rating: newRating }
+      await prisma.user.update({
+        where: { id: data.userId },
+        data: { rating: newRating }
+      })
+      await recalculateGlobalRanks(prisma)
+    }
+
+    // 6. Update submission with status and ratingDelta
+    await prisma.submission.update({
+      where: { id: data.submissionId },
+      data: { status: newStatus, ratingDelta: ratingDelta || 0 }
     })
-
-    // 6. Recalculate global ranks
-    await recalculateGlobalRanks(prisma)
 
     // 7. Revalidate pages
     revalidatePath("/")
@@ -73,8 +82,9 @@ export async function selfGradeSolution(data: {
       success: true,
       data: {
         status: newStatus,
-        ratingDelta,
-        newRating
+        ratingDelta: ratingDelta || 0,
+        newRating,
+        isRetry: !isFirstAttempt
       }
     }
   } catch (error) {
@@ -227,7 +237,7 @@ ${data.studentProof}`
       where: { id: data.submissionId },
       data: {
         status: newStatus,
-        ratingDelta: ratingDelta,
+        ratingDelta: ratingDelta || 0, // prevent -0
         feedback: aiResult.feedback as string
       }
     })
