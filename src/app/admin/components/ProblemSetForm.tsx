@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import InlineProblemEditor from "./InlineProblemEditor"
 
 interface InlineProblem {
   id?: string
@@ -9,6 +10,7 @@ interface InlineProblem {
   content: string
   level: "POSN" | "POSN1" | "POSN2" | "TMO" | "IMO"
   difficulty: number
+  uiKey?: string
 }
 
 interface ProblemSetFormProps {
@@ -39,12 +41,13 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
       problemId: i.problemId,
       content: i.content,
       level: i.level,
-      difficulty: i.difficulty
+      difficulty: i.difficulty,
+      uiKey: i.id || Math.random().toString(36).substring(7)
     })) || []
   )
 
   const handleAddProblem = () => {
-    setProblems([...problems, { content: "", level: "POSN", difficulty: 1200 }])
+    setProblems([...problems, { content: "", level: "POSN", difficulty: 1200, uiKey: Math.random().toString(36).substring(7) }])
   }
 
   const handleRemoveProblem = (index: number) => {
@@ -174,7 +177,7 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
 
         <div className="space-y-6">
           {problems.map((p, idx) => (
-            <div key={idx} className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-4 relative">
+            <div key={p.uiKey || idx} className="p-5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-4 relative">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex flex-col gap-1">
@@ -193,13 +196,9 @@ export default function ProblemSetForm({ initialData, onSubmit, isEditing }: Pro
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Problem Statement (Markdown supported)</label>
-                <textarea
-                  value={p.content}
-                  onChange={e => updateProblem(idx, "content", e.target.value)}
-                  rows={4}
-                  className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-[var(--text-primary)] outline-none focus:border-electric-500 transition-colors font-mono text-sm"
-                  placeholder="Type your problem here..."
+                <InlineProblemEditor 
+                  initialContent={p.content} 
+                  onChange={(newContent) => updateProblem(idx, "content", newContent)} 
                 />
               </div>
 
