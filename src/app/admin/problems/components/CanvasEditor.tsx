@@ -35,8 +35,8 @@ interface CanvasEditorProps {
 export default function CanvasEditor({ items, onChange, canvasHeight = 600, markdownContent }: CanvasEditorProps) {
   const isDark = useDarkMode();
   const iframeThemeCSS = isDark
-    ? 'body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; filter: invert(1) hue-rotate(180deg); }'
-    : 'body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }';
+    ? 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; } body { filter: invert(1) hue-rotate(180deg); }'
+    : 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }';
   const [newHtml, setNewHtml] = useState('');
   const [initWidth, setInitWidth] = useState('500');
   const [initHeight, setInitHeight] = useState('500');
@@ -115,7 +115,7 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600, mark
       )}
 
       <div 
-        className="relative w-full bg-[var(--bg-card)] border-2 border-[var(--border-color)] rounded-xl overflow-y-auto"
+        className="relative w-full bg-transparent border-2 border-dashed border-[var(--border-color)] rounded-xl overflow-y-auto"
         style={{ minHeight: canvasHeight, maxHeight: 800 }}
       >
         {/* Render markdown text in the background if provided */}
@@ -169,7 +169,9 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600, mark
                   srcDoc={`<style>${iframeThemeCSS}</style>${item.htmlCode}`}
                   className="border-0 pointer-events-none"
                   scrolling="no"
+                  allow=""
                   style={{ 
+                    display: 'block',
                     background: 'transparent',
                     width: `${item.originalWidth || item.width}px`,
                     height: `${item.originalHeight || item.height}px`,
