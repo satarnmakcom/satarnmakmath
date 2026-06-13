@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -10,6 +8,16 @@ import { aiGradeSolution } from '@/actions/grading'
 import { toggleBookmark, checkBookmarkStatus } from '@/actions/bookmarks'
 import { motion, AnimatePresence } from 'framer-motion'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import { useLanguage } from '@/context/LanguageContext'
+
+const LANG_SEP = '---LANG:TH---'
+function getLocalizedContent(content: string, lang: string): string {
+  const idx = content.indexOf(LANG_SEP)
+  if (idx === -1) return content
+  const en = content.slice(0, idx).trim()
+  const th = content.slice(idx + LANG_SEP.length).trim()
+  return lang === 'th' && th ? th : en
+}
 
 interface Problem {
   id: string
@@ -115,6 +123,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
   }, [params])
 
   const { data: session, update } = useSession()
+  const { language } = useLanguage()
   const [problem, setProblem] = useState<Problem | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeLeft, setTimeLeft] = useState(45 * 60)
@@ -285,7 +294,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
         <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)] mb-6 tracking-tight">{problem.title}</h2>
 
         <div className="mt-4 prose prose-invert max-w-none text-[var(--text-primary)]">
-          <MarkdownRenderer content={problem.content} />
+          <MarkdownRenderer content={getLocalizedContent(problem.content, language)} />
         </div>
 
         {/* Hints Section */}
@@ -520,7 +529,7 @@ export default function ProblemSolverPage({ params }: { params: Promise<{ id: st
       <div className="lg:hidden flex flex-col h-full overflow-y-auto">
          <div className="p-6 border-b border-[var(--border-color)]">
              <h2 className="text-xl font-bold text-[var(--text-primary)] mb-4">{problem.title}</h2>
-             <MarkdownRenderer content={problem.content} />
+             <MarkdownRenderer content={getLocalizedContent(problem.content, language)} />
          </div>
          <div className="flex-1 flex flex-col p-4 bg-[var(--bg-secondary)] min-h-[400px]">
              <textarea

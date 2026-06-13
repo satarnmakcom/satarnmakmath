@@ -7,6 +7,8 @@ import { CompetitionLevel } from '@prisma/client'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 import CanvasEditor, { CanvasItem } from './CanvasEditor'
 
+const LANG_SEP = '---LANG:TH---'
+
 const extractCanvasData = (content: string) => {
   const match = content.match(/```satarn-canvas\n([\s\S]*?)\n```/);
   if (match) {
@@ -19,6 +21,15 @@ const extractCanvasData = (content: string) => {
     }
   }
   return { items: [], cleanContent: content };
+};
+
+const parseBilingualContent = (content: string) => {
+  const idx = content.indexOf(LANG_SEP)
+  if (idx === -1) return { en: content, th: '' }
+  return {
+    en: content.slice(0, idx).trim(),
+    th: content.slice(idx + LANG_SEP.length).trim()
+  }
 };
 
 interface ProblemFormProps {
@@ -39,18 +50,22 @@ interface ProblemFormProps {
 export default function ProblemForm({ initialData, onSubmit, isEditing = false }: ProblemFormProps) {
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  
+  const textareaThRef = useRef<HTMLTextAreaElement>(null)
+
   const parsedContent = initialData?.content ? extractCanvasData(initialData.content) : { items: [], cleanContent: '' };
+  const parsedLangs = parseBilingualContent(parsedContent.cleanContent);
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPreview, setShowPreview] = useState(false)
+  const [contentLang, setContentLang] = useState<'en' | 'th'>('en')
   const [canvasItems, setCanvasItems] = useState<CanvasItem[]>(parsedContent.items)
   
   const [formData, setFormData] = useState({
     code: initialData?.code || '',
     title: initialData?.title || '',
-    content: parsedContent.cleanContent,
+    content: parsedLangs.en,
+    contentTh: parsedLangs.th,
     level: initialData?.level || 'POSN',
     difficulty: initialData?.difficulty || 1200,
     tags: initialData?.tags?.join(', ') || '',
@@ -66,9 +81,14 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
 
     const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
 
+    // Combine EN + TH content with separator
+    const combinedContent = formData.contentTh.trim()
+      ? `${formData.content}\n${LANG_SEP}\n${formData.contentTh}`
+      : formData.content
+
     const finalContent = canvasItems.length > 0 
-      ? `${formData.content}\n\n\`\`\`satarn-canvas\n${JSON.stringify(canvasItems, null, 2)}\n\`\`\``
-      : formData.content;
+      ? `${combinedContent}\n\n\`\`\`satarn-canvas\n${JSON.stringify(canvasItems, null, 2)}\n\`\`\``
+      : combinedContent;
 
     const res = await onSubmit({
       ...formData,
@@ -126,6 +146,24 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                 <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Content (LaTeX Supported)</label>
                 
                 <div className="flex items-center gap-2">
+                  {/* Language Tab Switcher */}
+                  <div className="flex items-center gap-1 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setContentLang('en')}
+                      className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${contentLang === 'en' ? 'bg-electric-500 text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                    >
+                      🇬🇧 EN
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContentLang('th')}
+                      className={`text-xs px-3 py-1 rounded-md font-bold transition-colors ${contentLang === 'th' ? 'bg-electric-500 text-white' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                    >
+                      🇹🇭 TH
+                    </button>
+                  </div>
+
                   <button
                     type="button"
                     onClick={() => setShowPreview(!showPreview)}
@@ -158,16 +196,27 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                       </svg>
-                      Editor
+                      Editor ({contentLang === 'en' ? '🇬🇧 EN' : '🇹🇭 TH'})
                     </div>
-                    <textarea
-                      required
-                      ref={textareaRef}
-                      rows={18}
-                      className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
-                      value={formData.content}
-                      onChange={e => setFormData({ ...formData, content: e.target.value })}
-                    />
+                    {contentLang === 'en' ? (
+                      <textarea
+                        required
+                        ref={textareaRef}
+                        rows={18}
+                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
+                        value={formData.content}
+                        onChange={e => setFormData({ ...formData, content: e.target.value })}
+                      />
+                    ) : (
+                      <textarea
+                        ref={textareaThRef}
+                        rows={18}
+                        className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
+                        value={formData.contentTh}
+                        onChange={e => setFormData({ ...formData, contentTh: e.target.value })}
+                        placeholder="Thai content (optional — if empty, EN version will be shown)"
+                      />
+                    )}
                   </div>
                   <div>
                     <div className="text-[10px] font-bold text-emerald-400 uppercase mb-1.5 flex items-center gap-1">
@@ -175,12 +224,15 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
-                      Live Preview (เหมือนที่นักเรียนเห็น)
+                      Live Preview ({contentLang === 'en' ? '🇬🇧 EN' : '🇹🇭 TH'})
                     </div>
                     <div className="bg-[var(--bg-secondary)] border border-emerald-500/30 rounded-xl px-4 py-3 overflow-y-auto relative" style={{ minHeight: '18rem', maxHeight: '36rem' }}>
-                      {formData.content || canvasItems.length > 0 ? (
+                      {(contentLang === 'en' ? formData.content : (formData.contentTh || formData.content)) || canvasItems.length > 0 ? (
                         <MarkdownRenderer 
-                          content={canvasItems.length > 0 ? `${formData.content}\n\n\`\`\`satarn-canvas\n${JSON.stringify(canvasItems, null, 2)}\n\`\`\`` : formData.content} 
+                          content={(() => {
+                            const base = contentLang === 'en' ? formData.content : (formData.contentTh || formData.content)
+                            return canvasItems.length > 0 ? `${base}\n\n\`\`\`satarn-canvas\n${JSON.stringify(canvasItems, null, 2)}\n\`\`\`` : base
+                          })()}
                         />
                       ) : (
                         <div className="text-[var(--text-tertiary)] text-sm italic text-center py-8">
@@ -191,14 +243,25 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                   </div>
                 </div>
               ) : (
-                <textarea
-                  required
-                  ref={textareaRef}
-                  rows={15}
-                  className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
-                  value={formData.content}
-                  onChange={e => setFormData({ ...formData, content: e.target.value })}
-                />
+                contentLang === 'en' ? (
+                  <textarea
+                    required
+                    ref={textareaRef}
+                    rows={15}
+                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
+                    value={formData.content}
+                    onChange={e => setFormData({ ...formData, content: e.target.value })}
+                  />
+                ) : (
+                  <textarea
+                    ref={textareaThRef}
+                    rows={15}
+                    className="w-full bg-[var(--bg-secondary)] border border-[var(--border-color)] text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-electric-500/50 transition-all resize-y"
+                    value={formData.contentTh}
+                    onChange={e => setFormData({ ...formData, contentTh: e.target.value })}
+                    placeholder="Thai content (optional — if empty, EN version will be shown to Thai users)"
+                  />
+                )
               )}
             </div>
             

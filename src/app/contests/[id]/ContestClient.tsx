@@ -6,6 +6,16 @@ import { useSession } from "next-auth/react"
 import { startAttempt, submitAttempt } from "@/actions/problemSets"
 import { aiGradeAttempt } from "@/actions/grading"
 import MarkdownRenderer from "@/components/MarkdownRenderer"
+import { useLanguage } from "@/context/LanguageContext"
+
+const LANG_SEP = '---LANG:TH---'
+function getLocalizedContent(content: string, lang: string): string {
+  const idx = content.indexOf(LANG_SEP)
+  if (idx === -1) return content
+  const en = content.slice(0, idx).trim()
+  const th = content.slice(idx + LANG_SEP.length).trim()
+  return lang === 'th' && th ? th : en
+}
 
 interface ContestClientProps {
   problemSet: any
@@ -16,6 +26,7 @@ interface ContestClientProps {
 export default function ContestClient({ problemSet, attempt, session }: ContestClientProps) {
   const router = useRouter()
   const { update } = useSession()
+  const { language } = useLanguage()
   const [currentAttempt, setCurrentAttempt] = useState<any>(attempt)
   // answers keyed by item.id (ProblemSetItem ID)
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -210,7 +221,7 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
                 </div>
 
                 <div className="mb-4 p-4 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
-                  <MarkdownRenderer content={item.problem.content} />
+                  <MarkdownRenderer content={getLocalizedContent(item.problem.content, language)} />
                 </div>
 
                 <div>
@@ -271,7 +282,7 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
                 </div>
               </div>
               <div className="p-6">
-                <MarkdownRenderer content={item.problem.content} />
+                <MarkdownRenderer content={getLocalizedContent(item.problem.content, language)} />
 
                 <div className="mt-6 pt-6 border-t border-[var(--border-color)]">
                   <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-3">Your Answer</label>
