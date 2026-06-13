@@ -1,8 +1,20 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex'
+
+function useDarkMode() {
+  const [isDark, setIsDark] = useState(false)
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains('dark'))
+    check()
+    const observer = new MutationObserver(check)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+  return isDark
+}
 
 interface MarkdownRendererProps {
   content: string
@@ -10,6 +22,10 @@ interface MarkdownRendererProps {
 }
 
 export default function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
+  const isDark = useDarkMode()
+  const iframeThemeCSS = isDark
+    ? 'body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; filter: invert(1) hue-rotate(180deg); }'
+    : 'body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }'
   return (
     <div className={`relative prose prose-invert prose-sm md:prose-base max-w-none text-[var(--text-secondary)] leading-relaxed ${className}`}>
       <ReactMarkdown
@@ -43,8 +59,8 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                           }}
                         >
                           <iframe 
-                            srcDoc={`<style>body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }</style>${item.htmlCode}`}
-                            className="border-0 pointer-events-auto dark:invert dark:hue-rotate-180" 
+                            srcDoc={`<style>${iframeThemeCSS}</style>${item.htmlCode}`}
+                            className="border-0 pointer-events-auto" 
                             scrolling="no"
                             style={{ 
                               background: 'transparent',

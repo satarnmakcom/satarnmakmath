@@ -1,6 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Rnd } from 'react-rnd';
 import MarkdownRenderer from '@/components/MarkdownRenderer';
+
+function useDarkMode() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const check = () => setIsDark(document.documentElement.classList.contains('dark'));
+    check();
+    const observer = new MutationObserver(check);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
 
 export interface CanvasItem {
   id: string;
@@ -21,6 +33,10 @@ interface CanvasEditorProps {
 }
 
 export default function CanvasEditor({ items, onChange, canvasHeight = 600, markdownContent }: CanvasEditorProps) {
+  const isDark = useDarkMode();
+  const iframeThemeCSS = isDark
+    ? 'body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; filter: invert(1) hue-rotate(180deg); }'
+    : 'body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }';
   const [newHtml, setNewHtml] = useState('');
   const [initWidth, setInitWidth] = useState('500');
   const [initHeight, setInitHeight] = useState('500');
@@ -150,8 +166,8 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600, mark
               
               <div className="w-full h-full overflow-hidden">
                 <iframe
-                  srcDoc={`<style>body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }</style>${item.htmlCode}`}
-                  className="border-0 pointer-events-none dark:invert dark:hue-rotate-180"
+                  srcDoc={`<style>${iframeThemeCSS}</style>${item.htmlCode}`}
+                  className="border-0 pointer-events-none"
                   scrolling="no"
                   style={{ 
                     background: 'transparent',
