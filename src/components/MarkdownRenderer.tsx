@@ -43,8 +43,9 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                           }}
                         >
                           <iframe 
-                            srcDoc={item.htmlCode} 
+                            srcDoc={`<style>body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }</style>${item.htmlCode}`}
                             className="border-0 pointer-events-auto" 
+                            scrolling="no"
                             style={{ 
                               background: 'transparent',
                               width: `${item.originalWidth || item.width}px`,

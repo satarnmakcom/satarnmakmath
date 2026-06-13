@@ -141,8 +141,9 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
               
               <div className="w-full h-full overflow-hidden">
                 <iframe
-                  srcDoc={item.htmlCode}
+                  srcDoc={`<style>body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }</style>${item.htmlCode}`}
                   className="border-0 pointer-events-none"
+                  scrolling="no"
                   style={{ 
                     background: 'transparent',
                     width: `${item.originalWidth || item.width}px`,
