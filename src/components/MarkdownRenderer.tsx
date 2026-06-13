@@ -19,6 +19,47 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
           // Custom HTML/CSS Art Renderer (Sandboxed Iframe)
           pre: ({ node, children, ...props }) => {
             const childrenArray = React.Children.toArray(children);
+
+            // Canvas Renderer
+            const canvasChild = childrenArray.find(
+              (child: any) => child?.props?.className?.includes('language-satarn-canvas')
+            ) as any;
+
+            if (canvasChild && canvasChild.props) {
+              try {
+                const items = JSON.parse(String(canvasChild.props.children).replace(/\n$/, ''));
+                if (Array.isArray(items) && items.length > 0) {
+                  return (
+                    <div className="relative w-full overflow-hidden my-6 bg-transparent" style={{ height: '600px' }}>
+                      {items.map((item: any) => (
+                        <div
+                          key={item.id}
+                          className="absolute pointer-events-none"
+                          style={{
+                            left: item.x,
+                            top: item.y,
+                            width: item.width,
+                            height: item.height,
+                          }}
+                        >
+                          <iframe 
+                            srcDoc={item.htmlCode} 
+                            className="w-full h-full border-0 pointer-events-auto" 
+                            style={{ background: 'transparent' }}
+                            sandbox="allow-scripts allow-same-origin"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  );
+                }
+              } catch (e) {
+                console.error("Failed to parse satarn-canvas JSON", e);
+              }
+              return null; // hide invalid canvas data or empty canvas
+            }
+
+            // Legacy HTML Art Logic (For backward compatibility)
             const codeChild = childrenArray.find(
               (child: any) => child?.props?.className?.includes('language-html-art')
             ) as any;

@@ -1,10 +1,25 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CompetitionLevel } from '@prisma/client'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
+import CanvasEditor, { CanvasItem } from './CanvasEditor'
+
+const extractCanvasData = (content: string) => {
+  const match = content.match(/```satarn-canvas\n([\s\S]*?)\n```/);
+  if (match) {
+    try {
+      const items = JSON.parse(match[1]);
+      const cleanContent = content.replace(/```satarn-canvas\n[\s\S]*?\n```/, '').trim();
+      return { items, cleanContent };
+    } catch (e) {
+      console.error('Failed to parse canvas data', e);
+    }
+  }
+  return { items: [], cleanContent: content };
+};
 
 interface ProblemFormProps {
   initialData?: {
@@ -25,55 +40,24 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   
+  const parsedContent = initialData?.content ? extractCanvasData(initialData.content) : { items: [], cleanContent: '' };
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPreview, setShowPreview] = useState(false)
+  const [canvasItems, setCanvasItems] = useState<CanvasItem[]>(parsedContent.items)
+  
   const [formData, setFormData] = useState({
     code: initialData?.code || '',
     title: initialData?.title || '',
-    content: initialData?.content || '',
+    content: parsedContent.cleanContent,
     level: initialData?.level || 'POSN',
     difficulty: initialData?.difficulty || 1200,
     tags: initialData?.tags?.join(', ') || '',
     hints: initialData?.hints || []
   })
 
-  // CSS Art Inserter States
-  const [showImageInserter, setShowImageInserter] = useState(false)
-  const [htmlCode, setHtmlCode] = useState('')
-  const [imgAlign, setImgAlign] = useState<'left' | 'center' | 'right'>('center')
-  const [imgWidth, setImgWidth] = useState('450')
-  const [imgHeight, setImgHeight] = useState('500')
-
-  const insertImageMarkdown = () => {
-    if (!htmlCode.trim()) return
-    const sizeData = `${imgAlign}|${imgWidth}|${imgHeight}`
-    const tag = `\n\`\`\`html-art|${sizeData}\n${htmlCode}\n\`\`\`\n`
-    
-    const textarea = textareaRef.current
-    if (textarea) {
-      const start = textarea.selectionStart
-      const end = textarea.selectionEnd
-      const text = formData.content
-      const before = text.substring(0, start)
-      const after = text.substring(end)
-      setFormData({
-        ...formData,
-        content: before + tag + after
-      })
-      
-      setHtmlCode('')
-      setShowImageInserter(false)
-      
-      // Auto-show preview after inserting
-      setShowPreview(true)
-      
-      setTimeout(() => {
-        textarea.focus()
-        textarea.setSelectionRange(start + tag.length, start + tag.length)
-      }, 50)
-    }
-  }
+  // Removed old Insert CSS logic
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,8 +66,13 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
 
     const tagsArray = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
 
+    const finalContent = canvasItems.length > 0 
+      ? `${formData.content}\n\n\`\`\`satarn-canvas\n${JSON.stringify(canvasItems, null, 2)}\n\`\`\``
+      : formData.content;
+
     const res = await onSubmit({
       ...formData,
+      content: finalContent,
       difficulty: Number(formData.difficulty),
       tags: tagsArray,
       hints: formData.hints.filter(h => h.trim() !== '')
@@ -153,109 +142,13 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                     {showPreview ? 'Hide Preview' : 'Show Preview'}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowImageInserter(!showImageInserter)}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-electric-500/10 text-electric-400 font-bold hover:bg-electric-500/20 transition-colors flex items-center gap-1"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                    </svg>
-                    Insert HTML/CSS Art
-                  </button>
                 </div>
               </div>
 
-              {showImageInserter && (
-                <div className="mb-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[var(--text-primary)]">Insert HTML/CSS Art (Iframe Sandboxed)</span>
-                    <button
-                      type="button"
-                      onClick={() => setShowImageInserter(false)}
-                      className="text-xs text-rose-500 hover:underline"
-                    >
-                      Close
-                    </button>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Paste HTML/CSS Code Here</label>
-                    <textarea
-                      value={htmlCode}
-                      onChange={e => setHtmlCode(e.target.value)}
-                      placeholder="<!DOCTYPE html><html>..."
-                      rows={5}
-                      className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50 font-mono resize-y"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-2">
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase flex justify-between">
-                        <span>Width:</span>
-                        <span className="text-electric-500">{imgWidth}px</span>
-                      </span>
-                      <input
-                        type="range"
-                        min="100"
-                        max="800"
-                        step="10"
-                        value={imgWidth}
-                        onChange={e => setImgWidth(e.target.value)}
-                        className="w-full accent-electric-500"
-                      />
-                    </div>
-                    
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase flex justify-between">
-                        <span>Height:</span>
-                        <span className="text-electric-500">{imgHeight}px</span>
-                      </span>
-                      <input
-                        type="range"
-                        min="100"
-                        max="800"
-                        step="10"
-                        value={imgHeight}
-                        onChange={e => setImgHeight(e.target.value)}
-                        className="w-full accent-electric-500"
-                      />
-                    </div>
-
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Align:</span>
-                      <div className="flex rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] h-6 mt-1">
-                        {(['left', 'center', 'right'] as const).map(align => (
-                          <button
-                            key={align}
-                            type="button"
-                            onClick={() => setImgAlign(align)}
-                            className={`flex-1 text-[10px] font-semibold transition-all capitalize ${
-                              imgAlign === align
-                                ? 'bg-electric-500 text-white'
-                                : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
-                            }`}
-                          >
-                            {align}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end pt-2 border-t border-[var(--border-color)]">
-                    <button
-                      type="button"
-                      onClick={insertImageMarkdown}
-                      disabled={!htmlCode.trim()}
-                      className="px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
-                    >
-                      Insert Code Block
-                    </button>
-                  </div>
-                </div>
-              )}
+              {/* Interactive Canvas Editor */}
+              <div className="mb-6">
+                <CanvasEditor items={canvasItems} onChange={setCanvasItems} />
+              </div>
 
               {/* Editor + Live Preview side by side when preview is open */}
               {showPreview ? (
