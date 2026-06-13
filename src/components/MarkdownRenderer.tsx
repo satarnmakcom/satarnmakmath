@@ -34,7 +34,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                       {items.map((item: any) => (
                         <div
                           key={item.id}
-                          className="absolute pointer-events-none"
+                          className="absolute pointer-events-none overflow-hidden"
                           style={{
                             left: item.x,
                             top: item.y,
@@ -44,8 +44,14 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                         >
                           <iframe 
                             srcDoc={item.htmlCode} 
-                            className="w-full h-full border-0 pointer-events-auto" 
-                            style={{ background: 'transparent' }}
+                            className="border-0 pointer-events-auto" 
+                            style={{ 
+                              background: 'transparent',
+                              width: `${item.originalWidth || item.width}px`,
+                              height: `${item.originalHeight || item.height}px`,
+                              transform: `scale(${item.width / (item.originalWidth || item.width || 1)}, ${item.height / (item.originalHeight || item.height || 1)})`,
+                              transformOrigin: 'top left'
+                            }}
                             sandbox="allow-scripts allow-same-origin"
                           />
                         </div>

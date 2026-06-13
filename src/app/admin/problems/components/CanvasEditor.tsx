@@ -8,6 +8,8 @@ export interface CanvasItem {
   y: number;
   width: number;
   height: number;
+  originalWidth?: number;
+  originalHeight?: number;
 }
 
 interface CanvasEditorProps {
@@ -18,17 +20,23 @@ interface CanvasEditorProps {
 
 export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: CanvasEditorProps) {
   const [newHtml, setNewHtml] = useState('');
+  const [initWidth, setInitWidth] = useState('500');
+  const [initHeight, setInitHeight] = useState('500');
   const [showAdder, setShowAdder] = useState(false);
 
   const handleAdd = () => {
     if (!newHtml.trim()) return;
+    const w = parseInt(initWidth, 10) || 500;
+    const h = parseInt(initHeight, 10) || 500;
     const newItem: CanvasItem = {
       id: Math.random().toString(36).substring(2, 9),
       htmlCode: newHtml,
       x: 100,
       y: 100,
-      width: 300,
-      height: 300
+      width: w,
+      height: h,
+      originalWidth: w,
+      originalHeight: h
     };
     onChange([...items, newItem]);
     setNewHtml('');
@@ -65,7 +73,17 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
             className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50 font-mono resize-y"
             rows={4}
           />
-          <div className="flex justify-end">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Base Width (px)</label>
+              <input type="number" value={initWidth} onChange={e => setInitWidth(e.target.value)} className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50" />
+            </div>
+            <div className="flex-1">
+              <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Base Height (px)</label>
+              <input type="number" value={initHeight} onChange={e => setInitHeight(e.target.value)} className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50" />
+            </div>
+          </div>
+          <div className="flex justify-end pt-2">
             <button
               type="button"
               onClick={handleAdd}
@@ -121,12 +139,20 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
                 &times;
               </button>
               
-              <iframe
-                srcDoc={item.htmlCode}
-                className="w-full h-full border-0 pointer-events-none"
-                style={{ background: 'transparent' }}
-                sandbox="allow-scripts allow-same-origin"
-              />
+              <div className="w-full h-full overflow-hidden">
+                <iframe
+                  srcDoc={item.htmlCode}
+                  className="border-0 pointer-events-none"
+                  style={{ 
+                    background: 'transparent',
+                    width: `${item.originalWidth || item.width}px`,
+                    height: `${item.originalHeight || item.height}px`,
+                    transform: `scale(${item.width / (item.originalWidth || item.width || 1)}, ${item.height / (item.originalHeight || item.height || 1)})`,
+                    transformOrigin: 'top left'
+                  }}
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              </div>
             </div>
           </Rnd>
         ))}
