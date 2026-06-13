@@ -48,9 +48,9 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                             scrolling="no"
                             style={{ 
                               background: 'transparent',
-                              width: `${item.originalWidth || item.width}px`,
-                              height: `${item.originalHeight || item.height}px`,
-                              transform: `scale(${item.width / (item.originalWidth || item.width || 1)}, ${item.height / (item.originalHeight || item.height || 1)})`,
+                              width: `${item.originalWidth || 300}px`,
+                              height: `${item.originalHeight || 300}px`,
+                              transform: `scale(${item.width / (item.originalWidth || 300)}, ${item.height / (item.originalHeight || 300)})`,
                               transformOrigin: 'top left'
                             }}
                             sandbox="allow-scripts allow-same-origin"
