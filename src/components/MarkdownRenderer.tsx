@@ -11,7 +11,7 @@ interface MarkdownRendererProps {
 
 export default function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
   return (
-    <div className={`prose prose-invert prose-sm md:prose-base max-w-none text-[var(--text-secondary)] leading-relaxed ${className}`}>
+    <div className={`relative prose prose-invert prose-sm md:prose-base max-w-none text-[var(--text-secondary)] leading-relaxed ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
@@ -27,12 +27,10 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
 
             if (canvasChild && canvasChild.props) {
               try {
-                const rawChildren = canvasChild.props.children;
-                const jsonString = Array.isArray(rawChildren) ? rawChildren.join('') : String(rawChildren);
-                const items = JSON.parse(jsonString.replace(/\n$/, ''));
+                const items = JSON.parse(String(canvasChild.props.children).replace(/\n$/, ''));
                 if (Array.isArray(items) && items.length > 0) {
                   return (
-                    <div className="relative w-full overflow-hidden my-6 bg-transparent" style={{ height: '600px' }}>
+                    <div className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
                       {items.map((item: any) => (
                         <div
                           key={item.id}
