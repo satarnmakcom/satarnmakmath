@@ -38,21 +38,17 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
     hints: initialData?.hints || []
   })
 
-  // CSS Image Inserter States
+  // CSS Art Inserter States
   const [showImageInserter, setShowImageInserter] = useState(false)
-  const [cssLightUrl, setCssLightUrl] = useState('')
-  const [cssDarkUrl, setCssDarkUrl] = useState('')
-  const [cssAltText, setCssAltText] = useState('')
+  const [htmlCode, setHtmlCode] = useState('')
   const [imgAlign, setImgAlign] = useState<'left' | 'center' | 'right'>('center')
-  const [imgWidth, setImgWidth] = useState('300')
-  const [imgHeight, setImgHeight] = useState('200')
+  const [imgWidth, setImgWidth] = useState('450')
+  const [imgHeight, setImgHeight] = useState('500')
 
   const insertImageMarkdown = () => {
-    if (!cssLightUrl) return
-    const altData = cssAltText || 'Problem Image'
+    if (!htmlCode.trim()) return
     const sizeData = `${imgAlign}|${imgWidth}|${imgHeight}`
-    // Format: ![altText|align|width|height](css:lightUrl|darkUrl)
-    const tag = `\n![${altData}|${sizeData}](css:${cssLightUrl}|${cssDarkUrl})\n`
+    const tag = `\n\`\`\`html-art|${sizeData}\n${htmlCode}\n\`\`\`\n`
     
     const textarea = textareaRef.current
     if (textarea) {
@@ -66,9 +62,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
         content: before + tag + after
       })
       
-      setCssLightUrl('')
-      setCssDarkUrl('')
-      setCssAltText('')
+      setHtmlCode('')
       setShowImageInserter(false)
       
       // Auto-show preview after inserting
@@ -165,9 +159,9 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                     className="text-xs px-3 py-1.5 rounded-lg bg-electric-500/10 text-electric-400 font-bold hover:bg-electric-500/20 transition-colors flex items-center gap-1"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
                     </svg>
-                    Insert CSS Image
+                    Insert HTML/CSS Art
                   </button>
                 </div>
               </div>
@@ -175,7 +169,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
               {showImageInserter && (
                 <div className="mb-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[var(--text-primary)]">Insert Image via CSS (Dark/Light Support):</span>
+                    <span className="text-xs font-semibold text-[var(--text-primary)]">Insert HTML/CSS Art (Iframe Sandboxed)</span>
                     <button
                       type="button"
                       onClick={() => setShowImageInserter(false)}
@@ -185,49 +179,59 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                     </button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Light Mode URL (Required)</label>
-                      <input
-                        type="url"
-                        value={cssLightUrl}
-                        onChange={e => setCssLightUrl(e.target.value)}
-                        placeholder="https://..."
-                        className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Dark Mode URL (Optional)</label>
-                      <input
-                        type="url"
-                        value={cssDarkUrl}
-                        onChange={e => setCssDarkUrl(e.target.value)}
-                        placeholder="https://..."
-                        className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
-                      />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Alt Text (For AI & Screen Readers)</label>
-                      <input
-                        type="text"
-                        value={cssAltText}
-                        onChange={e => setCssAltText(e.target.value)}
-                        placeholder="Description of the image..."
-                        className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Paste HTML/CSS Code Here</label>
+                    <textarea
+                      value={htmlCode}
+                      onChange={e => setHtmlCode(e.target.value)}
+                      placeholder="<!DOCTYPE html><html>..."
+                      rows={5}
+                      className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50 font-mono resize-y"
+                    />
                   </div>
 
-                  <div className="flex flex-wrap items-end gap-4 text-sm pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-2">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase flex justify-between">
+                        <span>Width:</span>
+                        <span className="text-electric-500">{imgWidth}px</span>
+                      </span>
+                      <input
+                        type="range"
+                        min="100"
+                        max="800"
+                        step="10"
+                        value={imgWidth}
+                        onChange={e => setImgWidth(e.target.value)}
+                        className="w-full accent-electric-500"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase flex justify-between">
+                        <span>Height:</span>
+                        <span className="text-electric-500">{imgHeight}px</span>
+                      </span>
+                      <input
+                        type="range"
+                        min="100"
+                        max="800"
+                        step="10"
+                        value={imgHeight}
+                        onChange={e => setImgHeight(e.target.value)}
+                        className="w-full accent-electric-500"
+                      />
+                    </div>
+
                     <div className="flex flex-col gap-1.5">
                       <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Align:</span>
-                      <div className="flex rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] h-8">
+                      <div className="flex rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] h-6 mt-1">
                         {(['left', 'center', 'right'] as const).map(align => (
                           <button
                             key={align}
                             type="button"
                             onClick={() => setImgAlign(align)}
-                            className={`px-3 text-xs font-semibold transition-all capitalize ${
+                            className={`flex-1 text-[10px] font-semibold transition-all capitalize ${
                               imgAlign === align
                                 ? 'bg-electric-500 text-white'
                                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
@@ -238,36 +242,16 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                         ))}
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Width (px/%):</span>
-                      <input
-                        type="text"
-                        value={imgWidth}
-                        onChange={e => setImgWidth(e.target.value)}
-                        placeholder="300"
-                        className="w-24 h-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
-                      />
-                    </div>
-                    
-                    <div className="flex flex-col gap-1.5">
-                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Height (px):</span>
-                      <input
-                        type="text"
-                        value={imgHeight}
-                        onChange={e => setImgHeight(e.target.value)}
-                        placeholder="200"
-                        className="w-24 h-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
-                      />
-                    </div>
-
+                  <div className="flex justify-end pt-2 border-t border-[var(--border-color)]">
                     <button
                       type="button"
                       onClick={insertImageMarkdown}
-                      disabled={!cssLightUrl}
-                      className="ml-auto h-8 px-4 bg-electric-500 hover:bg-electric-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                      disabled={!htmlCode.trim()}
+                      className="px-4 py-2 bg-electric-500 hover:bg-electric-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
                     >
-                      Insert Image
+                      Insert Code Block
                     </button>
                   </div>
                 </div>

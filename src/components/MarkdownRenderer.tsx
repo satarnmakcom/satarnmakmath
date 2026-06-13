@@ -16,6 +16,39 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex]}
         components={{
+          // Custom HTML/CSS Art Renderer (Sandboxed Iframe)
+          pre: ({ node, children, ...props }) => {
+            const childrenArray = React.Children.toArray(children);
+            const codeChild = childrenArray.find(
+              (child: any) => child?.props?.className?.includes('language-html-art')
+            ) as React.ReactElement | undefined;
+            
+            if (codeChild) {
+              const className = codeChild.props.className;
+              const match = /language-html-art(?:\|([^\|]+)\|([^\|]+)\|([^\|]+))?/.exec(className || '');
+              const align = match ? match[1]?.trim().toLowerCase() : 'center';
+              const width = match ? match[2]?.trim() : '100%';
+              const height = match ? match[3]?.trim() : '300px';
+
+              let alignmentClass = 'block mx-auto my-4';
+              if (align === 'left') alignmentClass = 'float-left mr-4 mb-4';
+              else if (align === 'right') alignmentClass = 'float-right ml-4 mb-4';
+
+              const w = width.match(/^\d+$/) ? `${width}px` : width;
+              const h = height.match(/^\d+$/) ? `${height}px` : height;
+
+              return (
+                <span className={`inline-block ${alignmentClass} overflow-hidden rounded-xl border border-[var(--border-color)] shadow-sm bg-white`} style={{ width: w, height: h }}>
+                  <iframe 
+                    srcDoc={String(codeChild.props.children).replace(/\n$/, '')} 
+                    className="w-full h-full border-0" 
+                    sandbox="allow-scripts allow-same-origin"
+                  />
+                </span>
+              );
+            }
+            return <pre className="bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl p-4 overflow-x-auto my-4" {...props}>{children}</pre>;
+          },
           // Customize link styles or other tags if needed
           a: ({ node, ...props }) => <a className="text-electric-400 hover:text-electric-300 transition-colors" {...props} />,
           p: ({ node, ...props }) => <p className="mb-4 last:mb-0" {...props} />,
