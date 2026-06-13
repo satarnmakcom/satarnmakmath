@@ -21,9 +21,9 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             const childrenArray = React.Children.toArray(children);
             const codeChild = childrenArray.find(
               (child: any) => child?.props?.className?.includes('language-html-art')
-            ) as React.ReactElement | undefined;
+            ) as any;
             
-            if (codeChild) {
+            if (codeChild && codeChild.props) {
               const className = codeChild.props.className;
               const match = /language-html-art(?:\|([^\|]+)\|([^\|]+)\|([^\|]+))?/.exec(className || '');
               const align = match ? match[1]?.trim().toLowerCase() : 'center';
