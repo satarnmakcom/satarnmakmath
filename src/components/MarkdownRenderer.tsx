@@ -27,7 +27,9 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
 
             if (canvasChild && canvasChild.props) {
               try {
-                const items = JSON.parse(String(canvasChild.props.children).replace(/\n$/, ''));
+                const rawChildren = canvasChild.props.children;
+                const jsonString = Array.isArray(rawChildren) ? rawChildren.join('') : String(rawChildren);
+                const items = JSON.parse(jsonString.replace(/\n$/, ''));
                 if (Array.isArray(items) && items.length > 0) {
                   return (
                     <div className="relative w-full overflow-hidden my-6 bg-transparent" style={{ height: '600px' }}>

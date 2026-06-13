@@ -178,8 +178,12 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                       Live Preview (เหมือนที่นักเรียนเห็น)
                     </div>
                     <div className="bg-[var(--bg-secondary)] border border-emerald-500/30 rounded-xl px-4 py-3 overflow-y-auto" style={{ minHeight: '18rem', maxHeight: '36rem' }}>
-                      {formData.content ? (
-                        <MarkdownRenderer content={formData.content} />
+                      {formData.content || canvasItems.length > 0 ? (
+                        <MarkdownRenderer content={
+                          canvasItems.length > 0 
+                            ? `${formData.content}\n\n\`\`\`satarn-canvas\n${JSON.stringify(canvasItems, null, 2)}\n\`\`\``
+                            : formData.content
+                        } />
                       ) : (
                         <div className="text-[var(--text-tertiary)] text-sm italic text-center py-8">
                           เริ่มพิมพ์โจทย์ด้านซ้าย เพื่อดู preview ที่นี่...
