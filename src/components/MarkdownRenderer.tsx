@@ -44,13 +44,13 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                         >
                           <iframe 
                             srcDoc={`<style>body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }</style>${item.htmlCode}`}
-                            className="border-0 pointer-events-auto" 
+                            className="border-0 pointer-events-auto dark:invert dark:hue-rotate-180" 
                             scrolling="no"
                             style={{ 
                               background: 'transparent',
-                              width: `${item.originalWidth || 300}px`,
-                              height: `${item.originalHeight || 300}px`,
-                              transform: `scale(${item.width / (item.originalWidth || 300)}, ${item.height / (item.originalHeight || 300)})`,
+                              width: `${item.originalWidth || item.width}px`,
+                              height: `${item.originalHeight || item.height}px`,
+                              transform: `scale(${item.width / (item.originalWidth || item.width || 1)}, ${item.height / (item.originalHeight || item.height || 1)})`,
                               transformOrigin: 'top left'
                             }}
                             sandbox="allow-scripts allow-same-origin"

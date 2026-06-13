@@ -147,7 +147,7 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
 
               {/* Interactive Canvas Editor */}
               <div className="mb-6">
-                <CanvasEditor items={canvasItems} onChange={setCanvasItems} />
+                <CanvasEditor items={canvasItems} onChange={setCanvasItems} markdownContent={formData.content} />
               </div>
 
               {/* Editor + Live Preview side by side when preview is open */}

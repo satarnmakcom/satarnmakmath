@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Rnd } from 'react-rnd';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 
 export interface CanvasItem {
   id: string;
@@ -16,9 +17,10 @@ interface CanvasEditorProps {
   items: CanvasItem[];
   onChange: (items: CanvasItem[]) => void;
   canvasHeight?: number;
+  markdownContent?: string;
 }
 
-export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: CanvasEditorProps) {
+export default function CanvasEditor({ items, onChange, canvasHeight = 600, markdownContent }: CanvasEditorProps) {
   const [newHtml, setNewHtml] = useState('');
   const [initWidth, setInitWidth] = useState('500');
   const [initHeight, setInitHeight] = useState('500');
@@ -97,10 +99,17 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
       )}
 
       <div 
-        className="relative w-full bg-[var(--bg-card)] border-2 border-dashed border-[var(--border-color)] rounded-xl overflow-hidden"
-        style={{ height: canvasHeight }}
+        className="relative w-full bg-[var(--bg-card)] border-2 border-[var(--border-color)] rounded-xl overflow-y-auto"
+        style={{ minHeight: canvasHeight, maxHeight: 800 }}
       >
-        {items.length === 0 && (
+        {/* Render markdown text in the background if provided */}
+        {markdownContent && (
+          <div className="absolute inset-0 p-4 pointer-events-none opacity-50">
+            <MarkdownRenderer content={markdownContent} />
+          </div>
+        )}
+
+        {items.length === 0 && !markdownContent && (
           <div className="absolute inset-0 flex items-center justify-center text-[var(--text-tertiary)] text-sm font-semibold pointer-events-none">
             Canvas is empty. Add some HTML art!
           </div>
@@ -120,7 +129,6 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
               });
             }}
             bounds="parent"
-            lockAspectRatio={true}
             className="group bg-transparent"
           >
             <div className="relative w-full h-full rounded-lg overflow-hidden group-hover:ring-2 ring-electric-500/50 transition-all cursor-move">
@@ -134,7 +142,7 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
                   e.stopPropagation();
                   removeItem(item.id);
                 }}
-                className="absolute top-2 right-2 z-20 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute top-2 right-2 z-20 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg pointer-events-auto"
                 title="Remove"
               >
                 &times;
@@ -143,13 +151,13 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600 }: Ca
               <div className="w-full h-full overflow-hidden">
                 <iframe
                   srcDoc={`<style>body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }</style>${item.htmlCode}`}
-                  className="border-0 pointer-events-none"
+                  className="border-0 pointer-events-none dark:invert dark:hue-rotate-180"
                   scrolling="no"
                   style={{ 
                     background: 'transparent',
-                    width: `${item.originalWidth || 300}px`,
-                    height: `${item.originalHeight || 300}px`,
-                    transform: `scale(${item.width / (item.originalWidth || 300)}, ${item.height / (item.originalHeight || 300)})`,
+                    width: `${item.originalWidth || item.width}px`,
+                    height: `${item.originalHeight || item.height}px`,
+                    transform: `scale(${item.width / (item.originalWidth || item.width || 1)}, ${item.height / (item.originalHeight || item.height || 1)})`,
                     transformOrigin: 'top left'
                   }}
                   sandbox="allow-scripts allow-same-origin"
