@@ -34,9 +34,8 @@ interface CanvasEditorProps {
 
 export default function CanvasEditor({ items, onChange, canvasHeight = 600, markdownContent }: CanvasEditorProps) {
   const isDark = useDarkMode();
-  const iframeThemeCSS = isDark
-    ? 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; } body { filter: invert(1) hue-rotate(180deg); }'
-    : 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }';
+  const iframeBaseCSS = 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }';
+  const filterStyle = isDark ? { filter: 'invert(1) hue-rotate(180deg)' } as React.CSSProperties : {};
   const [newHtml, setNewHtml] = useState('');
   const [initWidth, setInitWidth] = useState('500');
   const [initHeight, setInitHeight] = useState('500');
@@ -164,9 +163,9 @@ export default function CanvasEditor({ items, onChange, canvasHeight = 600, mark
                 &times;
               </button>
               
-              <div className="w-full h-full overflow-hidden">
+              <div className="w-full h-full overflow-hidden" style={filterStyle}>
                 <iframe
-                  srcDoc={`<style>${iframeThemeCSS}</style>${item.htmlCode}`}
+                  srcDoc={`<style>${iframeBaseCSS}</style>${item.htmlCode}`}
                   className="border-0 pointer-events-none"
                   scrolling="no"
                   allow=""

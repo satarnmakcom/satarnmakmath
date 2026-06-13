@@ -23,9 +23,8 @@ interface MarkdownRendererProps {
 
 export default function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
   const isDark = useDarkMode()
-  const iframeThemeCSS = isDark
-    ? 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; } body { filter: invert(1) hue-rotate(180deg); }'
-    : 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }'
+  const iframeBaseCSS = 'html, body { background: transparent !important; margin: 0; padding: 0; overflow: hidden !important; }'
+  const filterStyle = isDark ? { filter: 'invert(1) hue-rotate(180deg)' } as React.CSSProperties : {}
   return (
     <div className={`relative prose prose-invert prose-sm md:prose-base max-w-none text-[var(--text-secondary)] leading-relaxed ${className}`}>
       <ReactMarkdown
@@ -45,10 +44,9 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
               try {
                 const items = JSON.parse(String(canvasChild.props.children).replace(/\n$/, ''));
                 if (Array.isArray(items) && items.length > 0) {
-                  // Compute canvas height from item extents
                   const canvasH = items.reduce((max: number, it: any) => Math.max(max, (it.y || 0) + (it.height || 0)), 0) + 20;
                   return (
-                    <div className="relative w-full my-4" style={{ height: canvasH }}>
+                    <div className="relative w-full my-4 not-prose" style={{ height: canvasH }}>
                       {items.map((item: any) => (
                         <div
                           key={item.id}
@@ -58,10 +56,11 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                             top: item.y,
                             width: item.width,
                             height: item.height,
+                            ...filterStyle
                           }}
                         >
                           <iframe 
-                            srcDoc={`<style>${iframeThemeCSS}</style>${item.htmlCode}`}
+                            srcDoc={`<style>${iframeBaseCSS}</style>${item.htmlCode}`}
                             className="border-0" 
                             scrolling="no"
                             allow=""
