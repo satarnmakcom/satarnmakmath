@@ -4,7 +4,6 @@ import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CompetitionLevel } from '@prisma/client'
-import { uploadSvgAction } from '@/actions/admin'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
 interface ProblemFormProps {
@@ -25,7 +24,6 @@ interface ProblemFormProps {
 export default function ProblemForm({ initialData, onSubmit, isEditing = false }: ProblemFormProps) {
   const router = useRouter()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -40,40 +38,21 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
     hints: initialData?.hints || []
   })
 
-  // Upload States
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-  const [uploadedUrl, setUploadedUrl] = useState('')
+  // CSS Image Inserter States
+  const [showImageInserter, setShowImageInserter] = useState(false)
+  const [cssLightUrl, setCssLightUrl] = useState('')
+  const [cssDarkUrl, setCssDarkUrl] = useState('')
+  const [cssAltText, setCssAltText] = useState('')
   const [imgAlign, setImgAlign] = useState<'left' | 'center' | 'right'>('center')
   const [imgWidth, setImgWidth] = useState('300')
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setUploading(true)
-    setUploadError('')
-    setUploadedUrl('')
-
-    try {
-      const data = new FormData()
-      data.append('file', file)
-      const res = await uploadSvgAction(data)
-      if (res.success && res.url) {
-        setUploadedUrl(res.url)
-      } else {
-        setUploadError(res.error || 'Failed to upload image')
-      }
-    } catch (err: any) {
-      setUploadError(err.message || 'Upload error')
-    } finally {
-      setUploading(false)
-    }
-  }
+  const [imgHeight, setImgHeight] = useState('200')
 
   const insertImageMarkdown = () => {
-    if (!uploadedUrl) return
-    const tag = `\n![${imgAlign}|${imgWidth}](${uploadedUrl})\n`
+    if (!cssLightUrl) return
+    const altData = cssAltText || 'Problem Image'
+    const sizeData = `${imgAlign}|${imgWidth}|${imgHeight}`
+    // Format: ![altText|align|width|height](css:lightUrl|darkUrl)
+    const tag = `\n![${altData}|${sizeData}](css:${cssLightUrl}|${cssDarkUrl})\n`
     
     const textarea = textareaRef.current
     if (textarea) {
@@ -87,10 +66,10 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
         content: before + tag + after
       })
       
-      setUploadedUrl('')
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+      setCssLightUrl('')
+      setCssDarkUrl('')
+      setCssAltText('')
+      setShowImageInserter(false)
       
       // Auto-show preview after inserting
       setShowPreview(true)
@@ -164,7 +143,6 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                 <label className="block text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Content (LaTeX Supported)</label>
                 
                 <div className="flex items-center gap-2">
-                  {/* Preview Toggle */}
                   <button
                     type="button"
                     onClick={() => setShowPreview(!showPreview)}
@@ -181,50 +159,75 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                     {showPreview ? 'Hide Preview' : 'Show Preview'}
                   </button>
 
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileUpload}
-                    accept=".svg,.png,.jpg,.jpeg,.webp,.gif"
-                    className="hidden"
-                  />
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="text-xs px-3 py-1.5 rounded-lg bg-electric-500/10 text-electric-400 font-bold hover:bg-electric-500/20 transition-colors flex items-center gap-1 disabled:opacity-50"
+                    onClick={() => setShowImageInserter(!showImageInserter)}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-electric-500/10 text-electric-400 font-bold hover:bg-electric-500/20 transition-colors flex items-center gap-1"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    {uploading ? 'Uploading...' : 'Upload Image/SVG'}
+                    Insert CSS Image
                   </button>
                 </div>
               </div>
 
-              {uploadedUrl && (
-                <div className="mb-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-3">
+              {showImageInserter && (
+                <div className="mb-3 p-4 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-[var(--text-primary)]">Image Settings:</span>
+                    <span className="text-xs font-semibold text-[var(--text-primary)]">Insert Image via CSS (Dark/Light Support):</span>
                     <button
                       type="button"
-                      onClick={() => setUploadedUrl('')}
+                      onClick={() => setShowImageInserter(false)}
                       className="text-xs text-rose-500 hover:underline"
                     >
-                      Cancel
+                      Close
                     </button>
                   </div>
                   
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase">Align:</span>
-                      <div className="flex rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Light Mode URL (Required)</label>
+                      <input
+                        type="url"
+                        value={cssLightUrl}
+                        onChange={e => setCssLightUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Dark Mode URL (Optional)</label>
+                      <input
+                        type="url"
+                        value={cssDarkUrl}
+                        onChange={e => setCssDarkUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-1">Alt Text (For AI & Screen Readers)</label>
+                      <input
+                        type="text"
+                        value={cssAltText}
+                        onChange={e => setCssAltText(e.target.value)}
+                        placeholder="Description of the image..."
+                        className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-end gap-4 text-sm pt-2">
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Align:</span>
+                      <div className="flex rounded-lg overflow-hidden border border-[var(--border-color)] bg-[var(--bg-card)] h-8">
                         {(['left', 'center', 'right'] as const).map(align => (
                           <button
                             key={align}
                             type="button"
                             onClick={() => setImgAlign(align)}
-                            className={`px-2.5 py-1 text-xs font-semibold transition-all capitalize ${
+                            className={`px-3 text-xs font-semibold transition-all capitalize ${
                               imgAlign === align
                                 ? 'bg-electric-500 text-white'
                                 : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
@@ -236,56 +239,37 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs font-bold text-[var(--text-tertiary)] uppercase">Width:</span>
-                      <div className="flex items-center gap-1">
-                        <input
-                          type="text"
-                          value={imgWidth}
-                          onChange={e => setImgWidth(e.target.value)}
-                          placeholder="e.g. 300 or 50%"
-                          className="w-20 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-2 py-1 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
-                        />
-                      </div>
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Width (px/%):</span>
+                      <input
+                        type="text"
+                        value={imgWidth}
+                        onChange={e => setImgWidth(e.target.value)}
+                        placeholder="300"
+                        className="w-24 h-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase">Height (px):</span>
+                      <input
+                        type="text"
+                        value={imgHeight}
+                        onChange={e => setImgHeight(e.target.value)}
+                        placeholder="200"
+                        className="w-24 h-8 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-2 text-xs text-[var(--text-primary)] focus:outline-none focus:border-electric-500/50"
+                      />
                     </div>
 
                     <button
                       type="button"
                       onClick={insertImageMarkdown}
-                      className="ml-auto px-3 py-1.5 bg-electric-500 hover:bg-electric-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm"
+                      disabled={!cssLightUrl}
+                      className="ml-auto h-8 px-4 bg-electric-500 hover:bg-electric-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm disabled:opacity-50"
                     >
-                      Insert Image Code
+                      Insert Image
                     </button>
                   </div>
-
-                  {/* Image preview with position indicator */}
-                  <div className="pt-2 border-t border-[var(--border-color)]">
-                    <div className="text-[10px] font-bold text-[var(--text-tertiary)] uppercase mb-2">Preview (จะแสดงผลแบบนี้ใน Content):</div>
-                    <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-3 overflow-hidden">
-                      <div className={`${
-                        imgAlign === 'left' ? 'float-left mr-4 mb-2' :
-                        imgAlign === 'right' ? 'float-right ml-4 mb-2' :
-                        'mx-auto block'
-                      }`} style={{ width: (() => {
-                        const num = parseInt(imgWidth, 10)
-                        if (!isNaN(num)) {
-                          const unit = imgWidth.replace(/[0-9]/g, '') || 'px'
-                          return `${num}${unit}`
-                        }
-                        return imgWidth || 'auto'
-                      })() }}>
-                        <img src={uploadedUrl} alt="preview" className="max-w-full h-auto rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)]" />
-                      </div>
-                      <div className="clear-both" />
-                      <p className="text-[var(--text-tertiary)] text-xs mt-1">← ข้อความโจทย์จะอยู่ที่นี่</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {uploadError && (
-                <div className="mb-3 p-3 bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs rounded-xl font-medium">
-                  ⚠️ {uploadError}
                 </div>
               )}
 
