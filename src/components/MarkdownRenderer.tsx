@@ -55,7 +55,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             }
 
             // Custom CSS Image Parser
-            if (src?.startsWith('css:')) {
+            if (typeof src === 'string' && src.startsWith('css:')) {
               const urls = src.substring(4).split('|');
               const lightUrl = urls[0];
               const darkUrl = urls[1];
