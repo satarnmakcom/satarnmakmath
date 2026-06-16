@@ -226,11 +226,10 @@ ${data.studentProof}`
         temperature: 1,
         top_p: 0.95,
         max_tokens: 16384,
-        // @ts-ignore - custom nvidia params
         reasoning_budget: 16384,
         chat_template_kwargs: {"enable_thinking":true},
         stream: true
-      })
+      } as any)
 
       console.log("\\n--- AI Grading Stream Started ---")
       for await (const chunk of completion) {
@@ -429,11 +428,10 @@ ${sub.content}`
           temperature: 1,
           top_p: 0.95,
           max_tokens: 16384,
-          // @ts-ignore
           reasoning_budget: 16384,
           chat_template_kwargs: {"enable_thinking":true},
           stream: true
-        })
+        } as any)
 
         let responseText = ""
         for await (const chunk of completion) {
