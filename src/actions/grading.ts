@@ -5,8 +5,6 @@ import { calculateRatingChange, recalculateGlobalRanks } from "@/lib/rating"
 import { revalidatePath } from "next/cache"
 import OpenAI from "openai"
 
-export const maxDuration = 60; // Max allowed for Vercel Hobby plan
-
 /**
  * Self-grade a submission (honor system).
  * Updates the submission status and recalculates user rating.
@@ -125,9 +123,9 @@ export async function aiGradeSolution(data: {
     })
     const isFirstAttempt = previousSubmissionsCount === 0
 
-    const apiKey = process.env.NVIDIA_NIM_API_KEY
+    const apiKey = process.env.OPENROUTER_API_KEY
     if (!apiKey) {
-      console.error("API Key is not set")
+      console.error("OPENROUTER_API_KEY is not set")
       return { success: false, error: "AI grading is not configured properly." }
     }
 
@@ -219,17 +217,19 @@ ${data.studentProof}`
     try {
       const openai = new OpenAI({
         apiKey: apiKey,
-        baseURL: 'https://integrate.api.nvidia.com/v1',
+        baseURL: 'https://openrouter.ai/api/v1',
+        defaultHeaders: {
+          'HTTP-Referer': 'https://satarnmakmath.vercel.app',
+          'X-Title': 'Satarnmak Math',
+        }
       })
 
       const completion: any = await openai.chat.completions.create({
-        model: "nvidia/nemotron-3-ultra-550b-a55b",
+        model: "nvidia/nemotron-3-ultra-550b-a55b:free",
         messages: [{ role: "user", content: prompt }],
         temperature: 1,
         top_p: 0.95,
         max_tokens: 16384,
-        reasoning_budget: 16384,
-        chat_template_kwargs: {"enable_thinking":true},
         stream: true
       } as any)
 
@@ -337,7 +337,7 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "Attempt not found or not submitted" }
     }
 
-    const apiKey = process.env.NVIDIA_NIM_API_KEY
+    const apiKey = process.env.OPENROUTER_API_KEY
     if (!apiKey) {
       return { success: false, error: "AI grading is not configured properly." }
     }
@@ -406,17 +406,19 @@ ${sub.content}`
       try {
         const openai = new OpenAI({
           apiKey: apiKey,
-          baseURL: 'https://integrate.api.nvidia.com/v1',
+          baseURL: 'https://openrouter.ai/api/v1',
+          defaultHeaders: {
+            'HTTP-Referer': 'https://satarnmakmath.vercel.app',
+            'X-Title': 'Satarnmak Math',
+          }
         })
 
         const completion: any = await openai.chat.completions.create({
-          model: "nvidia/nemotron-3-ultra-550b-a55b",
+          model: "nvidia/nemotron-3-ultra-550b-a55b:free",
           messages: [{ role: "user", content: prompt }],
           temperature: 1,
           top_p: 0.95,
           max_tokens: 16384,
-          reasoning_budget: 16384,
-          chat_template_kwargs: {"enable_thinking":true},
           stream: true
         } as any)
 
