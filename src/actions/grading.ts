@@ -3,7 +3,6 @@
 import prisma from "@/lib/prisma"
 import { calculateRatingChange, recalculateGlobalRanks } from "@/lib/rating"
 import { revalidatePath } from "next/cache"
-import { GoogleGenerativeAI } from "@google/generative-ai"
 
 /**
  * Self-grade a submission (honor system).
@@ -124,7 +123,7 @@ export async function aiGradeSolution(data: {
     const isFirstAttempt = previousSubmissionsCount === 0
 
     // Use environment variable for API key to prevent leaks
-    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY
+    const apiKey = process.env.NVIDIA_NIM_API_KEY
     if (!apiKey) {
       console.error("API Key is not set")
       return { success: false, error: "AI grading is not configured properly." }
@@ -170,14 +169,14 @@ ${data.studentProof}`
 
     let responseText = ""
     try {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "moonshotai/kimi-k2.6",
           messages: [{ role: "user", content: prompt }]
         })
       })
@@ -190,7 +189,7 @@ ${data.studentProof}`
       const result = await res.json()
       responseText = result.choices?.[0]?.message?.content || ""
     } catch (e: any) {
-      console.error("Failed to fetch from Groq API:", e)
+      console.error("Failed to fetch from NVIDIA NIM API:", e)
       return { success: false, error: e.message || "AI API request failed" }
     }
 
@@ -281,7 +280,7 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "Attempt not found or not submitted" }
     }
 
-    const apiKey = process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY
+    const apiKey = process.env.NVIDIA_NIM_API_KEY
     if (!apiKey) {
       return { success: false, error: "AI grading is not configured properly." }
     }
@@ -344,14 +343,14 @@ ${sub.content}`
       let newStatus = "WRONG_ANSWER"
       
       try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${apiKey}`
           },
           body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
+            model: "moonshotai/kimi-k2.6",
             messages: [{ role: "user", content: prompt }]
           })
         })
