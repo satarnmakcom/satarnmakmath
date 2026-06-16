@@ -416,6 +416,8 @@ ${sub.content}`
       let isCorrect = false
       let newStatus = "WRONG_ANSWER"
       
+      let feedback: string = ""
+      
       try {
         const openai = new OpenAI({
           apiKey: apiKey,
@@ -456,11 +458,11 @@ ${sub.content}`
         const aiResult = JSON.parse(jsonString)
         isCorrect = aiResult.isCorrect === true
         newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
-        var feedback = aiResult.feedback
+        feedback = aiResult.feedback || ""
       } catch (e) {
         console.error("AI grading failed for submission", sub.id, e)
         newStatus = "WRONG_ANSWER" // Default to wrong if AI fails parsing
-        var feedback = "Grading failed due to AI error."
+        feedback = "Grading failed due to AI error."
       }
 
       let submissionDelta = 0
