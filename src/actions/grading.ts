@@ -123,9 +123,9 @@ export async function aiGradeSolution(data: {
     })
     const isFirstAttempt = previousSubmissionsCount === 0
 
-    const apiKey = process.env.OPENROUTER_API_KEY
+    const apiKey = process.env.GROQ_API_KEY
     if (!apiKey) {
-      console.error("OPENROUTER_API_KEY is not set")
+      console.error("GROQ_API_KEY is not set")
       return { success: false, error: "AI grading is not configured properly." }
     }
 
@@ -217,36 +217,20 @@ ${data.studentProof}`
     try {
       const openai = new OpenAI({
         apiKey: apiKey,
-        baseURL: 'https://openrouter.ai/api/v1',
-        defaultHeaders: {
-          'HTTP-Referer': 'https://satarnmakmath.vercel.app',
-          'X-Title': 'Satarnmak Math',
-        }
+        baseURL: 'https://api.groq.com/openai/v1',
       })
 
-      const completion: any = await openai.chat.completions.create({
-        model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+      const completion = await openai.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: prompt }],
-        temperature: 1,
-        top_p: 0.95,
-        max_tokens: 16384,
-        stream: true
-      } as any)
+        temperature: 0.2,
+        max_tokens: 4096,
+        stream: false
+      })
 
-      console.log("\\n--- AI Grading Stream Started ---")
-      for await (const chunk of completion) {
-        const reasoning = (chunk.choices[0]?.delta as any)?.reasoning_content;
-        if (reasoning) process.stdout.write(reasoning);
-        
-        const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          process.stdout.write(content);
-          responseText += content;
-        }
-      }
-      console.log("\\n--- AI Grading Stream Ended ---")
+      responseText = completion.choices?.[0]?.message?.content || ""
     } catch (e: any) {
-      console.error("Failed to fetch from NVIDIA NIM API:", e)
+      console.error("Failed to fetch from Groq API:", e)
       return { success: false, error: e.message || "AI API request failed" }
     }
 
@@ -337,7 +321,7 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "Attempt not found or not submitted" }
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY
+    const apiKey = process.env.GROQ_API_KEY
     if (!apiKey) {
       return { success: false, error: "AI grading is not configured properly." }
     }
@@ -406,30 +390,19 @@ ${sub.content}`
       try {
         const openai = new OpenAI({
           apiKey: apiKey,
-          baseURL: 'https://openrouter.ai/api/v1',
-          defaultHeaders: {
-            'HTTP-Referer': 'https://satarnmakmath.vercel.app',
-            'X-Title': 'Satarnmak Math',
-          }
+          baseURL: 'https://api.groq.com/openai/v1',
         })
 
-        const completion: any = await openai.chat.completions.create({
-          model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+        const completion = await openai.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
           messages: [{ role: "user", content: prompt }],
-          temperature: 1,
-          top_p: 0.95,
-          max_tokens: 16384,
-          stream: true
-        } as any)
+          temperature: 0.2,
+          max_tokens: 4096,
+          stream: false
+        })
 
-        let responseText = ""
-        for await (const chunk of completion) {
-          const content = chunk.choices[0]?.delta?.content || '';
-          if (content) {
-            responseText += content;
-          }
-        }
-        
+        const responseText = completion.choices?.[0]?.message?.content || ""
+
         const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i) || responseText.match(/\{[\s\S]*\}/)
         let jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : responseText
         
