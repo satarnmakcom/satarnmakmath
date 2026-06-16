@@ -7,6 +7,7 @@ import NextAuthProvider from "@/components/NextAuthProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "sonner";
 import Script from "next/script";
+import BannedUserGuard from "@/components/BannedUserGuard";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,6 +76,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <div className="noise-overlay pointer-events-none fixed inset-0 z-[-1] opacity-20 mix-blend-overlay"></div>
           <NextAuthProvider>
+            <BannedUserGuard />
             <AppLayout>{children}</AppLayout>
           </NextAuthProvider>
           <Toaster position="bottom-right" theme="system" richColors closeButton />

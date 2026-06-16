@@ -70,6 +70,13 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async session({ session, token }) {
+      if (token.isBanned) {
+        session.error = "BannedUser"
+        // @ts-ignore
+        session.user = undefined
+        return session
+      }
+
       if (session.user && token.sub) {
         session.user.id = token.sub
         session.user.role = (token.role as string) || "USER"
@@ -104,6 +111,11 @@ export const authOptions: NextAuthOptions = {
           })
 
           if (dbUser) {
+            if (dbUser.isBanned) {
+              token.isBanned = true
+              return token
+            }
+
             // --- Streak Auto-Update ---
             const now = new Date()
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
