@@ -220,7 +220,7 @@ ${data.studentProof}`
         baseURL: 'https://integrate.api.nvidia.com/v1',
       })
 
-      const completion = await openai.chat.completions.create({
+      const completion: any = await openai.chat.completions.create({
         model: "nvidia/nemotron-3-ultra-550b-a55b",
         messages: [{ role: "user", content: prompt }],
         temperature: 1,
@@ -422,7 +422,7 @@ ${sub.content}`
           baseURL: 'https://integrate.api.nvidia.com/v1',
         })
 
-        const completion = await openai.chat.completions.create({
+        const completion: any = await openai.chat.completions.create({
           model: "nvidia/nemotron-3-ultra-550b-a55b",
           messages: [{ role: "user", content: prompt }],
           temperature: 1,
