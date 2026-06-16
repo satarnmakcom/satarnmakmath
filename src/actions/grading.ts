@@ -5,6 +5,8 @@ import { calculateRatingChange, recalculateGlobalRanks } from "@/lib/rating"
 import { revalidatePath } from "next/cache"
 import OpenAI from "openai"
 
+export const maxDuration = 60; // Max allowed for Vercel Hobby plan
+
 /**
  * Self-grade a submission (honor system).
  * Updates the submission status and recalculates user rating.
@@ -353,27 +355,12 @@ export async function aiGradeAttempt(attemptId: string) {
 
     let totalRatingDelta = 0
 
-    // Grade each submission sequentially
-    for (const sub of attempt.submissions) {
-      if (sub.status !== "PENDING" || !sub.problem) continue // Already graded or missing item
+    // Grade all submissions in PARALLEL to prevent Vercel 15s timeout
+    const gradingPromises = attempt.submissions.map(async (sub) => {
+      if (sub.status !== "PENDING" || !sub.problem) return null
 
       if (!sub.content || sub.content.trim() === '') {
-        // Handle empty submissions
-        let submissionDelta = 0
-        if (isFirstAttempt) {
-          submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
-          totalRatingDelta += submissionDelta
-        }
-
-        await prisma.submission.update({
-          where: { id: sub.id },
-          data: { 
-            status: "WRONG_ANSWER",
-            ratingDelta: submissionDelta,
-            feedback: "No answer provided."
-          }
-        })
-        continue;
+        return { sub, isCorrect: false, feedback: "No answer provided.", empty: true }
       }
 
       const requiresProof = sub.problem.level !== 'POSN'
@@ -414,9 +401,7 @@ Student's Answer:
 ${sub.content}`
 
       let isCorrect = false
-      let newStatus = "WRONG_ANSWER"
-      
-      let feedback: string = ""
+      let feedback = ""
       
       try {
         const openai = new OpenAI({
@@ -437,12 +422,8 @@ ${sub.content}`
 
         let responseText = ""
         for await (const chunk of completion) {
-          const reasoning = (chunk.choices[0]?.delta as any)?.reasoning_content;
-          if (reasoning) process.stdout.write(reasoning);
-          
           const content = chunk.choices[0]?.delta?.content || '';
           if (content) {
-            process.stdout.write(content);
             responseText += content;
           }
         }
@@ -457,21 +438,26 @@ ${sub.content}`
           
         const aiResult = JSON.parse(jsonString)
         isCorrect = aiResult.isCorrect === true
-        newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
         feedback = aiResult.feedback || ""
       } catch (e) {
         console.error("AI grading failed for submission", sub.id, e)
-        newStatus = "WRONG_ANSWER" // Default to wrong if AI fails parsing
         feedback = "Grading failed due to AI error."
       }
 
+      return { sub, isCorrect, feedback, empty: false }
+    })
+
+    const gradedResults = await Promise.all(gradingPromises)
+
+    for (const result of gradedResults) {
+      if (!result) continue; // skipped
+
+      const { sub, isCorrect, feedback } = result;
+      const newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
       let submissionDelta = 0
+
       if (isFirstAttempt) {
-        if (isCorrect) {
-          submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, true)
-        } else {
-          submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
-        }
+        submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, isCorrect)
         totalRatingDelta += submissionDelta
       }
 

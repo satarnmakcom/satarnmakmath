@@ -59,6 +59,15 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
     }
   }, [currentAttempt, problemSet.timeLimitMinutes])
 
+  // Resume grading if stuck in SUBMITTED state
+  useEffect(() => {
+    if (currentAttempt && currentAttempt.status === "SUBMITTED" && !isGrading) {
+      // Auto-trigger grading if it got stuck previously
+      triggerAIGrading(currentAttempt.id)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAttempt?.status])
+
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600)
     const m = Math.floor((seconds % 3600) / 60)
