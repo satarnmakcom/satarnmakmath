@@ -42,6 +42,7 @@ interface ProblemFormProps {
     difficulty: number
     tags: string[]
     hints?: string[]
+    answer?: string | null
   }
   onSubmit: (data: any) => Promise<{ success: boolean, error?: string }>
   isEditing?: boolean
@@ -69,7 +70,8 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
     level: initialData?.level || 'POSN',
     difficulty: initialData?.difficulty || 1200,
     tags: initialData?.tags?.join(', ') || '',
-    hints: initialData?.hints || []
+    hints: initialData?.hints || [],
+    answer: initialData?.answer || ''
   })
 
   // Removed old Insert CSS logic
@@ -95,7 +97,8 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
       content: finalContent,
       difficulty: Number(formData.difficulty),
       tags: tagsArray,
-      hints: formData.hints.filter(h => h.trim() !== '')
+      hints: formData.hints.filter(h => h.trim() !== ''),
+      answer: formData.answer.trim() || null
     })
 
     if (res.success) {
@@ -363,6 +366,26 @@ export default function ProblemForm({ initialData, onSubmit, isEditing = false }
                 onChange={e => setFormData({ ...formData, tags: e.target.value })}
               />
             </div>
+          </div>
+
+          {/* Official Answer Key */}
+          <div className="card p-6 rounded-2xl space-y-3 border border-amber-500/20 bg-amber-500/5">
+            <div className="flex items-center gap-2 mb-1">
+              <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <label className="block text-xs font-bold text-amber-400 uppercase tracking-wider">Official Answer (เฉลย)</label>
+            </div>
+            <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">
+              ใส่เฉลยอย่างเป็นทางการที่นี่ AI จะใช้เฉลยนี้ตรวจคำตอบนักเรียนโดยตรง ทำให้แม่นยำและรวดเร็วขึ้น หากไม่ใส่ AI จะต้องแก้โจทย์เองก่อน
+            </p>
+            <textarea
+              rows={3}
+              className="w-full bg-[var(--bg-secondary)] border border-amber-500/30 text-[var(--text-primary)] rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:border-amber-500/60 transition-all resize-y placeholder-[var(--text-tertiary)]"
+              value={formData.answer}
+              onChange={e => setFormData({ ...formData, answer: e.target.value })}
+              placeholder="e.g. 42, 1/3, n(n+1)/2, หรือ proof answer..."
+            />
           </div>
         </div>
       </div>

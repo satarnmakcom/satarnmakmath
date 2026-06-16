@@ -176,58 +176,66 @@ export async function aiGradeSolution(data: {
     }
 
     const requiresProof = problem.level !== 'POSN'
+    const officialAnswer = (problem as any).answer as string | null | undefined
 
     const systemPrompt = `You are the world's most rigorous and accurate Mathematics Olympiad judge, equivalent to an IMO (International Mathematical Olympiad) problem setter and checker. You have PhD-level expertise in all branches of mathematics including Number Theory, Combinatorics, Algebra, and Geometry.
 
-Your ONLY job is to determine whether a student's answer is mathematically correct. You must be:
-- EXTREMELY PRECISE: Mathematical equivalence, not superficial string matching
-- UNFORGIVING on form: Unsimplified answers are WRONG
-- HONEST: Never give partial credit or benefit of the doubt on ambiguous answers
-- RIGOROUS: Solve the problem yourself from scratch before judging the student`
+Your ONLY job is to determine whether a student's answer is mathematically correct. You MUST:
+- Think step-by-step (chain-of-thought) before reaching a verdict
+- Be EXTREMELY PRECISE: mathematical equivalence, not superficial string matching
+- Be UNFORGIVING on form: unsimplified answers like "8/2" or "2+2" are WRONG when a simpler form exists
+- Be HONEST: never give benefit of the doubt on ambiguous answers
+- NEVER reveal the official answer in your feedback`
 
     const userPrompt = `## GRADING TASK
 
-### PHASE 1 — Solve the Problem Yourself
-Before looking at the student's answer, solve the problem completely on your own. Show all your working steps. This is mandatory — you MUST derive the correct answer independently.
+${
+  officialAnswer
+    ? `### ✅ OFFICIAL ANSWER PROVIDED
+The official correct answer is: **${officialAnswer}**
+Do NOT solve the problem yourself. Use this official answer as ground truth.
 
-### PHASE 2 — Evaluate the Student's Answer
-${requiresProof
-  ? `**Problem Type: PROOF-BASED (Level: ${problem.level})**
+### CHAIN-OF-THOUGHT — Verify the Student's Answer
+Think through these steps:
+1. Parse the student's answer carefully.
+2. Check if it is mathematically equivalent to the official answer.
+3. Check if it is in the required simplified/evaluated form.
+4. State your conclusion clearly.`
+    : `### PHASE 1 — Solve the Problem Yourself (Chain-of-Thought)
+No official answer was provided. You MUST solve this problem yourself first.
+Think through the solution step-by-step. Show ALL your working. Do not skip steps.
 
-Rubric:
-- CORRECT: The student demonstrates a complete, logically valid proof that reaches the correct conclusion. Minor notational issues are acceptable if the mathematical argument is sound.
-- WRONG: Any of these → bare final answer without proof, logical gaps, incorrect assumptions, wrong conclusion, circular reasoning, or incomplete argument.
-
-IMPORTANT: A correct final answer WITHOUT a valid proof is still WRONG.`
-  : `**Problem Type: SHORT ANSWER (Level: ${problem.level})**
-
-Rubric — THE ANSWER MUST BE IN SIMPLEST EVALUATED FORM:
-- CORRECT: Numerically/algebraically equivalent to the true answer AND already in simplest form.
-- WRONG (even if value is right): Unevaluated expressions like "2+2", "8/2", "√16", "3!", "sin(90°)" when a simpler form exists.
-- WRONG: Incorrect value, wrong units, extra/missing variables.
-
-Few-shot examples of WRONG answers (value correct but form wrong):
-  - True answer = 4 → Student writes "2+2" ❌ (not evaluated)
-  - True answer = 4 → Student writes "8/2" ❌ (not simplified)
-  - True answer = 4 → Student writes "2²" ❌ (not evaluated)
-  - True answer = 1/2 → Student writes "2/4" ❌ (not in lowest terms)
-  - True answer = 1/2 → Student writes "0.5" ✅ (acceptable equivalent)
-  - True answer = 4 → Student writes "4" ✅ (correct)
-  - True answer = 4 → Student writes "4.0" ✅ (acceptable)
-
-Few-shot examples of WRONG answers (value wrong):
-  - True answer = 4 → Student writes "5" ❌
-  - True answer = 4 → Student writes "3" ❌`
+### PHASE 2 — Verify the Student's Answer
+Now compare the student's answer to YOUR derived answer.`
 }
 
-### PHASE 3 — Output Format
-First write your complete solution and reasoning in plain text.
-Then output EXACTLY this JSON block at the very end — no extra text after it:
+### EVALUATION RUBRIC
+${requiresProof
+  ? `**Problem Type: PROOF-BASED (Level: ${problem.level})**
+- CORRECT ✅: Student shows a complete, logically valid proof reaching the correct conclusion.
+- WRONG ❌: Bare answer without proof, logical gaps, wrong conclusion, circular reasoning, or incomplete argument.
+- NOTE: A correct final answer WITHOUT a valid proof is still WRONG.`
+  : `**Problem Type: SHORT ANSWER (Level: ${problem.level})**
+The answer MUST be in simplest evaluated form:
+- CORRECT ✅: Mathematically equivalent to the true answer AND in simplest form.
+- WRONG ❌ (form wrong): "2+2", "8/2", "√16", "3!", "sin(90°)" — must be evaluated.
+- WRONG ❌ (form wrong): "2/4" when answer is "1/2" — must be in lowest terms.
+- CORRECT ✅: "0.5" when answer is "1/2" — acceptable decimal equivalent.
+- WRONG ❌: Incorrect numerical value.
+
+Examples:
+  True=4 → "2+2" ❌ | "8/2" ❌ | "2²" ❌ | "4" ✅ | "4.0" ✅
+  True=1/2 → "2/4" ❌ | "0.5" ✅ | "1/2" ✅`
+}
+
+### OUTPUT FORMAT
+First write your chain-of-thought reasoning in plain text (mandatory).
+Then output EXACTLY this JSON block at the very end:
 
 \`\`\`json
 {
   "isCorrect": <true|false>,
-  "feedback": "<Concise feedback in the same language the student used. If WRONG: explain exactly why and give a helpful directional hint without revealing the answer. If CORRECT: brief congratulations.>"
+  "feedback": "<Respond in the same language the student used. If WRONG: explain exactly why (but do NOT reveal the correct answer). If CORRECT: brief congratulations.>"
 }
 \`\`\`
 
@@ -377,58 +385,66 @@ export async function aiGradeAttempt(attemptId: string) {
       }
 
       const requiresProof = sub.problem.level !== 'POSN'
-      
+      const officialAnswer = (sub.problem as any).answer as string | null | undefined
+
       const systemPrompt = `You are the world's most rigorous and accurate Mathematics Olympiad judge, equivalent to an IMO (International Mathematical Olympiad) problem setter and checker. You have PhD-level expertise in all branches of mathematics including Number Theory, Combinatorics, Algebra, and Geometry.
 
-Your ONLY job is to determine whether a student's answer is mathematically correct. You must be:
-- EXTREMELY PRECISE: Mathematical equivalence, not superficial string matching
-- UNFORGIVING on form: Unsimplified answers are WRONG
-- HONEST: Never give partial credit or benefit of the doubt on ambiguous answers
-- RIGOROUS: Solve the problem yourself from scratch before judging the student`
+Your ONLY job is to determine whether a student's answer is mathematically correct. You MUST:
+- Think step-by-step (chain-of-thought) before reaching a verdict
+- Be EXTREMELY PRECISE: mathematical equivalence, not superficial string matching
+- Be UNFORGIVING on form: unsimplified answers like "8/2" or "2+2" are WRONG when a simpler form exists
+- Be HONEST: never give benefit of the doubt on ambiguous answers
+- NEVER reveal the official answer in your feedback`
 
       const prompt = `## GRADING TASK
 
-### PHASE 1 — Solve the Problem Yourself
-Before looking at the student's answer, solve the problem completely on your own. Show all your working steps. This is mandatory — you MUST derive the correct answer independently.
+${
+  officialAnswer
+    ? `### ✅ OFFICIAL ANSWER PROVIDED
+The official correct answer is: **${officialAnswer}**
+Do NOT solve the problem yourself. Use this official answer as ground truth.
 
-### PHASE 2 — Evaluate the Student's Answer
-${requiresProof
-  ? `**Problem Type: PROOF-BASED (Level: ${sub.problem.level})**
+### CHAIN-OF-THOUGHT — Verify the Student's Answer
+Think through these steps:
+1. Parse the student's answer carefully.
+2. Check if it is mathematically equivalent to the official answer.
+3. Check if it is in the required simplified/evaluated form.
+4. State your conclusion clearly.`
+    : `### PHASE 1 — Solve the Problem Yourself (Chain-of-Thought)
+No official answer was provided. You MUST solve this problem yourself first.
+Think through the solution step-by-step. Show ALL your working. Do not skip steps.
 
-Rubric:
-- CORRECT: The student demonstrates a complete, logically valid proof that reaches the correct conclusion. Minor notational issues are acceptable if the mathematical argument is sound.
-- WRONG: Any of these → bare final answer without proof, logical gaps, incorrect assumptions, wrong conclusion, circular reasoning, or incomplete argument.
-
-IMPORTANT: A correct final answer WITHOUT a valid proof is still WRONG.`
-  : `**Problem Type: SHORT ANSWER (Level: ${sub.problem.level})**
-
-Rubric — THE ANSWER MUST BE IN SIMPLEST EVALUATED FORM:
-- CORRECT: Numerically/algebraically equivalent to the true answer AND already in simplest form.
-- WRONG (even if value is right): Unevaluated expressions like "2+2", "8/2", "√16", "3!", "sin(90°)" when a simpler form exists.
-- WRONG: Incorrect value, wrong units, extra/missing variables.
-
-Few-shot examples of WRONG answers (value correct but form wrong):
-  - True answer = 4 → Student writes "2+2" ❌ (not evaluated)
-  - True answer = 4 → Student writes "8/2" ❌ (not simplified)
-  - True answer = 4 → Student writes "2²" ❌ (not evaluated)
-  - True answer = 1/2 → Student writes "2/4" ❌ (not in lowest terms)
-  - True answer = 1/2 → Student writes "0.5" ✅ (acceptable equivalent)
-  - True answer = 4 → Student writes "4" ✅ (correct)
-  - True answer = 4 → Student writes "4.0" ✅ (acceptable)
-
-Few-shot examples of WRONG answers (value wrong):
-  - True answer = 4 → Student writes "5" ❌
-  - True answer = 4 → Student writes "3" ❌`
+### PHASE 2 — Verify the Student's Answer
+Now compare the student's answer to YOUR derived answer.`
 }
 
-### PHASE 3 — Output Format
-First write your complete solution and reasoning in plain text.
-Then output EXACTLY this JSON block at the very end — no extra text after it:
+### EVALUATION RUBRIC
+${requiresProof
+  ? `**Problem Type: PROOF-BASED (Level: ${sub.problem.level})**
+- CORRECT ✅: Student shows a complete, logically valid proof reaching the correct conclusion.
+- WRONG ❌: Bare answer without proof, logical gaps, wrong conclusion, circular reasoning, or incomplete argument.
+- NOTE: A correct final answer WITHOUT a valid proof is still WRONG.`
+  : `**Problem Type: SHORT ANSWER (Level: ${sub.problem.level})**
+The answer MUST be in simplest evaluated form:
+- CORRECT ✅: Mathematically equivalent to the true answer AND in simplest form.
+- WRONG ❌ (form wrong): "2+2", "8/2", "√16", "3!", "sin(90°)" — must be evaluated.
+- WRONG ❌ (form wrong): "2/4" when answer is "1/2" — must be in lowest terms.
+- CORRECT ✅: "0.5" when answer is "1/2" — acceptable decimal equivalent.
+- WRONG ❌: Incorrect numerical value.
+
+Examples:
+  True=4 → "2+2" ❌ | "8/2" ❌ | "2²" ❌ | "4" ✅ | "4.0" ✅
+  True=1/2 → "2/4" ❌ | "0.5" ✅ | "1/2" ✅`
+}
+
+### OUTPUT FORMAT
+First write your chain-of-thought reasoning in plain text (mandatory).
+Then output EXACTLY this JSON block at the very end:
 
 \`\`\`json
 {
   "isCorrect": <true|false>,
-  "feedback": "<Concise feedback in the same language the student used. If WRONG: explain exactly why and give a helpful directional hint without revealing the answer. If CORRECT: brief congratulations.>"
+  "feedback": "<Respond in the same language the student used. If WRONG: explain exactly why (but do NOT reveal the correct answer). If CORRECT: brief congratulations.>"
 }
 \`\`\`
 

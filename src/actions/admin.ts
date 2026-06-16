@@ -25,6 +25,7 @@ export async function createProblem(data: {
   difficulty: number
   tags: string[]
   hints?: string[]
+  answer?: string
 }) {
   try {
     await ensureAdmin()
@@ -36,7 +37,8 @@ export async function createProblem(data: {
         level: data.level,
         difficulty: data.difficulty,
         tags: data.tags,
-        hints: data.hints || []
+        hints: data.hints || [],
+        answer: data.answer || null
       }
     })
     revalidatePath("/admin/problems")
@@ -55,6 +57,7 @@ export async function updateProblem(id: string, data: {
   difficulty: number
   tags: string[]
   hints?: string[]
+  answer?: string
 }) {
   try {
     await ensureAdmin()
@@ -67,7 +70,8 @@ export async function updateProblem(id: string, data: {
         level: data.level,
         difficulty: data.difficulty,
         tags: data.tags,
-        hints: data.hints || []
+        hints: data.hints || [],
+        answer: data.answer || null
       }
     })
     revalidatePath("/admin/problems")

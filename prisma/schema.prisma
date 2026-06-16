@@ -90,6 +90,7 @@ model Problem {
   level         CompetitionLevel
   difficulty    Int
   tags          String[]
+  answer        String?   @db.Text
   
   createdAt     DateTime  @default(now())
   hints         String[]  @default([])
