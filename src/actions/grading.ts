@@ -177,40 +177,66 @@ export async function aiGradeSolution(data: {
 
     const requiresProof = problem.level !== 'POSN'
 
-    const prompt = `You are an expert Math Olympiad judge. Your task is to grade a student's answer.
+    const systemPrompt = `You are the world's most rigorous and accurate Mathematics Olympiad judge, equivalent to an IMO (International Mathematical Olympiad) problem setter and checker. You have PhD-level expertise in all branches of mathematics including Number Theory, Combinatorics, Algebra, and Geometry.
 
-STEP 1 - Solve the problem yourself first:
-Before evaluating the student, carefully solve the problem on your own to determine the correct answer.
+Your ONLY job is to determine whether a student's answer is mathematically correct. You must be:
+- EXTREMELY PRECISE: Mathematical equivalence, not superficial string matching
+- UNFORGIVING on form: Unsimplified answers are WRONG
+- HONEST: Never give partial credit or benefit of the doubt on ambiguous answers
+- RIGOROUS: Solve the problem yourself from scratch before judging the student`
 
-STEP 2 - Compare with the student's answer:
+    const userPrompt = `## GRADING TASK
+
+### PHASE 1 — Solve the Problem Yourself
+Before looking at the student's answer, solve the problem completely on your own. Show all your working steps. This is mandatory — you MUST derive the correct answer independently.
+
+### PHASE 2 — Evaluate the Student's Answer
 ${requiresProof
-  ? `This is a proof-based problem (Level: ${problem.level}). The student must provide clear logical reasoning or steps.
-- Mark CORRECT if the student's reasoning is mathematically sound and reaches the right conclusion.
-- Mark WRONG if only a final answer is given without justification, or if logic is flawed.`
-  : `This is a short-answer problem (Level: ${problem.level}). The student only needs to provide the final answer.
-- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "8/2" or "2+2" is WRONG. They must evaluate it to the simplest form (e.g., 4, 1/2, 0.5, etc.).
-- Mark CORRECT if the student's answer is the final evaluated form and is mathematically equivalent to the correct answer.
-- Mark WRONG if the answer is an unevaluated expression (like 2+2 or 8/2) when it can be easily simplified, or if it is genuinely incorrect.`
+  ? `**Problem Type: PROOF-BASED (Level: ${problem.level})**
+
+Rubric:
+- CORRECT: The student demonstrates a complete, logically valid proof that reaches the correct conclusion. Minor notational issues are acceptable if the mathematical argument is sound.
+- WRONG: Any of these → bare final answer without proof, logical gaps, incorrect assumptions, wrong conclusion, circular reasoning, or incomplete argument.
+
+IMPORTANT: A correct final answer WITHOUT a valid proof is still WRONG.`
+  : `**Problem Type: SHORT ANSWER (Level: ${problem.level})**
+
+Rubric — THE ANSWER MUST BE IN SIMPLEST EVALUATED FORM:
+- CORRECT: Numerically/algebraically equivalent to the true answer AND already in simplest form.
+- WRONG (even if value is right): Unevaluated expressions like "2+2", "8/2", "√16", "3!", "sin(90°)" when a simpler form exists.
+- WRONG: Incorrect value, wrong units, extra/missing variables.
+
+Few-shot examples of WRONG answers (value correct but form wrong):
+  - True answer = 4 → Student writes "2+2" ❌ (not evaluated)
+  - True answer = 4 → Student writes "8/2" ❌ (not simplified)
+  - True answer = 4 → Student writes "2²" ❌ (not evaluated)
+  - True answer = 1/2 → Student writes "2/4" ❌ (not in lowest terms)
+  - True answer = 1/2 → Student writes "0.5" ✅ (acceptable equivalent)
+  - True answer = 4 → Student writes "4" ✅ (correct)
+  - True answer = 4 → Student writes "4.0" ✅ (acceptable)
+
+Few-shot examples of WRONG answers (value wrong):
+  - True answer = 4 → Student writes "5" ❌
+  - True answer = 4 → Student writes "3" ❌`
 }
 
-STEP 3 - Format your response:
-First, write out your step-by-step solution and evaluation of the student's answer in plain text.
-Then, AT THE VERY END of your response, you MUST include a JSON block wrapped in \`\`\`json ... \`\`\` containing your final verdict.
-
-Example format:
-(Your step-by-step analysis and math reasoning goes here...)
+### PHASE 3 — Output Format
+First write your complete solution and reasoning in plain text.
+Then output EXACTLY this JSON block at the very end — no extra text after it:
 
 \`\`\`json
 {
-  "isCorrect": true,
-  "feedback": "Brief feedback in the same language as the student's answer. If wrong, give a helpful hint. If correct, give encouragement."
+  "isCorrect": <true|false>,
+  "feedback": "<Concise feedback in the same language the student used. If WRONG: explain exactly why and give a helpful directional hint without revealing the answer. If CORRECT: brief congratulations.>"
 }
 \`\`\`
 
-Problem:
+---
+
+### Problem:
 ${problem.content}
 
-Student's Answer:
+### Student's Answer:
 ${data.studentProof}`
 
     let responseText = ""
@@ -222,8 +248,11 @@ ${data.studentProof}`
 
       const completion = await openai.chat.completions.create({
         model: "llama-3.3-70b-versatile",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.2,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ],
+        temperature: 0.1,
         max_tokens: 4096,
         stream: false
       })
@@ -348,40 +377,67 @@ export async function aiGradeAttempt(attemptId: string) {
       }
 
       const requiresProof = sub.problem.level !== 'POSN'
-      const prompt = `You are an expert Math Olympiad judge. Your task is to grade a student's answer.
+      
+      const systemPrompt = `You are the world's most rigorous and accurate Mathematics Olympiad judge, equivalent to an IMO (International Mathematical Olympiad) problem setter and checker. You have PhD-level expertise in all branches of mathematics including Number Theory, Combinatorics, Algebra, and Geometry.
 
-STEP 1 - Solve the problem yourself first:
-Carefully solve the problem to determine the correct answer before evaluating.
+Your ONLY job is to determine whether a student's answer is mathematically correct. You must be:
+- EXTREMELY PRECISE: Mathematical equivalence, not superficial string matching
+- UNFORGIVING on form: Unsimplified answers are WRONG
+- HONEST: Never give partial credit or benefit of the doubt on ambiguous answers
+- RIGOROUS: Solve the problem yourself from scratch before judging the student`
 
-STEP 2 - Compare with the student's answer:
+      const prompt = `## GRADING TASK
+
+### PHASE 1 — Solve the Problem Yourself
+Before looking at the student's answer, solve the problem completely on your own. Show all your working steps. This is mandatory — you MUST derive the correct answer independently.
+
+### PHASE 2 — Evaluate the Student's Answer
 ${requiresProof
-  ? `This is a proof-based problem (Level: ${sub.problem.level}). The student must show logical reasoning.
-- Mark CORRECT if reasoning is mathematically valid and reaches the right conclusion.
-- Mark WRONG if only a bare answer without justification, or if logic is flawed.`
-  : `This is a short-answer problem (Level: ${sub.problem.level}). Only the final answer matters.
-- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "8/2" or "2*2" is WRONG. They must evaluate it to the simplest form.
-- Mark CORRECT if the student's answer is the final evaluated form and is mathematically equivalent to the correct answer.
-- Mark WRONG if the answer is an unevaluated expression (like 2+2 or 8/2) when it can be easily simplified, or if it is genuinely incorrect.`
+  ? `**Problem Type: PROOF-BASED (Level: ${sub.problem.level})**
+
+Rubric:
+- CORRECT: The student demonstrates a complete, logically valid proof that reaches the correct conclusion. Minor notational issues are acceptable if the mathematical argument is sound.
+- WRONG: Any of these → bare final answer without proof, logical gaps, incorrect assumptions, wrong conclusion, circular reasoning, or incomplete argument.
+
+IMPORTANT: A correct final answer WITHOUT a valid proof is still WRONG.`
+  : `**Problem Type: SHORT ANSWER (Level: ${sub.problem.level})**
+
+Rubric — THE ANSWER MUST BE IN SIMPLEST EVALUATED FORM:
+- CORRECT: Numerically/algebraically equivalent to the true answer AND already in simplest form.
+- WRONG (even if value is right): Unevaluated expressions like "2+2", "8/2", "√16", "3!", "sin(90°)" when a simpler form exists.
+- WRONG: Incorrect value, wrong units, extra/missing variables.
+
+Few-shot examples of WRONG answers (value correct but form wrong):
+  - True answer = 4 → Student writes "2+2" ❌ (not evaluated)
+  - True answer = 4 → Student writes "8/2" ❌ (not simplified)
+  - True answer = 4 → Student writes "2²" ❌ (not evaluated)
+  - True answer = 1/2 → Student writes "2/4" ❌ (not in lowest terms)
+  - True answer = 1/2 → Student writes "0.5" ✅ (acceptable equivalent)
+  - True answer = 4 → Student writes "4" ✅ (correct)
+  - True answer = 4 → Student writes "4.0" ✅ (acceptable)
+
+Few-shot examples of WRONG answers (value wrong):
+  - True answer = 4 → Student writes "5" ❌
+  - True answer = 4 → Student writes "3" ❌`
 }
 
-STEP 3 - Format your response:
-First, write out your step-by-step solution and evaluation of the student's answer in plain text.
-Then, AT THE VERY END of your response, you MUST include a JSON block wrapped in \`\`\`json ... \`\`\` containing your final verdict.
-
-Example format:
-(Your step-by-step analysis and math reasoning goes here...)
+### PHASE 3 — Output Format
+First write your complete solution and reasoning in plain text.
+Then output EXACTLY this JSON block at the very end — no extra text after it:
 
 \`\`\`json
 {
-  "isCorrect": true,
-  "feedback": "Brief feedback. If wrong, give a helpful hint."
+  "isCorrect": <true|false>,
+  "feedback": "<Concise feedback in the same language the student used. If WRONG: explain exactly why and give a helpful directional hint without revealing the answer. If CORRECT: brief congratulations.>"
 }
 \`\`\`
 
-Problem:
+---
+
+### Problem:
 ${sub.problem.content}
 
-Student's Answer:
+### Student's Answer:
 ${sub.content}`
 
       let isCorrect = false
@@ -395,8 +451,11 @@ ${sub.content}`
 
         const completion = await openai.chat.completions.create({
           model: "llama-3.3-70b-versatile",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.2,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.1,
           max_tokens: 4096,
           stream: false
         })
