@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { calculateRatingChange, recalculateGlobalRanks } from "@/lib/rating"
 import { revalidatePath } from "next/cache"
+import OpenAI from "openai"
 
 /**
  * Self-grade a submission (honor system).
@@ -122,11 +123,56 @@ export async function aiGradeSolution(data: {
     })
     const isFirstAttempt = previousSubmissionsCount === 0
 
-    // Use environment variable for API key to prevent leaks
     const apiKey = process.env.NVIDIA_NIM_API_KEY
     if (!apiKey) {
       console.error("API Key is not set")
       return { success: false, error: "AI grading is not configured properly." }
+    }
+
+    if (!data.studentProof || data.studentProof.trim() === '') {
+      // Empty answer: Return 0 / WRONG_ANSWER immediately
+      const isCorrect = false;
+      let ratingDelta = 0;
+      let newRating = 1200; // placeholder, will calculate below
+
+      const user = await prisma.user.findUnique({ where: { id: data.userId } })
+      if (!user) return { success: false, error: "User not found" }
+      newRating = user.rating;
+
+      if (isFirstAttempt) {
+        ratingDelta = calculateRatingChange(user.rating, problem.difficulty, isCorrect)
+        newRating = Math.max(0, user.rating + ratingDelta)
+        await prisma.user.update({
+          where: { id: data.userId },
+          data: { rating: newRating }
+        })
+        await recalculateGlobalRanks(prisma)
+      }
+
+      await prisma.submission.update({
+        where: { id: data.submissionId },
+        data: {
+          status: "WRONG_ANSWER",
+          ratingDelta: ratingDelta || 0,
+          feedback: "No answer provided. Please try again."
+        }
+      })
+
+      revalidatePath("/")
+      revalidatePath("/profile")
+      revalidatePath("/leaderboard")
+
+      return {
+        success: true,
+        data: {
+          status: "WRONG_ANSWER",
+          ratingDelta,
+          newRating,
+          isCorrect,
+          isRetry: !isFirstAttempt,
+          feedback: "No answer provided. Please try again."
+        }
+      }
     }
 
     const requiresProof = problem.level !== 'POSN'
@@ -142,9 +188,9 @@ ${requiresProof
 - Mark CORRECT if the student's reasoning is mathematically sound and reaches the right conclusion.
 - Mark WRONG if only a final answer is given without justification, or if logic is flawed.`
   : `This is a short-answer problem (Level: ${problem.level}). The student only needs to provide the final answer.
-- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "2+2" or "2*2" is WRONG. They must evaluate it to the simplest form (e.g., 4, 1/2, 0.5, etc.).
+- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "8/2" or "2+2" is WRONG. They must evaluate it to the simplest form (e.g., 4, 1/2, 0.5, etc.).
 - Mark CORRECT if the student's answer is the final evaluated form and is mathematically equivalent to the correct answer.
-- Mark WRONG if the answer is an unevaluated expression (like 2+2) when it can be easily simplified, or if it is genuinely incorrect.`
+- Mark WRONG if the answer is an unevaluated expression (like 2+2 or 8/2) when it can be easily simplified, or if it is genuinely incorrect.`
 }
 
 STEP 3 - Format your response:
@@ -169,25 +215,35 @@ ${data.studentProof}`
 
     let responseText = ""
     try {
-      const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: "moonshotai/kimi-k2.6",
-          messages: [{ role: "user", content: prompt }]
-        })
+      const openai = new OpenAI({
+        apiKey: apiKey,
+        baseURL: 'https://integrate.api.nvidia.com/v1',
       })
 
-      if (!res.ok) {
-        const errorText = await res.text()
-        throw new Error(`API returned ${res.status}: ${errorText}`)
-      }
+      const completion = await openai.chat.completions.create({
+        model: "nvidia/nemotron-3-ultra-550b-a55b",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 1,
+        top_p: 0.95,
+        max_tokens: 16384,
+        // @ts-ignore - custom nvidia params
+        reasoning_budget: 16384,
+        chat_template_kwargs: {"enable_thinking":true},
+        stream: true
+      })
 
-      const result = await res.json()
-      responseText = result.choices?.[0]?.message?.content || ""
+      console.log("\\n--- AI Grading Stream Started ---")
+      for await (const chunk of completion) {
+        const reasoning = (chunk.choices[0]?.delta as any)?.reasoning_content;
+        if (reasoning) process.stdout.write(reasoning);
+        
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          process.stdout.write(content);
+          responseText += content;
+        }
+      }
+      console.log("\\n--- AI Grading Stream Ended ---")
     } catch (e: any) {
       console.error("Failed to fetch from NVIDIA NIM API:", e)
       return { success: false, error: e.message || "AI API request failed" }
@@ -302,6 +358,25 @@ export async function aiGradeAttempt(attemptId: string) {
     for (const sub of attempt.submissions) {
       if (sub.status !== "PENDING" || !sub.problem) continue // Already graded or missing item
 
+      if (!sub.content || sub.content.trim() === '') {
+        // Handle empty submissions
+        let submissionDelta = 0
+        if (isFirstAttempt) {
+          submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
+          totalRatingDelta += submissionDelta
+        }
+
+        await prisma.submission.update({
+          where: { id: sub.id },
+          data: { 
+            status: "WRONG_ANSWER",
+            ratingDelta: submissionDelta,
+            feedback: "No answer provided."
+          }
+        })
+        continue;
+      }
+
       const requiresProof = sub.problem.level !== 'POSN'
       const prompt = `You are an expert Math Olympiad judge. Your task is to grade a student's answer.
 
@@ -314,9 +389,9 @@ ${requiresProof
 - Mark CORRECT if reasoning is mathematically valid and reaches the right conclusion.
 - Mark WRONG if only a bare answer without justification, or if logic is flawed.`
   : `This is a short-answer problem (Level: ${sub.problem.level}). Only the final answer matters.
-- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "2+2" or "2*2" is WRONG. They must evaluate it to the simplest form.
+- The student MUST provide the final evaluated answer. For example, if the answer is 4, answering "8/2" or "2*2" is WRONG. They must evaluate it to the simplest form.
 - Mark CORRECT if the student's answer is the final evaluated form and is mathematically equivalent to the correct answer.
-- Mark WRONG if the answer is an unevaluated expression (like 2+2) when it can be easily simplified, or if it is genuinely incorrect.`
+- Mark WRONG if the answer is an unevaluated expression (like 2+2 or 8/2) when it can be easily simplified, or if it is genuinely incorrect.`
 }
 
 STEP 3 - Format your response:
@@ -343,25 +418,34 @@ ${sub.content}`
       let newStatus = "WRONG_ANSWER"
       
       try {
-        const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            model: "moonshotai/kimi-k2.6",
-            messages: [{ role: "user", content: prompt }]
-          })
+        const openai = new OpenAI({
+          apiKey: apiKey,
+          baseURL: 'https://integrate.api.nvidia.com/v1',
         })
 
-        if (!res.ok) {
-          const errText = await res.text()
-          throw new Error(`API error ${res.status}: ${errText}`)
-        }
+        const completion = await openai.chat.completions.create({
+          model: "nvidia/nemotron-3-ultra-550b-a55b",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 1,
+          top_p: 0.95,
+          max_tokens: 16384,
+          // @ts-ignore
+          reasoning_budget: 16384,
+          chat_template_kwargs: {"enable_thinking":true},
+          stream: true
+        })
 
-        const result = await res.json()
-        const responseText = result.choices?.[0]?.message?.content || ""
+        let responseText = ""
+        for await (const chunk of completion) {
+          const reasoning = (chunk.choices[0]?.delta as any)?.reasoning_content;
+          if (reasoning) process.stdout.write(reasoning);
+          
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            process.stdout.write(content);
+            responseText += content;
+          }
+        }
         
         const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/i) || responseText.match(/\{[\s\S]*\}/)
         let jsonString = jsonMatch ? jsonMatch[1] || jsonMatch[0] : responseText
@@ -374,9 +458,11 @@ ${sub.content}`
         const aiResult = JSON.parse(jsonString)
         isCorrect = aiResult.isCorrect === true
         newStatus = isCorrect ? "ACCEPTED" : "WRONG_ANSWER"
+        var feedback = aiResult.feedback
       } catch (e) {
         console.error("AI grading failed for submission", sub.id, e)
         newStatus = "WRONG_ANSWER" // Default to wrong if AI fails parsing
+        var feedback = "Grading failed due to AI error."
       }
 
       let submissionDelta = 0
@@ -393,7 +479,8 @@ ${sub.content}`
         where: { id: sub.id },
         data: { 
           status: newStatus,
-          ratingDelta: submissionDelta
+          ratingDelta: submissionDelta,
+          feedback: feedback
         }
       })
     }

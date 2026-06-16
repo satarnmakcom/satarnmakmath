@@ -15,7 +15,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
-      router.push("/dashboard")
+      router.push("/")
     }
   }, [status, router])
 
@@ -33,12 +33,12 @@ export default function LoginPage() {
       setError(res.error)
       setLoading(false)
     } else {
-      router.push("/dashboard")
+      router.push("/")
     }
   }
 
   const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/dashboard" })
+    signIn("google", { callbackUrl: "/" })
   }
 
   return (

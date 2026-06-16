@@ -105,21 +105,21 @@ export default function LandingPage() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative z-50 flex items-center justify-between px-6 md:px-10 lg:px-16 py-5"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 lg:px-16 py-4 bg-[var(--bg-primary)]/70 backdrop-blur-2xl border-b border-white/[0.05]"
       >
-        <Link href="/" className="flex items-center gap-3">
-          <img src="/logo1.png" alt="Satarnmak Math" className="h-10 w-auto object-contain" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <img src="/logo1.png" alt="Satarnmak Math" className="h-9 w-auto object-contain group-hover:scale-105 transition-transform" />
         </Link>
         <div className="flex items-center gap-3">
           <Link
             href="/login"
-            className="px-5 py-2.5 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors rounded-xl hover:bg-white/5"
+            className="px-5 py-2 text-sm font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors rounded-xl hover:bg-white/5"
           >
             Sign In
           </Link>
           <Link
             href="/register"
-            className="px-6 py-2.5 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-105 transition-all"
+            className="px-5 py-2 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-electric-500 to-violet-600 shadow-lg shadow-electric-500/25 hover:shadow-electric-500/40 hover:scale-105 transition-all"
           >
             Get Started
           </Link>
@@ -127,7 +127,7 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ===== HERO SECTION ===== */}
-      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-16 md:pt-24 pb-20 md:pb-32">
+      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 pt-32 md:pt-40 pb-20 md:pb-32">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
