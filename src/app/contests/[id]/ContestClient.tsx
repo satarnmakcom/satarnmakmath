@@ -235,9 +235,12 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
           })}
         </div>
 
-        <div className="text-center mt-12">
-          <button onClick={() => router.push('/contests')} className="btn-primary px-8 py-3 rounded-xl text-white font-bold">
+        <div className="text-center mt-12 flex justify-center gap-4">
+          <button onClick={() => router.push('/contests')} className="btn-secondary px-8 py-3 rounded-xl font-bold border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors">
             Back to Contests
+          </button>
+          <button onClick={handleStart} disabled={loading} className="btn-primary px-8 py-3 rounded-xl text-white font-bold disabled:opacity-50">
+            {loading ? "Starting..." : "Retake Exam"}
           </button>
         </div>
       </div>

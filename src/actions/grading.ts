@@ -286,6 +286,17 @@ export async function aiGradeAttempt(attemptId: string) {
       return { success: false, error: "AI grading is not configured properly." }
     }
 
+    // Check if this is the first completed attempt for this problem set
+    const previousAttemptsCount = await prisma.problemSetAttempt.count({
+      where: {
+        userId: attempt.userId,
+        problemSetId: attempt.problemSetId,
+        id: { not: attempt.id },
+        status: { in: ["SUBMITTED", "GRADED"] }
+      }
+    })
+    const isFirstAttempt = previousAttemptsCount === 0
+
     let totalRatingDelta = 0
 
     // Grade each submission sequentially
@@ -369,19 +380,23 @@ ${sub.content}`
         newStatus = "WRONG_ANSWER" // Default to wrong if AI fails parsing
       }
 
+      let submissionDelta = 0
+      if (isFirstAttempt) {
+        if (isCorrect) {
+          submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, true)
+        } else {
+          submissionDelta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
+        }
+        totalRatingDelta += submissionDelta
+      }
+
       await prisma.submission.update({
         where: { id: sub.id },
-        data: { status: newStatus }
+        data: { 
+          status: newStatus,
+          ratingDelta: submissionDelta
+        }
       })
-
-      if (isCorrect) {
-        // Calculate rating bump for this single problem
-        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, true)
-        totalRatingDelta += delta
-      } else {
-        const delta = calculateRatingChange(attempt.user.rating + totalRatingDelta, sub.problem.difficulty, false)
-        totalRatingDelta += delta
-      }
     }
 
     // Apply rating delta to user
