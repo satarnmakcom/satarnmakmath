@@ -140,71 +140,115 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
 
   if (!currentAttempt) {
     return (
-      <div className="max-w-5xl mx-auto py-16 md:py-24 relative min-h-[80vh] flex flex-col justify-center">
-        {/* Ambient Background Glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-electric-400/20 via-violet-500/10 to-transparent blur-[120px] rounded-full pointer-events-none -z-10 animate-pulse-soft" />
-        
-        <div className="text-center mb-20 relative z-10">
-          <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--glass-border)] shadow-sm backdrop-blur-md">
-            <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Mock Exam Preparation</span>
+      <div className="max-w-5xl mx-auto" style={{paddingTop: '4rem', paddingBottom: '6rem'}}>
+
+        {/* Top row: label + badge */}
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-[0.12em] bg-[var(--bg-elevated)] text-[var(--text-tertiary)] border border-[var(--border-color)]">
+              <span className="w-1.5 h-1.5 rounded-full bg-neon-500 animate-pulse inline-block"></span>
+              POSN Series
+            </span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-slate-800 via-electric-600 to-indigo-800 dark:from-white dark:via-electric-300 dark:to-indigo-300 mb-6 drop-shadow-sm tracking-tight py-2">{problemSet.title}</h1>
-          {problemSet.description && <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed font-medium">{problemSet.description}</p>}
+          <span className="text-xs font-mono text-[var(--text-tertiary)] tracking-widest uppercase">Pre-Exam Briefing</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 max-w-4xl mx-auto relative z-10">
-          <div className="p-8 rounded-[2rem] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl shadow-[var(--accent-glow)] flex flex-col items-center justify-center text-center group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/20 hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-400/20 to-orange-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-[inset_0_0_20px_rgba(249,115,22,0.2)] border border-orange-500/20">
-              <span className="text-4xl filter drop-shadow-md">⏳</span>
-            </div>
-            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 relative z-10">Time Limit</div>
-            <div className="text-3xl font-black text-[var(--text-primary)] relative z-10">{problemSet.timeLimitMinutes} <span className="text-lg text-[var(--text-secondary)] font-bold">Min</span></div>
-          </div>
-          
-          <div className="p-8 rounded-[2rem] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl shadow-[var(--accent-glow)] flex flex-col items-center justify-center text-center group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/20 hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-400/20 to-violet-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 shadow-[inset_0_0_20px_rgba(139,92,246,0.2)] border border-violet-500/20">
-              <span className="text-4xl filter drop-shadow-md">📝</span>
-            </div>
-            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 relative z-10">Total Problems</div>
-            <div className="text-3xl font-black text-[var(--text-primary)] relative z-10">{problemSet.items.length} <span className="text-lg text-[var(--text-secondary)] font-bold">Qs</span></div>
-          </div>
-          
-          <div className="p-8 rounded-[2rem] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl shadow-[var(--accent-glow)] flex flex-col items-center justify-center text-center group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-neon-500/20 hover:-translate-y-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-neon-400/20 to-neon-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.2)] border border-neon-500/20">
-              <span className="text-4xl filter drop-shadow-md">🤖</span>
-            </div>
-            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 relative z-10">Auto-Grading</div>
-            <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-500 to-emerald-600 relative z-10">AI Powered</div>
-          </div>
-        </div>
-
-        <div className="text-center relative z-20">
-          {!session ? (
-            <button onClick={() => router.push("/login")} className="relative group px-12 py-5 rounded-2xl text-white font-bold text-xl shadow-2xl shadow-electric-500/30 overflow-hidden transition-all duration-300 hover:shadow-electric-500/50 hover:scale-[1.02]">
-              <div className="absolute inset-0 bg-gradient-to-r from-electric-600 via-indigo-500 to-violet-600 group-hover:from-electric-500 group-hover:via-indigo-400 group-hover:to-violet-500 transition-all duration-300" />
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                Login to Start
-                <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={handleStart}
-              disabled={loading}
-              className="relative group px-12 py-5 rounded-2xl text-white font-bold text-xl shadow-2xl shadow-electric-500/30 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-electric-500/50 hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-electric-600 via-indigo-500 to-violet-600 group-hover:from-electric-500 group-hover:via-indigo-400 group-hover:to-violet-500 transition-all duration-300" />
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="relative z-10 flex items-center justify-center gap-3 tracking-wide">
-                {loading ? "Preparing Exam..." : "Start Attempt"}
-                {!loading && <svg className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
-              </span>
-            </button>
+        {/* Main title block */}
+        <div className="mb-12">
+          <h1
+            className="font-black tracking-tighter text-[var(--text-primary)] leading-none select-none"
+            style={{
+              fontSize: 'clamp(5rem, 14vw, 10rem)',
+              letterSpacing: '-0.04em',
+            }}
+          >
+            {problemSet.title}
+          </h1>
+          {problemSet.description && (
+            <p className="mt-5 text-base text-[var(--text-secondary)] max-w-xl leading-relaxed font-medium">
+              {problemSet.description}
+            </p>
           )}
         </div>
+
+        {/* Divider + Spec Bar */}
+        <div className="border-t border-[var(--border-color)] mb-0" />
+        <div className="grid grid-cols-3 divide-x divide-[var(--border-color)] border-b border-[var(--border-color)] mb-12">
+          
+          {/* Spec: Time */}
+          <div className="py-8 px-6 group">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-4 h-4 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><path strokeLinecap="round" d="M12 6v6l4 2"/>
+              </svg>
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Time Limit</span>
+            </div>
+            <div className="font-black text-[var(--text-primary)] tabular-nums" style={{fontSize: '2.5rem', letterSpacing: '-0.03em', lineHeight: 1}}>
+              {problemSet.timeLimitMinutes}
+              <span className="text-lg font-semibold text-[var(--text-tertiary)] ml-1.5">min</span>
+            </div>
+          </div>
+
+          {/* Spec: Questions */}
+          <div className="py-8 px-6 group">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-4 h-4 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Questions</span>
+            </div>
+            <div className="font-black text-[var(--text-primary)] tabular-nums" style={{fontSize: '2.5rem', letterSpacing: '-0.03em', lineHeight: 1}}>
+              {problemSet.items.length}
+              <span className="text-lg font-semibold text-[var(--text-tertiary)] ml-1.5">Qs</span>
+            </div>
+          </div>
+
+          {/* Spec: Grading */}
+          <div className="py-8 px-6 group">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-4 h-4 text-[var(--text-tertiary)]" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+              </svg>
+              <span className="text-xs font-bold uppercase tracking-[0.12em] text-[var(--text-tertiary)]">Grading</span>
+            </div>
+            <div className="font-black tabular-nums" style={{fontSize: '2.5rem', letterSpacing: '-0.03em', lineHeight: 1, color: 'var(--accent)'}}>
+              AI
+              <span className="text-lg font-semibold text-[var(--text-tertiary)] ml-1.5">powered</span>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA Row */}
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-[var(--text-tertiary)] max-w-xs leading-relaxed">
+            Once started, the timer cannot be paused. Ensure you have a stable connection.
+          </p>
+          <div className="flex items-center gap-4">
+            {!session ? (
+              <button
+                onClick={() => router.push("/login")}
+                className="group relative flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-base text-white overflow-hidden transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                style={{background: 'linear-gradient(135deg, #3B82F6, #6366F1)', boxShadow: '0 2px 20px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15)'}}
+              >
+                <span>Login to Start</span>
+                <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+              </button>
+            ) : (
+              <button
+                onClick={handleStart}
+                disabled={loading}
+                className="group relative flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-base text-white overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                style={{background: 'linear-gradient(135deg, #3B82F6, #6366F1)', boxShadow: '0 2px 20px rgba(99,102,241,0.35), inset 0 1px 0 rgba(255,255,255,0.15)'}}
+              >
+                <span>{loading ? 'Preparing...' : 'Start Attempt'}</span>
+                {!loading && (
+                  <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
       </div>
     )
   }
