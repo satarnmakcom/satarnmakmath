@@ -158,8 +158,8 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
           <h1
             className="font-black tracking-tighter text-[var(--text-primary)] leading-none select-none"
             style={{
-              fontSize: 'clamp(5rem, 14vw, 10rem)',
-              letterSpacing: '-0.04em',
+              fontSize: 'clamp(3rem, 6vw, 4.5rem)',
+              letterSpacing: '-0.03em',
             }}
           >
             {problemSet.title}
