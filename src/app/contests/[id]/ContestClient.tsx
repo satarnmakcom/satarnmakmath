@@ -140,37 +140,52 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
 
   if (!currentAttempt) {
     return (
-      <div className="max-w-3xl mx-auto py-16 text-center">
-        <h1 className="text-4xl font-extrabold text-[var(--text-primary)] mb-4">{problemSet.title}</h1>
-        {problemSet.description && <p className="text-[var(--text-secondary)] mb-8">{problemSet.description}</p>}
-
-        <div className="card p-8 rounded-2xl border border-[var(--border-color)] inline-block text-left mb-8">
-          <h3 className="font-bold text-[var(--text-primary)] mb-4 text-center">Exam Info</h3>
-          <ul className="space-y-3 text-[var(--text-secondary)]">
-            <li className="flex items-center gap-3">
-              <span className="text-2xl">⏳</span> Time Limit: <b>{problemSet.timeLimitMinutes} Minutes</b>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-2xl">📝</span> Total Problems: <b>{problemSet.items.length} Questions</b>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-2xl">🤖</span> AI Auto-grading upon submission
-            </li>
-          </ul>
+      <div className="max-w-4xl mx-auto py-16 md:py-24 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-electric-500/10 dark:bg-electric-500/20 blur-[100px] rounded-full pointer-events-none -z-10 animate-pulse-soft" />
+        
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--text-primary)] to-electric-500 mb-6 drop-shadow-sm">{problemSet.title}</h1>
+          {problemSet.description && <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">{problemSet.description}</p>}
         </div>
 
-        <div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-3xl mx-auto relative z-10">
+          <div className="card p-6 rounded-2xl flex flex-col items-center justify-center text-center group">
+            <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(249,115,22,0.15)]">
+              <span className="text-4xl filter drop-shadow-md">⏳</span>
+            </div>
+            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Time Limit</div>
+            <div className="text-2xl font-extrabold text-[var(--text-primary)]">{problemSet.timeLimitMinutes} Min</div>
+          </div>
+          
+          <div className="card p-6 rounded-2xl flex flex-col items-center justify-center text-center group">
+            <div className="w-16 h-16 rounded-full bg-violet-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(139,92,246,0.15)]">
+              <span className="text-4xl filter drop-shadow-md">📝</span>
+            </div>
+            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Total Problems</div>
+            <div className="text-2xl font-extrabold text-[var(--text-primary)]">{problemSet.items.length} Qs</div>
+          </div>
+          
+          <div className="card p-6 rounded-2xl flex flex-col items-center justify-center text-center group">
+            <div className="w-16 h-16 rounded-full bg-neon-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+              <span className="text-4xl filter drop-shadow-md">🤖</span>
+            </div>
+            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Auto-Grading</div>
+            <div className="text-2xl font-extrabold text-[var(--text-primary)]">AI Powered</div>
+          </div>
+        </div>
+
+        <div className="text-center relative z-10">
           {!session ? (
-            <button onClick={() => router.push("/login")} className="btn-primary px-8 py-3 rounded-xl text-white font-bold text-lg">
+            <button onClick={() => router.push("/login")} className="btn-primary px-10 py-4 rounded-xl text-white font-bold text-lg shadow-electric-500/25">
               Login to Start
             </button>
           ) : (
             <button
               onClick={handleStart}
               disabled={loading}
-              className="btn-primary px-8 py-3 rounded-xl text-white font-bold text-lg disabled:opacity-50"
+              className="btn-primary px-10 py-4 rounded-xl text-white font-bold text-lg shadow-electric-500/25 disabled:opacity-50"
             >
-              {loading ? "Starting..." : "Start Attempt"}
+              {loading ? "Preparing Exam..." : "Start Attempt"}
             </button>
           )}
         </div>
@@ -198,19 +213,23 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
     const acceptedCount = submissions.filter((s: any) => s.status === "ACCEPTED").length
 
     return (
-      <div className="max-w-4xl mx-auto py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-[var(--text-primary)] mb-2">Exam Results</h1>
-          <p className="text-[var(--text-secondary)] mb-8">{problemSet.title}</p>
+      <div className="max-w-4xl mx-auto py-12 relative">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-electric-500/10 dark:bg-electric-500/20 blur-[100px] rounded-full pointer-events-none -z-10 animate-pulse-soft" />
 
-          <div className="flex justify-center gap-6">
-            <div className="card p-6 rounded-2xl border border-[var(--border-color)] min-w-[150px]">
-              <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Score</div>
-              <div className="text-3xl font-extrabold text-electric-400">{acceptedCount} / {problemSet.items.length}</div>
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--text-primary)] to-electric-500 mb-2 drop-shadow-sm">Exam Results</h1>
+          <p className="text-lg text-[var(--text-secondary)] mb-8">{problemSet.title}</p>
+
+          <div className="flex justify-center gap-6 relative z-10">
+            <div className="card p-8 rounded-2xl border border-[var(--glass-border)] min-w-[180px] shadow-[0_10px_30px_rgba(59,130,246,0.1)] relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-electric-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-3 relative z-10">Final Score</div>
+              <div className="text-5xl font-extrabold text-electric-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.4)] relative z-10">{acceptedCount} <span className="text-2xl text-[var(--text-secondary)]">/ {problemSet.items.length}</span></div>
             </div>
-            <div className="card p-6 rounded-2xl border border-[var(--border-color)] min-w-[150px]">
-              <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-2">Rating Change</div>
-              <div className={`text-3xl font-extrabold ${(currentAttempt.score ?? 0) >= 0 ? 'text-neon-400' : 'text-rose-400'}`}>
+            <div className="card p-8 rounded-2xl border border-[var(--glass-border)] min-w-[180px] shadow-[0_10px_30px_rgba(59,130,246,0.1)] relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-neon-500/5 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-3 relative z-10">Rating Change</div>
+              <div className={`text-5xl font-extrabold relative z-10 ${(currentAttempt.score ?? 0) >= 0 ? 'text-neon-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.4)]'}`}>
                 {(currentAttempt.score ?? 0) > 0 ? '+' : ''}{currentAttempt.score ?? 0}
               </div>
             </div>
@@ -261,22 +280,22 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
 
   // IN_PROGRESS STATE
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] -mx-4 md:-mx-6 lg:-mx-8 -my-4 md:-my-6 lg:-my-8">
+    <div className="flex flex-col h-[calc(100vh-4rem)] -mx-4 md:-mx-6 lg:-mx-8 -my-4 md:-my-6 lg:-my-8 bg-[var(--bg-primary)]">
       {/* Top Bar */}
-      <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)] px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
+      <div className="bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--glass-border)] px-6 py-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
         <div>
-          <h1 className="font-bold text-[var(--text-primary)] text-lg hidden md:block">{problemSet.title}</h1>
-          <div className="text-xs text-[var(--text-secondary)]">Mock Exam in progress</div>
+          <h1 className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--text-primary)] to-electric-500 text-lg hidden md:block">{problemSet.title}</h1>
+          <div className="text-xs font-bold text-[var(--text-tertiary)] uppercase tracking-wider">Exam in progress</div>
         </div>
         <div className="flex items-center gap-6">
-          <div className={`flex items-center gap-2 font-mono font-bold text-xl ${timeLeft < 300 ? 'text-rose-500 animate-pulse' : 'text-[var(--text-primary)]'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div className={`flex items-center gap-2 font-mono font-bold text-2xl ${timeLeft < 300 ? 'text-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)] animate-pulse' : 'text-[var(--text-primary)] drop-shadow-sm'}`}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             {formatTime(timeLeft)}
           </div>
           <button
             onClick={handleManualSubmit}
             disabled={loading}
-            className="btn-primary px-6 py-2 rounded-xl text-white font-bold disabled:opacity-50"
+            className="btn-primary px-6 py-2.5 rounded-xl text-white font-bold disabled:opacity-50 shadow-electric-500/25"
           >
             Submit Exam
           </button>

@@ -160,7 +160,7 @@ export default function Header({ onToggleSidebar }: HeaderProps) {
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full hover:bg-[var(--bg-secondary)] transition-colors border border-transparent hover:border-[var(--border-color)] group"
+                className="flex items-center gap-2 pl-1 pr-4 py-1 rounded-full hover:bg-gradient-to-r hover:from-[var(--bg-elevated)] hover:to-transparent transition-all border border-transparent hover:border-[var(--glass-border)] shadow-sm hover:shadow-[0_0_15px_rgba(59,130,246,0.15)] group"
               >
                 <img
                   src={session.user?.image || "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session.user?.name}

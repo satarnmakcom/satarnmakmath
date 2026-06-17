@@ -100,8 +100,8 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
                   className={`relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300 ${active
-                      ? 'text-[var(--text-primary)] bg-[var(--bg-elevated)]'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/50'
+                      ? 'text-[var(--text-primary)] bg-gradient-to-r from-[var(--bg-elevated)] to-transparent shadow-sm border border-[var(--border-color)]/50'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]/40 border border-transparent'
                     }`}
                 >
                   {active && (
@@ -149,18 +149,21 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     {t('sidebar.your_progress')}
                   </span>
                 </div>
-                <div className="px-3 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
-                  <div className="flex justify-between text-xs mb-2">
-                    <span className="text-[var(--text-secondary)] font-medium truncate max-w-[150px]">{progressInfo.current} &rarr; {progressInfo.next}</span>
-                    <span className="text-electric-400 font-bold ml-2 shrink-0">{Math.round(progressInfo.percent)}%</span>
+                <div className="px-4 py-4 rounded-xl bg-gradient-to-br from-[var(--bg-elevated)] to-[var(--bg-card)] border border-[var(--glass-border)] shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-gradient-to-br from-electric-500/5 to-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="flex justify-between text-xs mb-3 relative z-10">
+                    <span className="text-[var(--text-primary)] font-bold truncate max-w-[140px]">{progressInfo.current} <span className="text-[var(--text-tertiary)] font-normal mx-1">&rarr;</span> {progressInfo.next}</span>
+                    <span className="text-electric-500 font-extrabold ml-2 shrink-0 drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">{Math.round(progressInfo.percent)}%</span>
                   </div>
-                  <div className="h-2 bg-[var(--bg-primary)] rounded-full overflow-hidden">
+                  <div className="h-2.5 bg-[var(--bg-primary)] rounded-full overflow-hidden shadow-inner relative z-10">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${progressInfo.percent}%` }}
-                      transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-electric-500 to-violet-500 rounded-full"
-                    />
+                      transition={{ duration: 1.5, delay: 0.2, ease: "easeOut" }}
+                      className="h-full bg-gradient-to-r from-electric-400 via-electric-500 to-violet-500 rounded-full relative"
+                    >
+                      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.4),transparent)] -translate-x-full animate-[shimmer_2s_infinite]" />
+                    </motion.div>
                   </div>
                 </div>
               </motion.div>
