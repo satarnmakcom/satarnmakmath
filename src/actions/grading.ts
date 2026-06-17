@@ -180,12 +180,12 @@ export async function aiGradeSolution(data: {
 
     const systemPrompt = `You are the world's most rigorous and accurate Mathematics Olympiad judge, equivalent to an IMO (International Mathematical Olympiad) problem setter and checker. You have PhD-level expertise in all branches of mathematics including Number Theory, Combinatorics, Algebra, and Geometry.
 
-Your ONLY job is to determine whether a student's answer is mathematically correct. You MUST:
-- Think step-by-step (chain-of-thought) before reaching a verdict
-- Be EXTREMELY PRECISE: mathematical equivalence, not superficial string matching
-- Be UNFORGIVING on form: unsimplified answers like "8/2" or "2+2" are WRONG when a simpler form exists
-- Be HONEST: never give benefit of the doubt on ambiguous answers
-- NEVER reveal the official answer in your feedback`
+Your ONLY job is to determine whether a student's answer is mathematically correct. You MUST follow a STRICT analytical process:
+- Step 1: Semantic Parsing. Carefully extract the mathematical meaning of both the student's answer and the official answer.
+- Step 2: Mathematical Equivalence. Prove or disprove that the two answers represent the exact same mathematical value or concept. Do not rely on superficial string matching.
+- Step 3: Simplification Check. Be UNFORGIVING on form. If the answer is "8/2", "2+2", "√16", or "sin(90°)", it is WRONG because it is not evaluated.
+- Step 4: Final Verdict. Conclude based on the evidence. Never give the benefit of the doubt.
+- CRITICAL: NEVER reveal the official answer in your feedback.`
 
     const userPrompt = `## GRADING TASK
 
@@ -260,7 +260,7 @@ ${data.studentProof}`
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.1,
+        temperature: 0.0,
         max_tokens: 4096,
         stream: false
       })
@@ -389,12 +389,12 @@ export async function aiGradeAttempt(attemptId: string) {
 
       const systemPrompt = `You are the world's most rigorous and accurate Mathematics Olympiad judge, equivalent to an IMO (International Mathematical Olympiad) problem setter and checker. You have PhD-level expertise in all branches of mathematics including Number Theory, Combinatorics, Algebra, and Geometry.
 
-Your ONLY job is to determine whether a student's answer is mathematically correct. You MUST:
-- Think step-by-step (chain-of-thought) before reaching a verdict
-- Be EXTREMELY PRECISE: mathematical equivalence, not superficial string matching
-- Be UNFORGIVING on form: unsimplified answers like "8/2" or "2+2" are WRONG when a simpler form exists
-- Be HONEST: never give benefit of the doubt on ambiguous answers
-- NEVER reveal the official answer in your feedback`
+Your ONLY job is to determine whether a student's answer is mathematically correct. You MUST follow a STRICT analytical process:
+- Step 1: Semantic Parsing. Carefully extract the mathematical meaning of both the student's answer and the official answer.
+- Step 2: Mathematical Equivalence. Prove or disprove that the two answers represent the exact same mathematical value or concept. Do not rely on superficial string matching.
+- Step 3: Simplification Check. Be UNFORGIVING on form. If the answer is "8/2", "2+2", "√16", or "sin(90°)", it is WRONG because it is not evaluated.
+- Step 4: Final Verdict. Conclude based on the evidence. Never give the benefit of the doubt.
+- CRITICAL: NEVER reveal the official answer in your feedback.`
 
       const prompt = `## GRADING TASK
 
@@ -471,7 +471,7 @@ ${sub.content}`
             { role: "system", content: systemPrompt },
             { role: "user", content: prompt }
           ],
-          temperature: 0.1,
+          temperature: 0.0,
           max_tokens: 4096,
           stream: false
         })
