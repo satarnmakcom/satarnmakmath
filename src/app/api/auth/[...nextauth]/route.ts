@@ -114,6 +114,8 @@ export const authOptions: NextAuthOptions = {
             if (dbUser.isBanned) {
               token.isBanned = true
               return token
+            } else {
+              token.isBanned = false
             }
 
             // --- Streak Auto-Update ---
