@@ -140,52 +140,68 @@ export default function ContestClient({ problemSet, attempt, session }: ContestC
 
   if (!currentAttempt) {
     return (
-      <div className="max-w-4xl mx-auto py-16 md:py-24 relative">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-electric-500/10 dark:bg-electric-500/20 blur-[100px] rounded-full pointer-events-none -z-10 animate-pulse-soft" />
+      <div className="max-w-5xl mx-auto py-16 md:py-24 relative min-h-[80vh] flex flex-col justify-center">
+        {/* Ambient Background Glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-br from-electric-400/20 via-violet-500/10 to-transparent blur-[120px] rounded-full pointer-events-none -z-10 animate-pulse-soft" />
         
-        <div className="text-center mb-16">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[var(--text-primary)] to-electric-500 mb-6 drop-shadow-sm">{problemSet.title}</h1>
-          {problemSet.description && <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto">{problemSet.description}</p>}
+        <div className="text-center mb-20 relative z-10">
+          <div className="inline-block mb-4 px-4 py-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--glass-border)] shadow-sm backdrop-blur-md">
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--text-secondary)]">Mock Exam Preparation</span>
+          </div>
+          <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-slate-800 via-electric-600 to-indigo-800 dark:from-white dark:via-electric-300 dark:to-indigo-300 mb-6 drop-shadow-sm tracking-tight py-2">{problemSet.title}</h1>
+          {problemSet.description && <p className="text-lg md:text-xl text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed font-medium">{problemSet.description}</p>}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-3xl mx-auto relative z-10">
-          <div className="card p-6 rounded-2xl flex flex-col items-center justify-center text-center group">
-            <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(249,115,22,0.15)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 max-w-4xl mx-auto relative z-10">
+          <div className="p-8 rounded-[2rem] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl shadow-[var(--accent-glow)] flex flex-col items-center justify-center text-center group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-orange-500/20 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-400/20 to-orange-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-[inset_0_0_20px_rgba(249,115,22,0.2)] border border-orange-500/20">
               <span className="text-4xl filter drop-shadow-md">⏳</span>
             </div>
-            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Time Limit</div>
-            <div className="text-2xl font-extrabold text-[var(--text-primary)]">{problemSet.timeLimitMinutes} Min</div>
+            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 relative z-10">Time Limit</div>
+            <div className="text-3xl font-black text-[var(--text-primary)] relative z-10">{problemSet.timeLimitMinutes} <span className="text-lg text-[var(--text-secondary)] font-bold">Min</span></div>
           </div>
           
-          <div className="card p-6 rounded-2xl flex flex-col items-center justify-center text-center group">
-            <div className="w-16 h-16 rounded-full bg-violet-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(139,92,246,0.15)]">
+          <div className="p-8 rounded-[2rem] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl shadow-[var(--accent-glow)] flex flex-col items-center justify-center text-center group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-violet-500/20 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-400/20 to-violet-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 shadow-[inset_0_0_20px_rgba(139,92,246,0.2)] border border-violet-500/20">
               <span className="text-4xl filter drop-shadow-md">📝</span>
             </div>
-            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Total Problems</div>
-            <div className="text-2xl font-extrabold text-[var(--text-primary)]">{problemSet.items.length} Qs</div>
+            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 relative z-10">Total Problems</div>
+            <div className="text-3xl font-black text-[var(--text-primary)] relative z-10">{problemSet.items.length} <span className="text-lg text-[var(--text-secondary)] font-bold">Qs</span></div>
           </div>
           
-          <div className="card p-6 rounded-2xl flex flex-col items-center justify-center text-center group">
-            <div className="w-16 h-16 rounded-full bg-neon-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(16,185,129,0.15)]">
+          <div className="p-8 rounded-[2rem] bg-gradient-to-b from-[var(--bg-card)] to-[var(--bg-secondary)] border border-[var(--border-color)] shadow-xl shadow-[var(--accent-glow)] flex flex-col items-center justify-center text-center group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-neon-500/20 hover:-translate-y-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent dark:from-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-neon-400/20 to-neon-600/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-[inset_0_0_20px_rgba(16,185,129,0.2)] border border-neon-500/20">
               <span className="text-4xl filter drop-shadow-md">🤖</span>
             </div>
-            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-wider mb-1">Auto-Grading</div>
-            <div className="text-2xl font-extrabold text-[var(--text-primary)]">AI Powered</div>
+            <div className="text-sm font-bold text-[var(--text-tertiary)] uppercase tracking-widest mb-2 relative z-10">Auto-Grading</div>
+            <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-neon-500 to-emerald-600 relative z-10">AI Powered</div>
           </div>
         </div>
 
-        <div className="text-center relative z-10">
+        <div className="text-center relative z-20">
           {!session ? (
-            <button onClick={() => router.push("/login")} className="btn-primary px-10 py-4 rounded-xl text-white font-bold text-lg shadow-electric-500/25">
-              Login to Start
+            <button onClick={() => router.push("/login")} className="relative group px-12 py-5 rounded-2xl text-white font-bold text-xl shadow-2xl shadow-electric-500/30 overflow-hidden transition-all duration-300 hover:shadow-electric-500/50 hover:scale-[1.02]">
+              <div className="absolute inset-0 bg-gradient-to-r from-electric-600 via-indigo-500 to-violet-600 group-hover:from-electric-500 group-hover:via-indigo-400 group-hover:to-violet-500 transition-all duration-300" />
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                Login to Start
+                <svg className="w-6 h-6 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </span>
             </button>
           ) : (
             <button
               onClick={handleStart}
               disabled={loading}
-              className="btn-primary px-10 py-4 rounded-xl text-white font-bold text-lg shadow-electric-500/25 disabled:opacity-50"
+              className="relative group px-12 py-5 rounded-2xl text-white font-bold text-xl shadow-2xl shadow-electric-500/30 overflow-hidden disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 hover:shadow-electric-500/50 hover:scale-[1.02] active:scale-[0.98]"
             >
-              {loading ? "Preparing Exam..." : "Start Attempt"}
+              <div className="absolute inset-0 bg-gradient-to-r from-electric-600 via-indigo-500 to-violet-600 group-hover:from-electric-500 group-hover:via-indigo-400 group-hover:to-violet-500 transition-all duration-300" />
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4IiBoZWlnaHQ9IjgiPgo8cmVjdCB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="relative z-10 flex items-center justify-center gap-3 tracking-wide">
+                {loading ? "Preparing Exam..." : "Start Attempt"}
+                {!loading && <svg className="w-6 h-6 group-hover:translate-x-1.5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
+              </span>
             </button>
           )}
         </div>
