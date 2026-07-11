@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getProblems } from '@/actions/problems'
 import { useSession } from 'next-auth/react'
 import LandingPage from '@/components/LandingPage'
+import { Skeleton } from '@/components/Skeleton'
 
 interface Problem {
   id: string
@@ -137,8 +138,19 @@ function Dashboard() {
             </select>
           </div>
           {loading ? (
-            <div className="flex justify-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-electric-500"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="card rounded-xl p-5 h-[124px] flex flex-col justify-between">
+                  <div>
+                    <Skeleton className="h-5 w-2/3 mb-2" />
+                    <Skeleton className="h-4 w-1/3 mb-4" />
+                  </div>
+                  <div className="flex justify-between">
+                    <Skeleton className="h-3 w-1/4" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,12 +220,8 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 animate-pulse">
-            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <div className="text-sm text-[var(--text-tertiary)] font-medium">Loading...</div>
+          <Skeleton className="w-12 h-12 rounded-xl" />
+          <Skeleton className="w-20 h-4 rounded-full" />
         </div>
       </div>
     )
