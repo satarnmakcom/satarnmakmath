@@ -92,3 +92,29 @@ export async function getLeaderboard(params?: {
     return { success: false, error: "Failed to fetch leaderboard" }
   }
 }
+
+export async function getCountryStats() {
+  try {
+    const stats = await prisma.user.groupBy({
+      by: ['country'],
+      _count: {
+        id: true
+      },
+      orderBy: {
+        _count: {
+          id: 'desc'
+        }
+      }
+    })
+    
+    const formattedStats = stats.map(s => ({
+      country: s.country || 'Unknown',
+      count: s._count.id
+    })).filter(s => s.country !== 'Unknown')
+
+    return { success: true, data: formattedStats }
+  } catch (error) {
+    console.error("Failed to fetch country stats:", error)
+    return { success: false, error: "Failed to fetch country stats" }
+  }
+}

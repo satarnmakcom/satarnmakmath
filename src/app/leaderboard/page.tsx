@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { getLeaderboard } from '@/actions/users'
+import { getLeaderboard, getCountryStats } from '@/actions/users'
 import Link from 'next/link'
 import { useLanguage } from '@/context/LanguageContext'
 import { getRatingInfo } from '@/lib/rating'
@@ -19,16 +19,27 @@ interface User {
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [countryStats, setCountryStats] = useState<{country: string, count: number}[]>([])
+  const [selectedCountry, setSelectedCountry] = useState<string>('')
+  const [selectedContinent, setSelectedContinent] = useState<string>('')
   const { t } = useLanguage()
 
   useEffect(() => {
     async function loadData() {
       setLoading(true)
-      const res = await getLeaderboard({ limit: 20 })
+      const res = await getLeaderboard({ limit: 20, country: selectedCountry || undefined })
       if (res.success) setUsers(res.data || [])
       setLoading(false)
     }
     loadData()
+  }, [selectedCountry])
+
+  useEffect(() => {
+    async function loadStats() {
+      const statsRes = await getCountryStats()
+      if (statsRes.success) setCountryStats(statsRes.data || [])
+    }
+    loadStats()
   }, [])
 
 
@@ -48,17 +59,30 @@ export default function LeaderboardPage() {
           <p className="text-[var(--text-secondary)] mt-3 text-lg">{t('leaderboard.desc')}</p>
         </div>
         <div className="flex gap-2">
-          <select className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors">
-            <option>{t('leaderboard.region_all')}</option>
-            <option>{t('leaderboard.region_th')}</option>
-            <option>{t('leaderboard.region_asia')}</option>
-            <option>{t('leaderboard.region_eu')}</option>
+          <select 
+            className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors"
+            value={selectedContinent}
+            onChange={(e) => setSelectedContinent(e.target.value)}
+          >
+            <option value="">{t('leaderboard.region_all')}</option>
+            <option value="Asia">Asia</option>
+            <option value="Europe">Europe</option>
+            <option value="North America">North America</option>
+            <option value="South America">South America</option>
+            <option value="Africa">Africa</option>
+            <option value="Oceania">Oceania</option>
           </select>
-          <select className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors">
-            <option>{t('leaderboard.level_all')}</option>
-            <option>สอวน. ค่าย 1</option>
-            <option>TMO</option>
-            <option>IMO</option>
+          <select 
+            className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl px-4 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-electric-500/50 cursor-pointer hover:border-electric-500/30 transition-colors"
+            value={selectedCountry}
+            onChange={(e) => setSelectedCountry(e.target.value)}
+          >
+            <option value="">All Countries</option>
+            {countryStats.map(c => (
+              <option key={c.country} value={c.country}>
+                {c.country} ({c.count})
+              </option>
+            ))}
           </select>
         </div>
       </div>
