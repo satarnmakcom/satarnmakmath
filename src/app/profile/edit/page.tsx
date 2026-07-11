@@ -7,21 +7,7 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { updateProfile } from '@/actions/profile'
 
-const countries = [
-  { code: 'TH', name: 'Thailand 🇹🇭' },
-  { code: 'US', name: 'United States 🇺🇸' },
-  { code: 'JP', name: 'Japan 🇯🇵' },
-  { code: 'KR', name: 'South Korea 🇰🇷' },
-  { code: 'CN', name: 'China 🇨🇳' },
-  { code: 'SG', name: 'Singapore 🇸🇬' },
-  { code: 'VN', name: 'Vietnam 🇻🇳' },
-  { code: 'IN', name: 'India 🇮🇳' },
-  { code: 'GB', name: 'United Kingdom 🇬🇧' },
-  { code: 'DE', name: 'Germany 🇩🇪' },
-  { code: 'FR', name: 'France 🇫🇷' },
-  { code: 'AU', name: 'Australia 🇦🇺' },
-  { code: 'OTHER', name: 'Other 🌍' },
-]
+import { countries } from '@/lib/countries'
 
 export default function EditProfilePage() {
   const { data: session, update } = useSession()
