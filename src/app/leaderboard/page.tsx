@@ -27,12 +27,16 @@ export default function LeaderboardPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true)
-      const res = await getLeaderboard({ limit: 20, country: selectedCountry || undefined })
+      const res = await getLeaderboard({ 
+        limit: 20, 
+        country: selectedCountry || undefined,
+        continent: selectedContinent || undefined 
+      })
       if (res.success) setUsers(res.data || [])
       setLoading(false)
     }
     loadData()
-  }, [selectedCountry])
+  }, [selectedCountry, selectedContinent])
 
   useEffect(() => {
     async function loadStats() {

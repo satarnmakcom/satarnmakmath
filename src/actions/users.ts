@@ -52,14 +52,30 @@ export async function getUserProfile(userId: string) {
   }
 }
 
+const CONTINENT_MAP: Record<string, string[]> = {
+  'Asia': ['TH', 'JP', 'CN', 'IN', 'VN', 'SG', 'KR', 'MY', 'ID', 'PH', 'TW', 'HK'],
+  'Europe': ['GB', 'FR', 'DE', 'IT', 'ES', 'RU', 'NL', 'SE', 'CH', 'PL', 'UA'],
+  'North America': ['US', 'CA', 'MX'],
+  'South America': ['BR', 'AR', 'CO', 'CL', 'PE'],
+  'Oceania': ['AU', 'NZ'],
+  'Africa': ['ZA', 'EG', 'NG', 'KE', 'MA']
+};
+
 export async function getLeaderboard(params?: {
   limit?: number;
   country?: string;
+  continent?: string;
 }) {
   try {
+    let countryFilter = params?.country ? { country: params.country } : undefined;
+    
+    if (!params?.country && params?.continent && CONTINENT_MAP[params.continent]) {
+      countryFilter = { country: { in: CONTINENT_MAP[params.continent] } };
+    }
+
     const users = await prisma.user.findMany({
       where: {
-        ...(params?.country && { country: params.country })
+        ...countryFilter
       },
       orderBy: [
         { rating: 'desc' },
