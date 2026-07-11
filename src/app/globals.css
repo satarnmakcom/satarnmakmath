@@ -3,23 +3,23 @@
 
 @layer base {
   :root {
-    --bg-primary:#f8fafc; --bg-secondary:#f1f5f9; --bg-card:#ffffff; --bg-elevated:#e2e8f0;
-    --text-primary:#0f172a; --text-secondary:#475569; --text-tertiary:#94a3b8;
-    --border-color:#e2e8f0; --accent:#3B82F6; --accent-glow:rgba(59,130,246,0.12);
-    --glass-bg: rgba(255,255,255,0.72); --glass-border: rgba(255,255,255,0.5);
+    --bg-primary:#f0f9ff; --bg-secondary:#e0f2fe; --bg-card:#ffffff; --bg-elevated:#bae6fd;
+    --text-primary:#0f172a; --text-secondary:#334155; --text-tertiary:#64748b;
+    --border-color:#bae6fd; --accent:#0284c7; --accent-glow:rgba(2,132,199,0.12);
+    --glass-bg: rgba(255,255,255,0.8); --glass-border: rgba(255,255,255,0.6);
   }
   .dark {
-    --bg-primary:#05050A; --bg-secondary:#0A0A12; --bg-card:#0F0F1A; --bg-elevated:#1A1A2E;
-    --text-primary:#ffffff; --text-secondary:#A1A1AA; --text-tertiary:#71717A;
-    --border-color:#1E1E2E; --accent:#6366F1; --accent-glow:rgba(99,102,241,0.15);
-    --glass-bg: rgba(15,15,26,0.65); --glass-border: rgba(255,255,255,0.05);
+    --bg-primary:#020617; --bg-secondary:#0f172a; --bg-card:#0b1121; --bg-elevated:#1e293b;
+    --text-primary:#f8fafc; --text-secondary:#cbd5e1; --text-tertiary:#94a3b8;
+    --border-color:#1e293b; --accent:#38bdf8; --accent-glow:rgba(56,189,248,0.15);
+    --glass-bg: rgba(2,6,23,0.75); --glass-border: rgba(255,255,255,0.08);
   }
   body { 
     background:var(--bg-primary); 
     color:var(--text-primary); 
     font-family: var(--font-kanit), var(--font-inter), system-ui, sans-serif;
     overflow-x:hidden;
-    background-image: radial-gradient(circle at 50% 0%, rgba(99,102,241,0.05) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(139,92,246,0.05) 0%, transparent 50%);
+    background-image: radial-gradient(circle at 50% 0%, rgba(2,132,199,0.03) 0%, transparent 50%), radial-gradient(circle at 100% 100%, rgba(56,189,248,0.03) 0%, transparent 50%);
     background-attachment: fixed;
   }
   h1, h2, h3, h4, h5, h6, .font-heading {

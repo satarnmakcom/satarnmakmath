@@ -75,27 +75,19 @@ export default function LandingPage() {
       {/* Ambient background glows */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div
-          className="absolute w-[800px] h-[800px] rounded-full opacity-30 blur-[150px] transition-all duration-[2000ms]"
+          className="absolute w-[800px] h-[800px] rounded-full opacity-20 blur-[150px]"
           style={{
-            background: 'radial-gradient(circle, rgba(99,102,241,0.3) 0%, transparent 70%)',
-            left: `calc(${mousePos.x * 0.02}% + 10%)`,
-            top: `calc(${mousePos.y * 0.02}% - 20%)`,
+            background: 'radial-gradient(circle, rgba(56,189,248,0.2) 0%, transparent 70%)',
+            left: '10%',
+            top: '-20%',
           }}
         />
         <div
-          className="absolute w-[600px] h-[600px] rounded-full opacity-20 blur-[120px]"
+          className="absolute w-[600px] h-[600px] rounded-full opacity-15 blur-[120px]"
           style={{
-            background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(2,132,199,0.2) 0%, transparent 70%)',
             right: '5%',
             bottom: '10%',
-          }}
-        />
-        <div
-          className="absolute w-[400px] h-[400px] rounded-full opacity-15 blur-[100px]"
-          style={{
-            background: 'radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%)',
-            left: '50%',
-            top: '60%',
           }}
         />
       </div>
@@ -148,7 +140,7 @@ export default function LandingPage() {
           style={{ fontFamily: 'var(--font-outfit), var(--font-inter), sans-serif' }}
         >
           <span className="text-[var(--text-primary)]">{t('landing.title1')}</span>
-          <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400 bg-clip-text text-transparent">{t('landing.title_highlight')}</span>
+          <span className="text-electric-500">{t('landing.title_highlight')}</span>
           <br />
           <span className="text-[var(--text-primary)]">{t('landing.title2')}</span>
         </motion.h1>
@@ -172,7 +164,7 @@ export default function LandingPage() {
         >
           <Link
             href="/register"
-            className="group relative px-8 py-4 text-base font-bold text-white rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 shadow-2xl shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:scale-[1.03] active:scale-[0.98] transition-all overflow-hidden"
+            className="group relative px-8 py-4 text-base font-bold text-white rounded-2xl btn-primary transition-all overflow-hidden"
           >
             <span className="relative z-10 flex items-center gap-2">
               {t('landing.start_free')}
@@ -180,7 +172,7 @@ export default function LandingPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           </Link>
           <Link
             href="/learn"
@@ -190,37 +182,7 @@ export default function LandingPage() {
           </Link>
         </motion.div>
 
-        {/* Floating Math Formulas - decorative */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <motion.div
-            animate={{ y: [-10, 10, -10], rotate: [0, 5, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[15%] left-[8%] text-2xl md:text-3xl font-mono text-white/[0.04] font-bold select-none"
-          >
-            ∑ₙ₌₁
-          </motion.div>
-          <motion.div
-            animate={{ y: [10, -10, 10], rotate: [0, -3, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute top-[25%] right-[10%] text-xl md:text-2xl font-mono text-white/[0.04] font-bold select-none"
-          >
-            ∫₀^∞
-          </motion.div>
-          <motion.div
-            animate={{ y: [-8, 12, -8] }}
-            transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-            className="absolute bottom-[30%] left-[15%] text-xl md:text-2xl font-mono text-white/[0.04] font-bold select-none"
-          >
-            π·e^(iθ)
-          </motion.div>
-          <motion.div
-            animate={{ y: [5, -15, 5], rotate: [0, 8, 0] }}
-            transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-            className="absolute top-[40%] right-[18%] text-lg md:text-xl font-mono text-white/[0.04] font-bold select-none"
-          >
-            lim x→∞
-          </motion.div>
-        </div>
+        {/* Floating Math Formulas - decorative removed */}
       </section>
 
       {/* ===== STATS BAR ===== */}
@@ -357,7 +319,7 @@ export default function LandingPage() {
           transition={{ duration: 0.7 }}
           className="relative rounded-3xl overflow-hidden"
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-violet-600/20 to-purple-600/20 blur-xl" />
+          <div className="absolute inset-0 bg-electric-500/10 blur-xl" />
           <div className="relative border border-white/[0.08] rounded-3xl bg-white/[0.03] backdrop-blur-md p-10 md:p-16 text-center">
             <h2 className="text-3xl md:text-5xl font-extrabold text-[var(--text-primary)] tracking-tight mb-4" style={{ fontFamily: 'var(--font-outfit)' }}>
               {t('landing.cta.title')}
@@ -367,7 +329,7 @@ export default function LandingPage() {
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-10 py-4 text-base font-bold text-white rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105 active:scale-[0.98] transition-all"
+              className="inline-flex items-center gap-2 px-10 py-4 text-base font-bold text-white rounded-2xl btn-primary transition-all"
             >
               {t('landing.cta.btn')}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
