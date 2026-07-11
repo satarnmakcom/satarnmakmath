@@ -67,9 +67,10 @@ export async function getLeaderboard(params?: {
   continent?: string;
 }) {
   try {
-    let countryFilter = params?.country ? { country: params.country } : undefined;
-    
-    if (!params?.country && params?.continent && CONTINENT_MAP[params.continent]) {
+    let countryFilter: any = undefined;
+    if (params?.country) {
+      countryFilter = { country: params.country };
+    } else if (params?.continent && CONTINENT_MAP[params.continent]) {
       countryFilter = { country: { in: CONTINENT_MAP[params.continent] } };
     }
 
